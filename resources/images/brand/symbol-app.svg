@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Sisahygo Connect symbol">
+
+<defs>
+  <linearGradient id="blueGrad" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#176BFF"/><stop offset="1" stop-color="#061A55"/></linearGradient>
+  <linearGradient id="orangeGrad" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#FF5B00"/><stop offset="1" stop-color="#FFA640"/></linearGradient>
+  <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="8" stdDeviation="8" flood-opacity=".18"/></filter>
+</defs>
+<rect width="512" height="512" rx="112" fill="#FFFFFF"/>
+<g filter="url(#softShadow)">
+  <path d="M132 122c0-39 32-71 71-71h223c0 70-57 127-127 127H202c-16 0-29 13-29 29s13 29 29 29h153c39 0 71 32 71 71s-32 71-71 71H105c0-70 57-127 127-127h121c16 0 29-13 29-29s-13-29-29-29H203c-39 0-71-32-71-71z" fill="url(#blueGrad)"/>
+  <path d="M121 377c0-69 56-125 125-125h155c23 0 42 19 42 42v1c0 69-56 125-125 125H121v-43z" fill="url(#orangeGrad)"/>
+  <path d="M82 311a42 42 0 1 0 0-84 42 42 0 0 0 0 84zm0-23a19 19 0 1 1 0-38 19 19 0 0 1 0 38z" fill="url(#orangeGrad)"/>
+  <path d="M117 297l56 42" stroke="url(#orangeGrad)" stroke-width="22" stroke-linecap="round"/>
+  <g fill="url(#blueGrad)">
+    <rect x="342" y="162" width="25" height="25" rx="3" transform="rotate(10 342 162)"/>
+    <rect x="379" y="142" width="19" height="19" rx="3" transform="rotate(10 379 142)"/>
+    <rect x="407" y="172" width="20" height="20" rx="3" transform="rotate(10 407 172)"/>
+    <rect x="373" y="202" width="23" height="23" rx="3" transform="rotate(10 373 202)"/>
+    <rect x="417" y="214" width="17" height="17" rx="3" transform="rotate(10 417 214)"/>
+  </g>
+</g>
+</svg>
