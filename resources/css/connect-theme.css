@@ -1,4 +1,3 @@
-
 @layer components {
     .connect-button-primary {
         @apply inline-flex items-center justify-center rounded-lg
@@ -11,4 +10,12 @@
             focus-visible:ring-connect-blue-500
             focus-visible:ring-offset-2;
     }
+
+    .connect-focus {
+        @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-connect-blue-500 focus-visible:ring-offset-2;
+    }
+}
+
+[x-cloak] {
+    display: none !important;
 }
