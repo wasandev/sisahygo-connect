@@ -1,0 +1,14 @@
+
+@layer components {
+    .connect-button-primary {
+        @apply inline-flex items-center justify-center rounded-lg
+            bg-connect-blue-500 px-4 py-2
+            font-semibold text-white
+            transition
+            hover:bg-connect-blue-600
+            focus:outline-none
+            focus-visible:ring-2
+            focus-visible:ring-connect-blue-500
+            focus-visible:ring-offset-2;
+    }
+}

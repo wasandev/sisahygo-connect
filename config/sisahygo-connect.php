@@ -1,19 +1,14 @@
 <?php
 
 return [
-    'name' => env('APP_NAME', 'Sisahygo Connect'),
-    'brand' => [
-        'primary' => '#0D47FF',
-        'navy' => '#0A183D',
-        'orange' => '#FF7A00',
-        'accent_orange' => '#FFA64D',
-        'text' => '#1A1F2C',
-        'muted' => '#687280',
-        'light' => '#F2F4F7',
+    'name' => env('CONNECT_NAME', 'Sisahygo Connect'),
+    'api' => [
+        'base_url' => env('SISAHYGO_API_URL', 'https://sandbox-api.sisahygo.online/api/v1/client'),
+        'timeout' => (int) env('SISAHYGO_API_TIMEOUT', 15),
     ],
-    'assets' => [
-        'logo' => '/images/brand/logo-horizontal.svg',
-        'logo_dark' => '/images/brand/logo-horizontal-on-dark.svg',
-        'symbol' => '/images/brand/symbol.svg',
+    'brand' => [
+        'primary' => '#0875D1',
+        'accent' => '#F47A16',
+        'ink' => '#0B2A4A',
     ],
 ];
