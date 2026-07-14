@@ -16,3 +16,8 @@ Resolved in hardening baseline:
 - Removed conditional customer foreign key behavior from the Client Account customer migration.
 - Removed unused Laravel starter welcome and preview views.
 - Consolidated payment type grouping into `PaymentType`.
+
+Resolved in Sprint 1.5 foundation:
+
+- Added Sisahygo API configuration, encrypted per-Client-Account credential storage, integration context, HTTP client foundation, fixtures and contract-style tests.
+- Documented receiver Core API compatibility gap.

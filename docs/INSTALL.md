@@ -30,5 +30,5 @@ npm run build
 
 - Authentication is provided by the existing Laravel/Livewire stack.
 - Tenant-dependent application pages require a selected Client Account.
-- The root URL intentionally redirects to login.
+- The root URL shows a guest welcome page. Authenticated users are sent to the dashboard.
 - Sisahygo API integration is not implemented yet.

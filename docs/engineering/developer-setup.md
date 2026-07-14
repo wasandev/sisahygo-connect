@@ -1,6 +1,6 @@
 # Developer Setup
 
-Sisahygo Connect uses Laravel, Livewire 3, Tailwind CSS, and Laravel Sail.
+Sisahygo Connect uses Laravel 13, Livewire 3, Tailwind CSS, and Laravel Sail.
 
 Recommended Windows development path:
 
@@ -21,3 +21,9 @@ npm run build
 ```
 
 Do not reinstall Laravel, Breeze, Livewire, Tailwind, or Vite for routine sprint work.
+
+## Sisahygo API Local Configuration
+
+Copy safe Sisahygo API configuration values from `.env.example` and provide credentials through the encrypted credential model. Do not place real API keys in tracked files.
+
+Normal tests use `Http::fake()` and fixtures. Live sandbox smoke tests are disabled by default with `SISAHYGO_API_LIVE_SMOKE_TESTS=false`.
