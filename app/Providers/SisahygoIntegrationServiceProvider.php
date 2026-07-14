@@ -1,0 +1,16 @@
+<?php
+
+namespace App\Providers;
+
+use App\Domain\Sisahygo\Services\SisahygoApiCredentialService;
+use App\Integrations\Sisahygo\Configuration\SisahygoApiConfiguration;
+use Illuminate\Support\ServiceProvider;
+
+class SisahygoIntegrationServiceProvider extends ServiceProvider
+{
+    public function register(): void
+    {
+        $this->app->singleton(SisahygoApiConfiguration::class, fn () => SisahygoApiConfiguration::fromConfig());
+        $this->app->singleton(SisahygoApiCredentialService::class);
+    }
+}
