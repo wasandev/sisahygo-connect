@@ -37,28 +37,28 @@ new class extends Component
     }
 }; ?>
 
-<x-connect.card title="Access Foundation">
+<x-connect.card :title="__('client_account.access_foundation')">
     <div class="space-y-5">
         <div>
-            <p class="text-sm font-semibold text-connect-navy-900">Customer links</p>
+            <p class="text-sm font-semibold text-connect-navy-900">{{ __('client_account.customer_links') }}</p>
             @if ($customerLinks)
                 <div class="mt-3 space-y-2">
                     @foreach ($customerLinks as $link)
                         <div class="rounded-lg border border-slate-200 p-3 text-sm text-slate-600">
-                            <span class="font-semibold text-connect-navy-900">Customer #{{ $link['customer_id'] }}</span>
-                            <span class="ml-2">Send: {{ $link['can_send'] ? 'Yes' : 'No' }}</span>
-                            <span class="ml-2">Receive: {{ $link['can_receive'] ? 'Yes' : 'No' }}</span>
-                            <span class="ml-2">Payment: {{ $link['can_view_payment'] ? 'Yes' : 'No' }}</span>
+                            <span class="font-semibold text-connect-navy-900">{{ __('client_account.customer_number', ['id' => $link['customer_id']]) }}</span>
+                            <span class="ml-2">{{ __('client_account.send') }}: {{ $link['can_send'] ? __('client_account.yes') : __('client_account.no') }}</span>
+                            <span class="ml-2">{{ __('client_account.receive') }}: {{ $link['can_receive'] ? __('client_account.yes') : __('client_account.no') }}</span>
+                            <span class="ml-2">{{ __('client_account.payment') }}: {{ $link['can_view_payment'] ? __('client_account.yes') : __('client_account.no') }}</span>
                         </div>
                     @endforeach
                 </div>
             @else
-                <p class="mt-2 text-sm text-slate-600">No active customer links are configured yet.</p>
+                <p class="mt-2 text-sm text-slate-600">{{ __('client_account.empty_customer_links') }}</p>
             @endif
         </div>
 
         <div>
-            <p class="text-sm font-semibold text-connect-navy-900">Capabilities</p>
+            <p class="text-sm font-semibold text-connect-navy-900">{{ __('client_account.capabilities') }}</p>
             @if ($capabilities)
                 <div class="mt-3 flex flex-wrap gap-2">
                     @foreach ($capabilities as $capability)
@@ -66,7 +66,7 @@ new class extends Component
                     @endforeach
                 </div>
             @else
-                <p class="mt-2 text-sm text-slate-600">No capabilities are enabled yet.</p>
+                <p class="mt-2 text-sm text-slate-600">{{ __('client_account.empty_capabilities') }}</p>
             @endif
         </div>
     </div>

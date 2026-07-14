@@ -1,24 +1,15 @@
-# Sisahygo Connect Laravel StarterKit v1.0
+# Sisahygo Connect
 
-ชุดไฟล์สำหรับเริ่มโปรเจกต์ Sisahygo Connect บน Laravel + Livewire + Tailwind CSS
+Sisahygo Connect is a Laravel and Livewire application for authenticated client-account workflows.
 
-## Included
+Current baseline:
 
-- Brand assets in `public/images/brand`
-- PWA icons, favicon, manifest
-- Laravel Blade components
-- Tailwind brand colors
-- Login preview page
-- Dashboard preview page
-- Codex brand rules
-- Installation guide
+- Laravel with Livewire 3
+- Tailwind CSS
+- Laravel Sail development workflow
+- Existing authentication preserved
+- Tenant-safe Client Account foundation
+- Thai default localization with English keys prepared
+- Sisahygo API integration not implemented yet
 
-## Recommended stack
-
-- Laravel 11/12
-- Livewire 3
-- Tailwind CSS 3/4
-- Alpine.js
-- Vite
-
-See `docs/INSTALL.md` for usage.
+The root URL intentionally redirects to login. Tenant-dependent pages require a valid current Client Account context.

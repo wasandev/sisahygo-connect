@@ -29,7 +29,7 @@ new class extends Component
     }
 }; ?>
 
-<x-connect.card title="Account Users">
+<x-connect.card :title="__('client_account.users')">
     @if ($members)
         <div class="space-y-3">
             @foreach ($members as $member)
@@ -43,6 +43,6 @@ new class extends Component
             @endforeach
         </div>
     @else
-        <p class="text-sm leading-6 text-slate-600">No client account users are available for this account yet.</p>
+        <p class="text-sm leading-6 text-slate-600">{{ __('client_account.empty_users') }}</p>
     @endif
 </x-connect.card>

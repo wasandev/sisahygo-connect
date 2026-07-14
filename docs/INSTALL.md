@@ -1,28 +1,34 @@
-# Install Sisahygo Connect Starter Kit into Laravel
+# Sisahygo Connect Setup
 
-1. Copy the contents of this ZIP into your Laravel project root.
-2. Merge `tailwind.config.js` if your project already has one.
-3. Merge `vite.config.js` if your project already has one.
-4. Copy Blade components into `resources/views/components`.
-5. Add this to your layout `<head>`:
+Sisahygo Connect is a Laravel, Livewire 3, Tailwind CSS, and Laravel Sail application.
 
-```blade
-<x-application.meta />
-@vite(['resources/css/app.css', 'resources/js/app.js'])
+## Local Development
+
+Use WSL for project files and run Sail from the project root.
+
+```bash
+./vendor/bin/sail up -d
+./vendor/bin/sail artisan migrate
+npm run build
+./vendor/bin/sail artisan test
 ```
 
-6. Use logo component:
+## Verification
 
-```blade
-<x-application.logo />
-<x-application.logo mode="dark" />
-<x-application.logo variant="vertical" />
-<x-application.logo variant="symbol" />
+Before handing off sprint work, run:
+
+```bash
+composer dump-autoload
+npm run build
+./vendor/bin/sail artisan optimize:clear
+./vendor/bin/sail artisan migrate
+./vendor/bin/sail artisan route:list
+./vendor/bin/sail artisan test
 ```
 
-7. Preview sample pages:
+## Notes
 
-```php
-Route::view('/connect-login-preview', 'pages.login-preview');
-Route::view('/connect-dashboard-preview', 'pages.dashboard-preview');
-```
+- Authentication is provided by the existing Laravel/Livewire stack.
+- Tenant-dependent application pages require a selected Client Account.
+- The root URL intentionally redirects to login.
+- Sisahygo API integration is not implemented yet.

@@ -1,11 +1,11 @@
-<x-app-layout title="Dashboard">
+<x-app-layout :title="__('navigation.dashboard')">
     <div class="space-y-6">
         <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             @foreach ([
-                ['label' => 'Orders today', 'value' => '0'],
-                ['label' => 'In transit', 'value' => '0'],
-                ['label' => 'Completed', 'value' => '0'],
-                ['label' => 'Needs attention', 'value' => '0'],
+                ['label' => __('page.dashboard.orders_today'), 'value' => '0'],
+                ['label' => __('page.dashboard.in_transit'), 'value' => '0'],
+                ['label' => __('page.dashboard.completed'), 'value' => '0'],
+                ['label' => __('page.dashboard.needs_attention'), 'value' => '0'],
             ] as $stat)
                 <x-connect.card>
                     <p class="text-sm text-slate-500">{{ $stat['label'] }}</p>
@@ -14,36 +14,36 @@
             @endforeach
         </div>
 
-        <x-connect.card title="Workspace overview">
+        <x-connect.card :title="__('page.dashboard.workspace_overview')">
             <div class="grid gap-6 lg:grid-cols-[1fr_18rem]">
                 <div>
                     <p class="text-sm leading-6 text-slate-600">
-                        Sisahygo Connect is ready for authenticated workflows. Dashboard is active now, while the remaining modules are prepared as safe placeholders until the external Sisahygo API integration begins.
+                        {{ __('page.dashboard.ready_message') }}
                     </p>
                     <div class="mt-5 flex flex-wrap gap-3">
                         <a href="{{ route('order-checking') }}" wire:navigate>
-                            <x-connect.button type="button">Open Order Checking</x-connect.button>
+                            <x-connect.button type="button">{{ __('page.dashboard.open_order_checking') }}</x-connect.button>
                         </a>
                         <a href="{{ route('tracking') }}" wire:navigate>
-                            <x-connect.button type="button" variant="secondary">View Tracking</x-connect.button>
+                            <x-connect.button type="button" variant="secondary">{{ __('page.dashboard.view_tracking') }}</x-connect.button>
                         </a>
                     </div>
                 </div>
 
                 <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
-                    <p class="text-sm font-semibold text-connect-navy-900">Current status</p>
+                    <p class="text-sm font-semibold text-connect-navy-900">{{ __('page.dashboard.current_status') }}</p>
                     <dl class="mt-4 space-y-3 text-sm">
                         <div class="flex items-center justify-between gap-4">
-                            <dt class="text-slate-500">Authentication</dt>
-                            <dd class="font-semibold text-emerald-700">Active</dd>
+                            <dt class="text-slate-500">{{ __('page.dashboard.authentication') }}</dt>
+                            <dd class="font-semibold text-emerald-700">{{ __('page.dashboard.active') }}</dd>
                         </div>
                         <div class="flex items-center justify-between gap-4">
-                            <dt class="text-slate-500">Dashboard</dt>
-                            <dd class="font-semibold text-emerald-700">Active</dd>
+                            <dt class="text-slate-500">{{ __('page.dashboard.dashboard') }}</dt>
+                            <dd class="font-semibold text-emerald-700">{{ __('page.dashboard.active') }}</dd>
                         </div>
                         <div class="flex items-center justify-between gap-4">
-                            <dt class="text-slate-500">API integration</dt>
-                            <dd class="font-semibold text-slate-600">Pending</dd>
+                            <dt class="text-slate-500">{{ __('page.dashboard.api_integration') }}</dt>
+                            <dd class="font-semibold text-slate-600">{{ __('page.dashboard.pending') }}</dd>
                         </div>
                     </dl>
                 </div>

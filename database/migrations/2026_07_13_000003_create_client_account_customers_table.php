@@ -26,12 +26,6 @@ return new class extends Migration
             $table->index(['customer_id', 'can_receive']);
             $table->index(['customer_id', 'can_view_payment']);
         });
-
-        if (Schema::hasTable('customers')) {
-            Schema::table('client_account_customers', function (Blueprint $table) {
-                $table->foreign('customer_id')->references('id')->on('customers')->cascadeOnUpdate()->restrictOnDelete();
-            });
-        }
     }
 
     public function down(): void

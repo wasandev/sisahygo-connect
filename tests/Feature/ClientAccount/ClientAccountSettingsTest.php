@@ -53,18 +53,18 @@ class ClientAccountSettingsTest extends TestCase
         $this->actingAs($user)
             ->get(route('settings.client-account'))
             ->assertOk()
-            ->assertSee('Client Account')
+            ->assertSee('บัญชีลูกค้า')
             ->assertSee('ABC Company')
             ->assertSee('settings.manage');
     }
 
-    public function test_authenticated_user_without_client_account_sees_safe_empty_state(): void
+    public function test_authenticated_user_without_client_account_sees_safe_unavailable_page(): void
     {
         $user = User::factory()->create();
 
         $this->actingAs($user)
             ->get(route('settings.client-account'))
-            ->assertOk()
-            ->assertSee('No active client account is linked to this user yet');
+            ->assertForbidden()
+            ->assertSee('ยังไม่มีบัญชีลูกค้าที่พร้อมใช้งาน');
     }
 }

@@ -1,14 +1,14 @@
-<x-app-layout title="Profile">
+<x-app-layout :title="__('navigation.profile')">
     <div class="space-y-6">
-        <x-connect.card title="Profile information">
+        <x-connect.card :title="__('profile.information')">
             <livewire:profile.update-profile-information-form />
         </x-connect.card>
 
-        <x-connect.card title="Update password">
+        <x-connect.card :title="__('profile.update_password')">
             <livewire:profile.update-password-form />
         </x-connect.card>
 
-        <x-connect.card title="Delete account">
+        <x-connect.card :title="__('profile.delete_account')">
             <livewire:profile.delete-user-form />
         </x-connect.card>
     </div>

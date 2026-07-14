@@ -2,6 +2,9 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Domain\ClientAccount\Enums\ClientAccountRole;
+use App\Domain\ClientAccount\Models\ClientAccount;
+use App\Domain\ClientAccount\Models\ClientAccountUser;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Volt\Volt;
@@ -57,12 +60,10 @@ class AuthenticationTest extends TestCase
     public function test_navigation_menu_can_be_rendered(): void
     {
         $user = User::factory()->create();
+        $this->createClientAccountFor($user);
 
-        $this->actingAs($user);
-
-        $response = $this->get('/dashboard');
-
-        $response
+        $this->actingAs($user)
+            ->get('/dashboard')
             ->assertOk()
             ->assertSeeVolt('layout.navigation');
     }
@@ -82,5 +83,20 @@ class AuthenticationTest extends TestCase
             ->assertRedirect('/');
 
         $this->assertGuest();
+    }
+
+    private function createClientAccountFor(User $user): ClientAccount
+    {
+        $account = ClientAccount::create(['name' => 'ABC Company', 'code' => 'ABC']);
+
+        ClientAccountUser::create([
+            'client_account_id' => $account->id,
+            'user_id' => $user->id,
+            'role' => ClientAccountRole::Owner,
+            'is_active' => true,
+            'joined_at' => now(),
+        ]);
+
+        return $account;
     }
 }
