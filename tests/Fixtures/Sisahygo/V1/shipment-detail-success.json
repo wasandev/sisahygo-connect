@@ -1,0 +1,21 @@
+{
+  "data": {
+    "tracking_no": "SH10001",
+    "order_header_no": "OH10001",
+    "order_header_date": "2026-07-01T10:00:00+07:00",
+    "order_status": "delivered",
+    "order_type": "parcel",
+    "order_amount": "125.50",
+    "paymenttype": "T",
+    "payment_status": 1,
+    "customer_id": 10001,
+    "customer_rec_id": 20001,
+    "items": [
+      {"name": "Fake parcel", "quantity": 2, "amount": "100.00"}
+    ],
+    "status_history": [
+      {"status": "picked_up", "occurred_at": "2026-07-01T11:00:00+07:00", "description": "Picked up"},
+      {"status": "delivered", "occurred_at": "2026-07-02T09:00:00+07:00"}
+    ]
+  }
+}

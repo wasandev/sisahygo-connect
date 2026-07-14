@@ -1,0 +1,8 @@
+{
+  "data": [
+    {"tracking_no": "SH10001", "order_header_no": "OH10001", "order_header_date": "2026-07-01", "order_status": "created", "order_type": "parcel", "order_amount": "125.50", "paymenttype": "H", "payment_status": 0, "customer_id": 10001, "customer_rec_id": 20001},
+    {"tracking_no": "SH10002", "order_header_no": "OH10002", "order_header_date": "2026-07-02", "order_status": "delivered", "order_type": "parcel", "order_amount": "250.00", "paymenttype": "E", "payment_status": 1, "sender": {"customer_id": 10002}, "receiver": {"customer_id": 20002}},
+    {"tracking_no": "SH10002", "order_header_no": "OH10002-DUP", "customer_id": 10002, "customer_rec_id": 20002}
+  ],
+  "meta": {"current_page": 1, "per_page": 15, "total": 2}
+}

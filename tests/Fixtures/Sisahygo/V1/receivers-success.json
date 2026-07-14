@@ -1,0 +1,6 @@
+{
+  "data": [
+    {"customer_id": 20001, "name": "Receiver Demo Co., Ltd.", "phone": "020000001", "extra": "ignored"},
+    {"customer_id": 20002, "name": "Receiver Example Co., Ltd."}
+  ]
+}
