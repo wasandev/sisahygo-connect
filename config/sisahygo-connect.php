@@ -3,7 +3,8 @@
 return [
     'name' => env('CONNECT_NAME', 'Sisahygo Connect'),
     'api' => [
-        'base_url' => env('SISAHYGO_API_URL', 'https://sandbox-api.sisahygo.online/api/v1/client'),
+        // Deprecated compatibility keys. New integration code must use config/sisahygo.php.
+        'base_url' => env('SISAHYGO_API_SANDBOX_URL', 'https://sandbox-api.sisahygo.online/api/v1/client'),
         'timeout' => (int) env('SISAHYGO_API_TIMEOUT', 15),
     ],
     'brand' => [

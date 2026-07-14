@@ -3,11 +3,14 @@
 namespace App\Domain\ClientAccount\Models;
 
 use App\Domain\ClientAccount\Enums\ClientCapability;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ClientAccountCapability extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'client_account_id',
         'capability',

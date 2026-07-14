@@ -4,7 +4,11 @@ use App\Http\Controllers\ClientAccountSelectionController;
 use App\Livewire\Actions\Logout;
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/login');
+Route::get('/', function () {
+    return auth()->check()
+        ? redirect()->route('dashboard')
+        : view('welcome');
+})->name('welcome');
 
 Route::middleware(['auth'])->group(function () {
     // Account selection is authenticated but intentionally outside the tenant middleware
