@@ -46,7 +46,7 @@ class ShipmentMapper
         return new ShipmentDetail(
             summary: $this->summary($data),
             items: array_map(fn (array $item) => $this->item($item), is_array($data['items'] ?? null) ? $data['items'] : []),
-            statusHistory: array_map(fn (array $status) => $this->status($status), is_array($data['status_history'] ?? null) ? $data['status_history'] : []),
+            statusHistory: array_map(fn (array $status) => $this->status($status), $this->statusHistory($data)),
         );
     }
 
@@ -70,7 +70,7 @@ class ShipmentMapper
     private function item(array $data): ShipmentItem
     {
         return new ShipmentItem(
-            name: $this->nullableString($data['name'] ?? $data['item_name'] ?? null) ?? 'Unknown item',
+            name: $this->nullableString($data['name'] ?? $data['item_name'] ?? $data['product_name'] ?? null) ?? 'Unknown item',
             quantity: max(0, (int) ($data['quantity'] ?? 0)),
             amount: $this->money($data['amount'] ?? null),
         );
@@ -81,9 +81,26 @@ class ShipmentMapper
     {
         return new ShipmentStatus(
             status: $this->nullableString($data['status'] ?? $data['order_status'] ?? null) ?? 'unknown',
-            occurredAt: $this->date($data['occurred_at'] ?? $data['created_at'] ?? null),
+            occurredAt: $this->date($data['occurred_at'] ?? $data['created_at'] ?? $data['changed_at'] ?? null),
             description: $this->nullableString($data['description'] ?? null),
         );
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     * @return array<int, array<string, mixed>>
+     */
+    private function statusHistory(array $data): array
+    {
+        if (is_array($data['status_history'] ?? null)) {
+            return $data['status_history'];
+        }
+
+        if (is_array($data['history'] ?? null)) {
+            return $data['history'];
+        }
+
+        return [];
     }
 
     private function nullableString(mixed $value): ?string

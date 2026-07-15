@@ -1,19 +1,21 @@
 # ADR-004: Current Client Account Selection
 
-Status: Accepted
+## สถานะ
 
-## Context
+Approved
 
-Sisahygo Connect supports users that can belong to more than one Client Account. Selecting the first account by name, ID, or creation date can expose the wrong tenant context and is not acceptable for SaaS use.
+## บริบท
 
-## Decision
+Sisahygo Connect รองรับผู้ใช้ที่อยู่ได้มากกว่าหนึ่ง Client Account การเลือกบัญชีแรกจากชื่อ, ID หรือวันที่สร้าง อาจทำให้เข้าสู่ tenant context ผิดบัญชี และไม่เหมาะสำหรับ SaaS
 
-Use an explicit current Client Account context stored in the session key `selected_client_account_id`.
+## การตัดสินใจ
 
-A user with one active Client Account may be selected automatically, but the account and membership must still be validated. A user with multiple active Client Accounts must choose an account on the account selection screen. A user with no active Client Account receives a safe unavailable response.
+ใช้ current Client Account context แบบ explicit เก็บไว้ใน session key `selected_client_account_id`
 
-Every tenant-dependent request validates that the selected account exists, is active, and has an active membership for the authenticated user.
+ผู้ใช้ที่มี active Client Account เพียงบัญชีเดียวสามารถถูกเลือกให้อัตโนมัติได้ แต่ต้อง validate account และ membership เสมอ ผู้ใช้ที่มี active Client Accounts หลายบัญชีต้องเลือกบัญชีบนหน้า account selection ส่วนผู้ใช้ที่ไม่มี active Client Account จะได้รับ unavailable response ที่ปลอดภัย
 
-## Consequences
+ทุก tenant-dependent request ต้อง validate ว่าบัญชีที่เลือกมีอยู่จริง active และมี active membership ของ authenticated user
 
-Tenant pages have a reliable account context before future Sisahygo API integration begins. Profile, logout, authentication, email verification, and account selection remain user-level routes and do not require a selected tenant.
+## ผลกระทบ
+
+Tenant pages มี account context ที่เชื่อถือได้ก่อนเริ่ม Sisahygo API integration ในอนาคต ส่วน profile, logout, authentication, email verification และ account selection ยังคงเป็น user-level routes และไม่ต้องมี selected tenant

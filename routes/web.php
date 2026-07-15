@@ -31,6 +31,17 @@ Route::middleware(['auth'])->group(function () {
     })->name('logout');
 
     Route::middleware(['client.account'])->group(function () {
+        Route::prefix('ux')->name('ux.')->group(function () {
+            Route::view('/dashboard', 'ux.dashboard')->name('dashboard');
+            Route::view('/order-checking', 'ux.order-checking')->name('order-checking');
+            Route::view('/tracking', 'ux.tracking')->name('tracking');
+            Route::view('/shipment-detail', 'ux.shipment-detail')->name('shipment-detail');
+            Route::view('/payments', 'ux.payments')->name('payments');
+            Route::view('/reports', 'ux.reports')->name('reports');
+            Route::view('/settings', 'ux.settings')->name('settings');
+            Route::view('/profile', 'ux.profile')->name('profile');
+            Route::view('/notifications', 'ux.notifications')->name('notifications');
+        });
         Route::view('/dashboard', 'dashboard')
             ->name('dashboard');
 

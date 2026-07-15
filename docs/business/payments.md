@@ -1,17 +1,17 @@
 # Payments
 
-Payment visibility is independent from shipment visibility. Being allowed to view a shipment does not grant access to payment details.
+Payment visibility แยกจาก shipment visibility การมีสิทธิ์ดู shipment ไม่ได้แปลว่ามีสิทธิ์ดูรายละเอียด Payment
 
-Sender-linked Client Accounts may view payment details only when:
+Client Accounts ที่เชื่อมในฐานะผู้ส่งสินค้าจะดูรายละเอียด Payment ได้เฉพาะเมื่อ:
 
-- `order_headers.customer_id` belongs to an active linked customer with `can_send = true`
-- the linked customer has `can_view_payment = true`
-- `paymenttype` is `H`, `T`, or `F`
+- `order_headers.customer_id` เป็นของ active linked customer ที่มี `can_send = true`
+- linked customer นั้นมี `can_view_payment = true`
+- `paymenttype` เป็น `H`, `T` หรือ `F`
 
-Receiver-linked Client Accounts may view payment details only when:
+Client Accounts ที่เชื่อมในฐานะผู้รับสินค้าจะดูรายละเอียด Payment ได้เฉพาะเมื่อ:
 
-- `order_headers.customer_rec_id` belongs to an active linked customer with `can_receive = true`
-- the linked customer has `can_view_payment = true`
-- `paymenttype` is `E` or `L`
+- `order_headers.customer_rec_id` เป็นของ active linked customer ที่มี `can_receive = true`
+- linked customer นั้นมี `can_view_payment = true`
+- `paymenttype` เป็น `E` หรือ `L`
 
-Future Payment screens must use both `paymenttype` and `payment_status` from the Sisahygo API.
+Payment screens ในอนาคตต้องใช้ทั้ง `paymenttype` และ `payment_status` จาก Sisahygo API

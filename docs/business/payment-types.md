@@ -1,6 +1,6 @@
 # Payment Types
 
-Sisahygo payment types are authoritative and must not be reinterpreted by Sisahygo Connect.
+Sisahygo payment types เป็นแหล่งอ้างอิงหลัก และ Sisahygo Connect ห้ามตีความใหม่เอง
 
 ## Sender Payment Types
 
@@ -19,11 +19,11 @@ Sisahygo payment types are authoritative and must not be reinterpreted by Sisahy
 
 ## Payment Status
 
-Use the `payment_status` field returned by the Sisahygo API.
+ใช้ field `payment_status` ที่ Sisahygo API ส่งกลับมา
 
 | Code | Thai | English |
 | --- | --- | --- |
 | 0 | ค้างชำระ | Outstanding |
 | 1 | ชำระแล้ว | Paid |
 
-Do not introduce another payment status field or status vocabulary.
+ห้ามเพิ่ม payment status field หรือชุดคำเรียกสถานะอีกชุดหนึ่ง

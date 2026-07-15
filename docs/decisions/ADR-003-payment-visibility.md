@@ -1,22 +1,24 @@
 # ADR-003: Payment Visibility
 
-Status: Accepted
+## สถานะ
 
-## Context
+Approved
 
-Payment visibility is not the same as shipment visibility. Sprint 1.0.1 clarifies the authoritative Sisahygo payment types and payment status values.
+## บริบท
 
-## Decision
+Payment visibility ไม่ใช่เรื่องเดียวกับ shipment visibility Sprint 1.0.1 ระบุ Sisahygo payment types และ payment status values ที่เป็น authoritative source แล้ว
 
-Use `AuthorizedPaymentQuery` and `PaymentPolicy`. Sender payment visibility requires an authorized sender customer link, `can_view_payment`, payment capability, and `paymenttype IN ('H', 'T', 'F')`.
+## การตัดสินใจ
 
-Receiver payment visibility requires an authorized receiver customer link, `can_view_payment`, payment capability, and `paymenttype IN ('E', 'L')`.
+ใช้ `AuthorizedPaymentQuery` และ `PaymentPolicy` ฝั่งผู้ส่งสินค้าจะเห็น Payment ได้เมื่อมี authorized sender customer link, `can_view_payment`, payment capability และ `paymenttype IN ('H', 'T', 'F')`
 
-Use the Sisahygo API `payment_status` field only:
+ฝั่งผู้รับสินค้าจะเห็น Payment ได้เมื่อมี authorized receiver customer link, `can_view_payment`, payment capability และ `paymenttype IN ('E', 'L')`
+
+ใช้ Sisahygo API field `payment_status` เท่านั้น:
 
 - `0` = Outstanding / ค้างชำระ
 - `1` = Paid / ชำระแล้ว
 
-## Consequences
+## ผลกระทบ
 
-Payment access can evolve independently from shipment access while preserving horizontal privilege protection. Future Payment screens must display meaning from `paymenttype` plus `payment_status`, not invented statuses.
+Payment access สามารถพัฒนาแยกจาก shipment access ได้ โดยยังป้องกัน horizontal privilege escalation หน้าจอ Payment ในอนาคตต้องแสดงความหมายจาก `paymenttype` และ `payment_status` ไม่ใช่สถานะที่สร้างขึ้นเอง

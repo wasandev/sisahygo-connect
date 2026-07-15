@@ -1,15 +1,15 @@
 # Developer Setup
 
-Sisahygo Connect uses Laravel 13, Livewire 3, Tailwind CSS, and Laravel Sail.
+Sisahygo Connect ใช้ Laravel 13, Livewire 3, Tailwind CSS และ Laravel Sail
 
-Recommended Windows development path:
+แนวทางที่แนะนำสำหรับ development บน Windows:
 
-1. Use WSL for project files.
-2. Start Sail from the WSL project directory.
-3. Run PHP/Laravel commands through Sail when they depend on the application container.
-4. Run frontend builds with `npm run build` from the project root.
+1. เก็บ project files ไว้ใน WSL
+2. Start Sail จาก WSL project directory
+3. รัน PHP/Laravel commands ผ่าน Sail เมื่อคำสั่งนั้นต้องพึ่ง application container
+4. รัน frontend builds ด้วย `npm run build` จาก project root
 
-Common verification commands:
+คำสั่งตรวจสอบที่ใช้บ่อย:
 
 ```bash
 composer dump-autoload
@@ -20,10 +20,10 @@ npm run build
 ./vendor/bin/sail artisan test
 ```
 
-Do not reinstall Laravel, Breeze, Livewire, Tailwind, or Vite for routine sprint work.
+งาน sprint ปกติห้าม reinstall Laravel, Breeze, Livewire, Tailwind หรือ Vite
 
 ## Sisahygo API Local Configuration
 
-Copy safe Sisahygo API configuration values from `.env.example` and provide credentials through the encrypted credential model. Do not place real API keys in tracked files.
+คัดลอกค่า configuration ที่ปลอดภัยของ Sisahygo API จาก `.env.example` และจัดการ credentials ผ่าน encrypted credential model ห้ามใส่ API keys จริงลงใน tracked files
 
-Normal tests use `Http::fake()` and fixtures. Live sandbox smoke tests are disabled by default with `SISAHYGO_API_LIVE_SMOKE_TESTS=false`.
+Tests ปกติใช้ `Http::fake()` และ fixtures ส่วน live Sandbox smoke tests ปิดไว้ตามค่าเริ่มต้นด้วย `SISAHYGO_API_LIVE_SMOKE_TESTS=false`

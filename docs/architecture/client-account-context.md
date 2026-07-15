@@ -1,15 +1,15 @@
 # Current Client Account Context
 
-Tenant-dependent pages require an explicit current Client Account context.
+หน้าที่ขึ้นกับ tenant ต้องมี current Client Account context อย่างชัดเจน
 
 Session key: `selected_client_account_id`
 
-Resolution rules:
+กฎการ resolve:
 
-- Users with no active Client Accounts receive a safe unavailable response.
-- Users with exactly one active Client Account are selected automatically after active membership validation.
-- Users with multiple active Client Accounts must select one explicitly.
-- Session values are never trusted without validating active account status and active membership.
-- Invalid or tampered session selections are cleared and redirected to account selection.
+- ผู้ใช้ที่ไม่มี active Client Accounts จะได้รับ unavailable response ที่ปลอดภัย
+- ผู้ใช้ที่มี active Client Account เพียงบัญชีเดียวจะถูกเลือกให้อัตโนมัติ หลังจาก validate active membership แล้ว
+- ผู้ใช้ที่มี active Client Accounts หลายบัญชีต้องเลือกบัญชีเองอย่างชัดเจน
+- ห้ามเชื่อ session value โดยไม่ validate account status และ active membership อีกครั้ง
+- Session selection ที่ไม่ถูกต้องหรือถูก tamper ต้องถูกล้างและ redirect ไปหน้า account selection
 
-The `client.account` middleware is applied only to tenant-dependent routes. User-level routes such as profile, logout, account selection, and authentication remain outside this middleware.
+`client.account` middleware ใช้เฉพาะ routes ที่ขึ้นกับ tenant เท่านั้น ส่วน user-level routes เช่น profile, logout, account selection และ authentication อยู่นอก middleware นี้

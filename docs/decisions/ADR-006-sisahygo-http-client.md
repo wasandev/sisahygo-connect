@@ -1,17 +1,19 @@
 # ADR-006: Sisahygo HTTP Client
 
-Status: Accepted
+## สถานะ
 
-## Context
+Approved
 
-Sisahygo Connect needs a reusable API foundation for the external Sisahygo Client API without direct database access.
+## บริบท
 
-## Decision
+Sisahygo Connect ต้องมี API foundation ที่ reuse ได้สำหรับ external Sisahygo Client API โดยไม่เข้าฐานข้อมูลโดยตรง
 
-Use Laravel HTTP Client behind `app/Integrations/Sisahygo/V1/SisahygoApiClient`. Requests use trusted configured base URLs, `X-Api-Key`, JSON headers, correlation IDs, configured timeouts, conservative GET retry, and safe exception mapping.
+## การตัดสินใจ
 
-POST requests are not retried blindly in Sprint 1.5.
+ใช้ Laravel HTTP Client ภายใต้ `app/Integrations/Sisahygo/V1/SisahygoApiClient` Requests ใช้ trusted configured base URLs, `X-Api-Key`, JSON headers, correlation IDs, configured timeouts, conservative GET retry และ safe exception mapping
 
-## Consequences
+POST requests จะไม่ถูก retry แบบ blind retry ใน Sprint 1.5
 
-Future modules can reuse a single transport boundary while keeping secrets out of logs and UI state.
+## ผลกระทบ
+
+Modules ในอนาคตสามารถใช้ transport boundary เดียวกันได้ และยังป้องกันไม่ให้ secrets หลุดไปใน logs หรือ UI state

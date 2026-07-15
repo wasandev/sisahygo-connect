@@ -21,12 +21,8 @@
                         {{ __('page.dashboard.ready_message') }}
                     </p>
                     <div class="mt-5 flex flex-wrap gap-3">
-                        <a href="{{ route('order-checking') }}" wire:navigate>
-                            <x-connect.button type="button">{{ __('page.dashboard.open_order_checking') }}</x-connect.button>
-                        </a>
-                        <a href="{{ route('tracking') }}" wire:navigate>
-                            <x-connect.button type="button" variant="secondary">{{ __('page.dashboard.view_tracking') }}</x-connect.button>
-                        </a>
+                        <x-connect.button :href="route('order-checking')" wire:navigate>{{ __('page.dashboard.open_order_checking') }}</x-connect.button>
+                        <x-connect.button :href="route('tracking')" wire:navigate variant="secondary">{{ __('page.dashboard.view_tracking') }}</x-connect.button>
                     </div>
                 </div>
 

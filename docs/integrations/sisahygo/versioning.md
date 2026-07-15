@@ -1,7 +1,7 @@
 # Sisahygo API Versioning
 
-Version-specific integration code lives under `app/Integrations/Sisahygo/V1`.
+Version-specific integration code อยู่ใต้ `app/Integrations/Sisahygo/V1`
 
-V1 owns endpoint classes, request/response mapping, DTOs, and field-name translation. Domain code and Livewire components must not depend on raw API arrays or external field names.
+V1 รับผิดชอบ endpoint classes, request/response mapping, DTOs และ field-name translation Domain code และ Livewire components ต้องไม่พึ่ง raw API arrays หรือ external field names โดยตรง
 
-If a future Core API version changes response shapes, new versioned mappers should isolate that change without rewriting domain authorization rules.
+ถ้า Core API version ในอนาคตเปลี่ยน response shapes ให้สร้าง versioned mappers ใหม่เพื่อ isolate การเปลี่ยนแปลง โดยไม่ต้อง rewrite domain authorization rules

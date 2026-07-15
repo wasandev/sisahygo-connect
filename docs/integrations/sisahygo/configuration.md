@@ -1,6 +1,6 @@
 # Sisahygo API Configuration
 
-Configuration is defined in `config/sisahygo.php`.
+Configuration กำหนดอยู่ใน `config/sisahygo.php`
 
 Environment variables:
 
@@ -16,6 +16,6 @@ SISAHYGO_API_USER_AGENT="Sisahygo Connect"
 SISAHYGO_API_LIVE_SMOKE_TESTS=false
 ```
 
-Only `sandbox` and `production` are supported environments. Base URLs must be HTTPS URLs from trusted configuration. Application classes must not hard-code environment URLs.
+รองรับ environment เฉพาะ `sandbox` และ `production` เท่านั้น Base URLs ต้องเป็น HTTPS URLs จาก trusted configuration Application classes ห้าม hard-code environment URLs
 
-No real API keys belong in tracked files.
+ห้ามใส่ API keys จริงใน tracked files

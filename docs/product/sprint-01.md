@@ -2,11 +2,11 @@
 
 Scope:
 
-- Add Client Account domain model
-- Add account membership, linked customers, capabilities, and audit foundation
-- Add authorized query objects for shipment and payment isolation
-- Add settings foundation page
-- Add documentation and ADRs
+- เพิ่ม Client Account domain model
+- เพิ่ม account membership, linked customers, capabilities และ audit foundation
+- เพิ่ม authorized query objects สำหรับ shipment และ payment isolation
+- เพิ่ม settings foundation page
+- เพิ่ม documentation และ ADRs
 
 Out of scope:
 

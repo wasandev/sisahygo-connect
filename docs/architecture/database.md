@@ -8,13 +8,13 @@ Client Account foundation tables:
 - `client_account_capabilities`
 - `client_account_activity_logs`
 
-`client_account_customers.customer_id` is an external Sisahygo customer identifier consumed through the Sisahygo API. It intentionally does not reference a local `customers` table.
+`client_account_customers.customer_id` เป็น external Sisahygo customer identifier ที่ใช้ผ่าน Sisahygo API โดยตั้งใจไม่ทำ foreign key ไปยัง local `customers` table
 
-Important constraints:
+Constraints สำคัญ:
 
-- `client_accounts.code` is unique.
-- `client_account_users` is unique by `client_account_id` and `user_id`.
-- `client_account_customers` is unique by `client_account_id` and `customer_id`.
-- `client_account_capabilities` is unique by `client_account_id` and `capability`.
+- `client_accounts.code` ต้อง unique
+- `client_account_users` unique ตาม `client_account_id` และ `user_id`
+- `client_account_customers` unique ตาม `client_account_id` และ `customer_id`
+- `client_account_capabilities` unique ตาม `client_account_id` และ `capability`
 
-Indexes support active account membership, customer authorization, payment visibility, and capability checks.
+Indexes รองรับ active account membership, customer authorization, payment visibility และ capability checks

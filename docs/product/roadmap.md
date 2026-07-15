@@ -5,6 +5,6 @@
 3. Bulk Order Checking
 4. Shipment Tracking
 5. Shipment History
-6. Billing and Payment
+6. Billing และ Payment
 7. Reports
 8. Notifications

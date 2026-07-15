@@ -1,14 +1,14 @@
 # Localization Conventions
 
-Thai is the default user interface language.
+ภาษาไทยเป็นภาษาหลักของ user interface
 
-Rules:
+กฎการใช้งาน:
 
-- User-facing Blade and Livewire strings should use Laravel language files.
-- Matching English keys should be maintained for future locale support.
-- Do not translate route names, internal class names, database values, capability keys, or API field names.
-- Navigation keys live under `navigation.*`.
-- Page copy lives under `page.*`.
-- Account selection copy lives under `account_selection.*`.
-- Client Account foundation copy lives under `client_account.*`.
-- Payment type and status labels live under `payment.*`.
+- User-facing strings ใน Blade และ Livewire ควรอยู่ใน Laravel language files
+- ควรรักษา matching English keys ไว้เพื่อรองรับ locale อื่นในอนาคต
+- ห้ามแปล route names, internal class names, database values, capability keys หรือ API field names
+- Navigation keys อยู่ใต้ `navigation.*`
+- Page copy อยู่ใต้ `page.*`
+- Account selection copy อยู่ใต้ `account_selection.*`
+- Client Account foundation copy อยู่ใต้ `client_account.*`
+- Payment type และ status labels อยู่ใต้ `payment.*`

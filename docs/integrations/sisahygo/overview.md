@@ -1,17 +1,17 @@
 # Sisahygo API Integration Overview
 
-Sisahygo Connect integrates with the external Sisahygo Client API through an API-only boundary. The application must not query the Sisahygo production database directly.
+Sisahygo Connect เชื่อมต่อกับ external Sisahygo Client API ผ่าน API-only boundary เท่านั้น Application ห้าม query Sisahygo production database โดยตรง
 
-Integration code lives under `app/Integrations/Sisahygo`. Domain authorization remains in `app/Domain`.
+Integration code อยู่ใต้ `app/Integrations/Sisahygo` ส่วน domain authorization ยังคงอยู่ใน `app/Domain`
 
-Every external request must be built from a validated integration context containing:
+External request ทุกครั้งต้องสร้างจาก integration context ที่ validate แล้ว และมีข้อมูลต่อไปนี้:
 
 - authenticated user identity
 - selected active Client Account identity
 - required Client Account capability
-- active encrypted API credential for the selected environment
+- active encrypted API credential สำหรับ environment ที่เลือก
 - authorized sender customer IDs
 - authorized receiver customer IDs
 - correlation ID
 
-API credentials authenticate Sisahygo Connect to the Core API. They are not sender or receiver identities. Sender and receiver identities come only from Client Account customer links.
+API credentials ใช้ authenticate Sisahygo Connect กับ Core API เท่านั้น ไม่ใช่ sender หรือ receiver identities Sender และ receiver identities ต้องมาจาก Client Account customer links เท่านั้น

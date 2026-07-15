@@ -1,10 +1,10 @@
 # Blade Components
 
-Canonical Sisahygo Connect production components live in:
+Production components หลักของ Sisahygo Connect อยู่ที่:
 
 `resources/views/components/connect/`
 
-Current canonical components:
+Canonical components ปัจจุบัน:
 
 - `x-connect.logo`
 - `x-connect.card`
@@ -12,6 +12,6 @@ Current canonical components:
 - `x-connect.nav-link`
 - `x-connect.meta`
 
-Breeze authentication components remain in use by authentication and profile views and must not be removed until those screens are intentionally migrated.
+Breeze authentication components ยังถูกใช้ใน authentication และ profile views และห้ามลบจนกว่าจะมีการย้ายหน้ากลุ่มนี้อย่างตั้งใจ
 
-Preview-only starter views have been removed from active source. Placeholder tenant pages remain because they are intentionally routed as safe future-module placeholders.
+Preview-only starter views ถูกนำออกจาก active source แล้ว ส่วน placeholder tenant pages ยังอยู่ เพราะตั้งใจให้เป็น placeholder ที่ปลอดภัยสำหรับ modules ในอนาคต

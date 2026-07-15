@@ -1,17 +1,19 @@
 # ADR-008: API Versioning and DTO Boundary
 
-Status: Accepted
+## สถานะ
 
-## Context
+Approved
 
-Raw external API arrays would couple Livewire and domain code to Core API field names.
+## บริบท
 
-## Decision
+ถ้าใช้ raw external API arrays โดยตรง Livewire และ domain code จะผูกกับ field names ของ Core API มากเกินไป
 
-Place versioned endpoint classes, DTOs, and mappers under `app/Integrations/Sisahygo/V1`. Create DTOs only for known and tested API contracts used by the integration foundation.
+## การตัดสินใจ
 
-Use domain enums such as `PaymentType` and `PaymentStatus` during mapping.
+วาง versioned endpoint classes, DTOs และ mappers ไว้ใต้ `app/Integrations/Sisahygo/V1` สร้าง DTOs เฉพาะ API contracts ที่รู้และทดสอบแล้วใน integration foundation
 
-## Consequences
+ใช้ domain enums เช่น `PaymentType` และ `PaymentStatus` ระหว่าง mapping
 
-Future Core API version changes can be isolated in versioned mappers instead of leaking into UI or domain authorization code.
+## ผลกระทบ
+
+ถ้า Core API version ในอนาคตเปลี่ยน response shapes สามารถ isolate การเปลี่ยนแปลงไว้ใน versioned mappers ได้ โดยไม่ให้หลุดไปถึง UI หรือ domain authorization code

@@ -1,8 +1,8 @@
 # UI Architecture
 
-Authenticated application pages use the reusable application shell from `resources/views/layouts/app.blade.php` and `resources/views/livewire/layout/navigation.blade.php`.
+Authenticated application pages ใช้ reusable application shell จาก `resources/views/layouts/app.blade.php` และ `resources/views/livewire/layout/navigation.blade.php`
 
-Canonical Sisahygo Connect Blade components live under `resources/views/components/connect/` and should be referenced with dot notation such as:
+Canonical Sisahygo Connect Blade components อยู่ใต้ `resources/views/components/connect/` และควรเรียกด้วย dot notation เช่น:
 
 ```blade
 <x-connect.logo />
@@ -10,6 +10,6 @@ Canonical Sisahygo Connect Blade components live under `resources/views/componen
 <x-connect.button />
 ```
 
-Breeze authentication components remain active for authentication and profile workflows. Preview-only starter artifacts have been removed from active source.
+Breeze authentication components ยังใช้งานอยู่ใน authentication และ profile workflows ส่วน preview-only starter artifacts ถูกนำออกจาก active source แล้ว
 
-Tenant-dependent navigation assumes the `client.account` middleware has already resolved the current Client Account.
+Tenant-dependent navigation ถือว่า `client.account` middleware ได้ resolve current Client Account เรียบร้อยแล้ว

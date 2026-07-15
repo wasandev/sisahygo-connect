@@ -12,14 +12,15 @@ class ReceiverMapper
      */
     public function map(array $data): ReceiverSummary
     {
-        $id = $data['customer_id'] ?? $data['id'] ?? null;
-        $name = $data['name'] ?? $data['customer_name'] ?? null;
+        $id = $data['customer_id'] ?? $data['id'] ?? $data['customer_rec_id'] ?? null;
+        $name = $data['name'] ?? $data['customer_name'] ?? $data['to_customer_name'] ?? null;
+        $phone = $data['phone'] ?? $data['to_customer_phone'] ?? null;
 
         if (! is_numeric($id) || ! is_string($name) || $name === '') {
             throw new SisahygoUnexpectedResponseException('Receiver response is missing required fields.');
         }
 
-        return new ReceiverSummary((int) $id, $name, is_string($data['phone'] ?? null) ? $data['phone'] : null);
+        return new ReceiverSummary((int) $id, $name, is_string($phone) ? $phone : null);
     }
 
     /**

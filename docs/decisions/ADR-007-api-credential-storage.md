@@ -1,17 +1,19 @@
 # ADR-007: API Credential Storage
 
-Status: Accepted
+## สถานะ
 
-## Context
+Approved
 
-A global API key is not sufficient for SaaS-ready Client Account isolation, credential rotation, environment separation, and auditability.
+## บริบท
 
-## Decision
+Global API Key เพียงตัวเดียวไม่เพียงพอสำหรับ Client Account isolation ที่พร้อมใช้แบบ SaaS, credential rotation, environment separation และ auditability
 
-Store encrypted Sisahygo API credentials per Client Account and environment in `sisahygo_api_credentials`. Keep a key fingerprint for safe identification. Support active and revoked credentials, rotation history, `last_used_at`, and creator tracking.
+## การตัดสินใจ
 
-API credentials authenticate Sisahygo Connect only. Sender and receiver customer identity comes from Client Account customer links.
+เก็บ Sisahygo API credentials แบบเข้ารหัสแยกตาม Client Account และ environment ใน `sisahygo_api_credentials` เก็บ key fingerprint ไว้เพื่อระบุตัวตนอย่างปลอดภัย รองรับ active credentials, revoked credentials, rotation history, `last_used_at` และ creator tracking
 
-## Consequences
+API credentials ใช้ authenticate Sisahygo Connect เท่านั้น Sender และ receiver customer identity ต้องมาจาก Client Account customer links
 
-Credential lifecycle can evolve without exposing keys to Blade, Livewire, logs, exceptions, or browser responses.
+## ผลกระทบ
+
+Credential lifecycle สามารถพัฒนาต่อได้โดยไม่เปิดเผย keys ไปยัง Blade, Livewire, logs, exceptions หรือ browser responses

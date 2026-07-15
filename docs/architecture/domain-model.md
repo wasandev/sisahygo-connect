@@ -1,8 +1,8 @@
 # Domain Model
 
-A Client Account represents one organization. It can have multiple users and can link to multiple external Sisahygo customer identifiers.
+Client Account แทนองค์กรหนึ่งองค์กร โดยหนึ่ง Client Account มีผู้ใช้ได้หลายคน และเชื่อมกับ external Sisahygo customer identifiers ได้หลายรายการ
 
-A customer link can independently define:
+Customer link หนึ่งรายการกำหนดสิทธิ์แยกกันได้ดังนี้:
 
 - `can_send`
 - `can_receive`
@@ -11,8 +11,8 @@ A customer link can independently define:
 - `is_default_receiver`
 - `is_active`
 
-Client Accounts are not tied to a single customer and are not modeled as sender/receiver/both enum values.
+Client Accounts ไม่ได้ผูกกับลูกค้าเพียงรายเดียว และไม่ถูก model เป็น enum แบบ sender/receiver/both
 
-Tenant-dependent workflows run inside a current Client Account context. Users with multiple active Client Accounts must explicitly select the current account.
+Workflows ที่ขึ้นกับ tenant ต้องทำงานภายใต้ current Client Account context ผู้ใช้ที่มี active Client Accounts หลายบัญชีต้องเลือกบัญชีปัจจุบันเองอย่างชัดเจน
 
-Shipment visibility and payment visibility are separate domain rules. Both derive access from authorized transactions rather than customer master data.
+Shipment visibility และ payment visibility เป็น domain rules คนละชุด ทั้งสองอย่างได้สิทธิ์จาก authorized transactions ไม่ใช่จาก customer master data โดยตรง

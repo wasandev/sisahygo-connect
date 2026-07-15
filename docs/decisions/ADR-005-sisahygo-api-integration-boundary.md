@@ -1,17 +1,19 @@
 # ADR-005: Sisahygo API Integration Boundary
 
-Status: Accepted
+## สถานะ
 
-## Context
+Approved
 
-Sisahygo Connect will consume Sisahygo customer and transactional data through the Sisahygo API. It must not depend on direct production database access to the core Sisahygo database.
+## บริบท
 
-## Decision
+Sisahygo Connect จะใช้ Sisahygo customer และ transactional data ผ่าน Sisahygo API และต้องไม่พึ่ง direct production database access ไปยัง core Sisahygo database
 
-Treat `client_account_customers.customer_id` as an external Sisahygo customer identifier. Do not create a foreign key from `client_account_customers.customer_id` to a local `customers` table. Keep uniqueness and query indexes on the external identifier.
+## การตัดสินใจ
 
-Future shipment, payment, and customer integration must enter through API client services and continue to use Client Account authorization and authorized query boundaries.
+ถือว่า `client_account_customers.customer_id` เป็น external Sisahygo customer identifier ห้ามสร้าง foreign key จาก `client_account_customers.customer_id` ไปยัง local `customers` table ให้คง uniqueness และ query indexes บน external identifier นี้ไว้
 
-## Consequences
+Shipment, Payment และ customer integration ในอนาคตต้องเข้าผ่าน API client services และยังต้องใช้ Client Account authorization รวมถึง authorized query boundaries ต่อไป
 
-Migrations behave consistently across environments even when a local `customers` table does or does not exist. API integration can evolve without coupling Sisahygo Connect schema to the core Sisahygo production database schema.
+## ผลกระทบ
+
+Migrations จะทำงานสม่ำเสมอในทุก environment ไม่ว่าจะมี local `customers` table หรือไม่ API integration สามารถพัฒนาต่อได้โดยไม่ผูก schema ของ Sisahygo Connect เข้ากับ schema ของ core Sisahygo production database

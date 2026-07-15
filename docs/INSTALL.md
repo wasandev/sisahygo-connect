@@ -1,10 +1,10 @@
 # Sisahygo Connect Setup
 
-Sisahygo Connect is a Laravel, Livewire 3, Tailwind CSS, and Laravel Sail application.
+Sisahygo Connect เป็น application ที่ใช้ Laravel, Livewire 3, Tailwind CSS และ Laravel Sail
 
 ## Local Development
 
-Use WSL for project files and run Sail from the project root.
+ใช้ WSL สำหรับ project files และรัน Sail จาก project root
 
 ```bash
 ./vendor/bin/sail up -d
@@ -15,7 +15,7 @@ npm run build
 
 ## Verification
 
-Before handing off sprint work, run:
+ก่อนส่งมอบงาน sprint ให้รันคำสั่งต่อไปนี้:
 
 ```bash
 composer dump-autoload
@@ -28,7 +28,7 @@ npm run build
 
 ## Notes
 
-- Authentication is provided by the existing Laravel/Livewire stack.
-- Tenant-dependent application pages require a selected Client Account.
-- The root URL shows a guest welcome page. Authenticated users are sent to the dashboard.
-- Sisahygo API integration is not implemented yet.
+- Authentication มาจาก Laravel/Livewire stack เดิม
+- Application pages ที่ขึ้นกับ tenant ต้องมี selected Client Account
+- Root URL แสดง guest welcome page ส่วนผู้ใช้ที่ authenticated แล้วจะถูกส่งไป dashboard
+- Sisahygo API integration ยังไม่ได้ implement เป็น business features

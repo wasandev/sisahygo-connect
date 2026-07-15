@@ -9,7 +9,7 @@
 @endphp
 
 <a {{ $attributes->merge([
-    'class' => "connect-focus flex items-center rounded-lg px-3 py-2.5 text-sm font-semibold transition {$classes}",
+    'class' => "connect-focus flex min-h-11 items-center rounded-lg px-3 py-2.5 text-sm font-semibold transition {$classes}",
 ]) }}>
     <span class="truncate">{{ $slot }}</span>
 </a>

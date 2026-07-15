@@ -26,12 +26,11 @@ final readonly class SisahygoApiConfiguration
             throw new InvalidArgumentException('Unsupported Sisahygo API environment.');
         }
 
-        $baseUrl = (string) config("sisahygo.api.environments.{$environment->value}.base_url");
-        self::assertTrustedBaseUrl($baseUrl);
+        $baseUrl = self::baseUrlForEnvironment($environment);
 
         return new self(
             environment: $environment,
-            baseUrl: rtrim($baseUrl, '/'),
+            baseUrl: $baseUrl,
             connectTimeout: max(1, (int) config('sisahygo.api.connect_timeout')),
             timeout: max(1, (int) config('sisahygo.api.timeout')),
             retryTimes: max(0, (int) config('sisahygo.api.retry_times')),
@@ -39,6 +38,14 @@ final readonly class SisahygoApiConfiguration
             userAgent: (string) config('sisahygo.api.user_agent'),
             liveSmokeTests: (bool) config('sisahygo.api.live_smoke_tests'),
         );
+    }
+
+    public static function baseUrlForEnvironment(SisahygoApiEnvironment $environment): string
+    {
+        $baseUrl = (string) config("sisahygo.api.environments.{$environment->value}.base_url");
+        self::assertTrustedBaseUrl($baseUrl);
+
+        return rtrim($baseUrl, '/');
     }
 
     public static function assertTrustedBaseUrl(string $baseUrl): void

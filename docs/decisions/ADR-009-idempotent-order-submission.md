@@ -1,17 +1,19 @@
 # ADR-009: Idempotent Order Submission
 
-Status: Accepted
+## สถานะ
 
-## Context
+Approved
 
-Future Order Checking and Bulk Order Checking operations may submit POST requests that must be protected from duplicate submissions and unknown-result retries.
+## บริบท
 
-## Decision
+Order Checking และ Bulk Order Checking ในอนาคตอาจส่ง POST requests ที่ต้องป้องกัน duplicate submissions และ unknown-result retries
 
-Do not create a final idempotency schema in Sprint 1.5. Document the contract and defer the final storage design until the Core API confirms support for `Idempotency-Key`, `client_reference_no`, `batch_reference_no`, timeout reconciliation, and unknown-result recovery.
+## การตัดสินใจ
 
-POST requests are not automatically retried in Sprint 1.5.
+ยังไม่สร้าง final idempotency schema ใน Sprint 1.5 ให้บันทึก contract ไว้ก่อน และเลื่อนการออกแบบ storage ขั้นสุดท้ายจนกว่า Core API จะยืนยันการรองรับ `Idempotency-Key`, `client_reference_no`, `batch_reference_no`, timeout reconciliation และ unknown-result recovery
 
-## Consequences
+POST requests จะไม่ถูก retry อัตโนมัติใน Sprint 1.5
 
-The foundation avoids inventing Core API behavior while leaving extension points for safe future submissions.
+## ผลกระทบ
+
+Foundation จะไม่เดาพฤติกรรมของ Core API เอง แต่ยังคงมี extension points สำหรับ safe future submissions

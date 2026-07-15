@@ -1,3 +1,3 @@
 # Order Checking
 
-Order Checking is outside Sprint 1. Future implementation must use Client Account membership, capability checks, and authorized transaction queries.
+Order Checking อยู่นอก scope ของ Sprint 1 การ implement ในอนาคตต้องใช้ Client Account membership, capability checks และ authorized transaction queries เสมอ

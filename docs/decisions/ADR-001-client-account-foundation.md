@@ -1,15 +1,17 @@
 # ADR-001: Client Account Foundation
 
-Status: Accepted
+## สถานะ
 
-## Context
+Approved
 
-Sisahygo Connect needs a commercial SaaS-ready account model that supports many users and many linked Sisahygo customers per organization.
+## บริบท
 
-## Decision
+Sisahygo Connect ต้องมี account model ที่พร้อมสำหรับ SaaS เชิงพาณิชย์ รองรับผู้ใช้หลายคนและ Sisahygo customers หลายรายการภายใต้องค์กรเดียว
 
-Create Client Account domain tables for accounts, users, customer links, capabilities, and activity logs. Do not model links as `sender`, `receiver`, or `both`; use capability columns on each customer link.
+## การตัดสินใจ
 
-## Consequences
+สร้าง Client Account domain tables สำหรับ accounts, users, customer links, capabilities และ activity logs ห้าม model links เป็น `sender`, `receiver` หรือ `both` แต่ให้ใช้ capability columns ในแต่ละ customer link แทน
 
-Future customer roles can be added without redesigning the relationship model. Existing authentication remains intact.
+## ผลกระทบ
+
+ในอนาคตสามารถเพิ่ม customer roles ได้โดยไม่ต้องออกแบบ relationship model ใหม่ และยังรักษา authentication เดิมไว้ครบถ้วน

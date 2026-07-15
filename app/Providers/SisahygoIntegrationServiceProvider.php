@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Console\Commands\SisahygoCredentialSetCommand;
 use App\Domain\Sisahygo\Services\SisahygoApiCredentialService;
 use App\Integrations\Sisahygo\Configuration\SisahygoApiConfiguration;
 use Illuminate\Support\ServiceProvider;
@@ -12,5 +13,14 @@ class SisahygoIntegrationServiceProvider extends ServiceProvider
     {
         $this->app->singleton(SisahygoApiConfiguration::class, fn () => SisahygoApiConfiguration::fromConfig());
         $this->app->singleton(SisahygoApiCredentialService::class);
+    }
+
+    public function boot(): void
+    {
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                SisahygoCredentialSetCommand::class,
+            ]);
+        }
     }
 }

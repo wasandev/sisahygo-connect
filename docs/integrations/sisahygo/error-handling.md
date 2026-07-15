@@ -1,6 +1,6 @@
 # Sisahygo API Error Handling
 
-The integration layer maps transport and API failures into safe exceptions:
+Integration layer map transport failures และ API failures เป็น safe exceptions ดังนี้:
 
 - `SisahygoConnectionException`
 - `SisahygoAuthenticationException`
@@ -11,6 +11,6 @@ The integration layer maps transport and API failures into safe exceptions:
 - `SisahygoServerException`
 - `SisahygoUnexpectedResponseException`
 
-Exception context must be safe for logs and diagnostics. It may include status code, endpoint name, correlation ID, Client Account ID, credential ID and fingerprint. It must not include `X-Api-Key`, decrypted credentials, full payloads, passwords, full addresses, or unnecessary customer personal data.
+Exception context ต้องปลอดภัยสำหรับ logs และ diagnostics ข้อมูลที่ใส่ได้ เช่น status code, endpoint name, correlation ID, Client Account ID, credential ID และ fingerprint ห้ามใส่ `X-Api-Key`, decrypted credentials, full payloads, passwords, full addresses หรือ customer personal data ที่ไม่จำเป็น
 
-User-facing Thai error copy should be mapped later at the application boundary.
+User-facing Thai error copy ควรถูก map ภายหลังที่ application boundary

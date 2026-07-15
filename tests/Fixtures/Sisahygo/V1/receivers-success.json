@@ -1,6 +1,6 @@
 {
   "data": [
-    {"customer_id": 20001, "name": "Receiver Demo Co., Ltd.", "phone": "020000001", "extra": "ignored"},
-    {"customer_id": 20002, "name": "Receiver Example Co., Ltd."}
+    {"customer_rec_id": 20001, "to_customer_name": "Receiver Demo Co., Ltd.", "to_customer_phone": "020000001", "branch_rec_id": 901, "extra": "ignored"},
+    {"customer_rec_id": 20002, "to_customer_name": "Receiver Example Co., Ltd.", "branch_rec_id": 902}
   ]
 }

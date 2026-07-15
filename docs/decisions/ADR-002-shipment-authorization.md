@@ -1,15 +1,17 @@
 # ADR-002: Shipment Authorization
 
-Status: Accepted
+## สถานะ
 
-## Context
+Approved
 
-A Client Account must never see shipments that do not belong to itself.
+## บริบท
 
-## Decision
+Client Account ต้องไม่เห็น shipments ที่ไม่ได้เป็นของตัวเอง
 
-Use `AuthorizedOrderQuery` to derive shipment visibility from authorized sender and receiver customer links. Do not expose customer, product, or shipment master data globally.
+## การตัดสินใจ
 
-## Consequences
+ใช้ `AuthorizedOrderQuery` เพื่อ derive shipment visibility จาก authorized sender และ receiver customer links ห้ามเปิดเผย customer, product หรือ shipment master data แบบ global
 
-Livewire, controllers, APIs, reports, and services can reuse the same data isolation logic.
+## ผลกระทบ
+
+Livewire, controllers, APIs, reports และ services สามารถใช้ data isolation logic ชุดเดียวกันซ้ำได้

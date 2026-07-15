@@ -1,8 +1,8 @@
 # Backlog
 
-- Client account onboarding
-- User invitation workflow
-- Customer link management
-- Shipment visibility integration
-- Payment visibility integration
-- Audit log viewer
+- Onboarding สำหรับ Client Account
+- Workflow สำหรับเชิญผู้ใช้
+- การจัดการ customer links
+- การเชื่อมต่อข้อมูล Shipment visibility
+- การเชื่อมต่อข้อมูล Payment visibility
+- หน้าดู audit log
