@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ClientAccountSelectionController;
 use App\Livewire\Actions\Logout;
+use App\Livewire\OrderChecking;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -33,7 +34,7 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['client.account'])->group(function () {
         Route::prefix('ux')->name('ux.')->group(function () {
             Route::view('/dashboard', 'ux.dashboard')->name('dashboard');
-            Route::view('/order-checking', 'ux.order-checking')->name('order-checking');
+            Route::get('/order-checking', OrderChecking::class)->name('order-checking');
             Route::view('/tracking', 'ux.tracking')->name('tracking');
             Route::view('/shipment-detail', 'ux.shipment-detail')->name('shipment-detail');
             Route::view('/payments', 'ux.payments')->name('payments');
@@ -45,10 +46,8 @@ Route::middleware(['auth'])->group(function () {
         Route::view('/dashboard', 'dashboard')
             ->name('dashboard');
 
-        Route::view('/order-checking', 'pages.placeholder', [
-            'title' => __('navigation.order_checking'),
-            'description' => __('page.placeholder.order_checking'),
-        ])->name('order-checking');
+        Route::get('/order-checking', OrderChecking::class)
+            ->name('order-checking');
 
         Route::view('/shipments', 'pages.placeholder', [
             'title' => __('navigation.shipments'),
