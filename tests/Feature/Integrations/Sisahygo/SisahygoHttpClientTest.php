@@ -34,7 +34,7 @@ class SisahygoHttpClientTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_get_request_sends_expected_url_headers_and_context_scope(): void
+    public function test_get_request_sends_expected_url_headers(): void
     {
         $context = $this->context();
         Http::fake([
@@ -45,7 +45,7 @@ class SisahygoHttpClientTest extends TestCase
 
         $this->assertSame(20001, $receivers[0]->customerId);
         Http::assertSent(function ($request) use ($context) {
-            return $request->url() === 'https://sandbox-api.sisahygo.online/api/v1/client/receivers?receiver_customer_ids%5B0%5D=20001'
+            return $request->url() === 'https://sandbox-api.sisahygo.online/api/v1/client/receivers'
                 && $request->hasHeader('X-Api-Key', 'secret-api-key')
                 && $request->hasHeader('Accept', 'application/json')
                 && str_contains($request->header('Content-Type')[0] ?? '', 'application/json')

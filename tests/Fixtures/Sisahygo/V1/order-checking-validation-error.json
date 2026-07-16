@@ -1,0 +1,12 @@
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "ข้อมูลไม่ถูกต้อง",
+    "details": {
+      "items.0.product_id": [
+        "สินค้าไม่ถูกต้อง"
+      ]
+    },
+    "status": 422
+  }
+}

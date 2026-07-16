@@ -3,11 +3,18 @@
 namespace Tests\Feature;
 
 use App\Domain\ClientAccount\Enums\ClientAccountRole;
+use App\Domain\ClientAccount\Enums\ClientCapability;
 use App\Domain\ClientAccount\Models\ClientAccount;
+use App\Domain\ClientAccount\Models\ClientAccountCapability;
+use App\Domain\ClientAccount\Models\ClientAccountCustomer;
 use App\Domain\ClientAccount\Models\ClientAccountUser;
+use App\Domain\Sisahygo\Enums\SisahygoApiEnvironment;
+use App\Domain\Sisahygo\Services\SisahygoApiCredentialService;
 use App\Livewire\OrderChecking;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -15,10 +22,10 @@ class OrderCheckingPageTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_order_checking_page_renders_the_production_livewire_experience(): void
+    public function test_order_checking_page_renders_for_eligible_account(): void
     {
-        $user = User::factory()->create();
-        $this->createClientAccountFor($user);
+        [$user] = $this->eligibleAccount();
+        $this->fakeUnitsOnly();
 
         $this->actingAs($user)
             ->get(route('order-checking'))
@@ -27,57 +34,174 @@ class OrderCheckingPageTest extends TestCase
             ->assertSee('1. ผู้รับสินค้า')
             ->assertSee('2. รายการสินค้า')
             ->assertSee('3. หมายเหตุและเลขอ้างอิง')
-            ->assertSee('4. ตรวจทานและยืนยัน')
-            ->assertSee('ข้อมูลจำลองสำหรับ Sprint 2A-Prep');
+            ->assertSee('4. ตรวจทานและยืนยัน');
     }
 
-    public function test_mock_receiver_search_and_product_grid_are_stateful(): void
+    public function test_receiver_only_account_shows_unavailable_state(): void
     {
-        Livewire::test(OrderChecking::class)
-            ->set('receiverSearch', 'คลัง')
-            ->assertSee('หจก. คลังเหนือ')
-            ->call('selectReceiver', 'receiver-north-warehouse')
-            ->assertSet('selectedReceiverId', 'receiver-north-warehouse')
-            ->call('addProduct', 'อะไหล่เครื่องจักร')
-            ->assertSet('items.1.product', 'อะไหล่เครื่องจักร');
+        $user = User::factory()->create();
+        $account = ClientAccount::factory()->create();
+        ClientAccountUser::factory()->for($account)->for($user)->owner()->create(['role' => ClientAccountRole::Owner]);
+        ClientAccountCapability::factory()->for($account)->capability(ClientCapability::OrderCreate)->create();
+        ClientAccountCustomer::factory()->for($account)->receiver()->create(['customer_id' => 20001]);
+        app(SisahygoApiCredentialService::class)->create($account, SisahygoApiEnvironment::Sandbox, 'Sandbox', 'secret-api-key');
+        Http::fake(['*' => Http::response($this->fixture('units-success.json'))]);
+
+        $this->actingAs($user)
+            ->get(route('order-checking'))
+            ->assertOk()
+            ->assertSee('ยังไม่พร้อมสร้างรายการตรวจรับ')
+            ->assertSee('ยังไม่มีสิทธิ์ส่งสินค้า');
     }
 
-    public function test_validation_states_block_incomplete_mock_confirmation(): void
+    public function test_receiver_and_product_search_add_item_with_stable_row_keys(): void
     {
-        Livewire::test(OrderChecking::class)
-            ->set('selectedReceiverId', null)
-            ->set('items', [])
-            ->set('clientReferenceNo', '')
-            ->call('confirmMockOrder')
-            ->assertHasErrors(['selectedReceiverId', 'items', 'clientReferenceNo'])
-            ->assertSet('showSuccessDialog', false);
+        [$user, $account] = $this->eligibleAccount();
+        app()->instance(ClientAccount::class, $account);
+        $this->actingAs($user);
+        $this->fakeReferenceData();
+
+        $component = Livewire::test(OrderChecking::class)
+            ->set('receiverSearch', 'รับ')
+            ->assertSee('บริษัท รับสินค้าไทย จำกัด')
+            ->call('selectReceiver', 20001)
+            ->assertSet('selectedReceiver.customer_id', 20001)
+            ->set('productSearch', 'น้ำ')
+            ->assertSee('น้ำดื่ม 600 ml')
+            ->call('addProduct', 6639, 1)
+            ->assertSet('items.1.product_id', 6639);
+
+        $firstRowKey = $component->get('items')[0]['row_key'];
+
+        $component->call('removeItem', $firstRowKey)
+            ->assertSet('items.0.product_id', 6639);
     }
 
-    public function test_complete_mock_order_shows_success_dialog_without_submission_integration(): void
+    public function test_valid_submission_posts_once_and_shows_checking_success(): void
     {
+        [$user, $account] = $this->eligibleAccount();
+        app()->instance(ClientAccount::class, $account);
+        $this->actingAs($user);
+        $this->fakeReferenceDataWithSubmit();
+
         Livewire::test(OrderChecking::class)
-            ->call('confirmMockOrder')
-            ->assertHasNoErrors()
-            ->assertSet('showSuccessDialog', true)
-            ->assertSee('จำลองการรับรายการสำเร็จ')
+            ->set('selectedReceiver', ['customer_id' => 20001, 'name' => 'บริษัท รับสินค้าไทย จำกัด', 'phone' => '020000001'])
+            ->set('items.0.product_id', 6639)
+            ->set('items.0.product_name', 'น้ำดื่ม 600 ml')
+            ->set('items.0.unit_id', 1)
+            ->set('items.0.unit_name', 'ขวด')
+            ->set('clientReferenceNo', 'SC-20260716-ABC123')
+            ->call('submit')
+            ->assertSet('state', 'success')
             ->assertSee('รอตรวจสอบ');
+
+        Http::assertSentCount(5);
+        Http::assertSent(fn ($request) => $request->method() === 'POST');
     }
 
-    private function createClientAccountFor(User $user): ClientAccount
+    public function test_api_422_maps_to_stable_item_error(): void
     {
-        $account = ClientAccount::create([
-            'name' => 'ABC Company',
-            'code' => 'ABC',
+        [$user, $account] = $this->eligibleAccount();
+        app()->instance(ClientAccount::class, $account);
+        $this->actingAs($user);
+        Http::fake([
+            'https://sandbox-api.sisahygo.online/api/v1/client/units*' => Http::response($this->fixture('units-success.json')),
+            'https://sandbox-api.sisahygo.online/api/v1/client/receivers*' => Http::response($this->fixture('receivers-success.json')),
+            'https://sandbox-api.sisahygo.online/api/v1/client/products*' => Http::response($this->fixture('products-success.json')),
+            'https://sandbox-api.sisahygo.online/api/v1/client/order-checkings' => Http::response($this->fixture('order-checking-validation-error.json'), 422),
         ]);
 
-        ClientAccountUser::create([
-            'client_account_id' => $account->id,
-            'user_id' => $user->id,
-            'role' => ClientAccountRole::Owner,
-            'is_active' => true,
-            'joined_at' => now(),
-        ]);
+        $component = Livewire::test(OrderChecking::class)
+            ->set('selectedReceiver', ['customer_id' => 20001, 'name' => 'บริษัท รับสินค้าไทย จำกัด', 'phone' => '020000001'])
+            ->set('items.0.product_id', 6639)
+            ->set('items.0.product_name', 'น้ำดื่ม 600 ml')
+            ->set('items.0.unit_id', 1)
+            ->set('items.0.unit_name', 'ขวด')
+            ->set('clientReferenceNo', 'SC-20260716-ABC123');
 
-        return $account;
+        $rowKey = $component->get('items')[0]['row_key'];
+
+        $component->call('submit')
+            ->assertSet('state', 'api_validation_failed')
+            ->assertHasErrors(["items.{$rowKey}.product_id"]);
+    }
+
+    public function test_timeout_enters_unknown_state_and_reconciliation_can_find_order(): void
+    {
+        [$user, $account] = $this->eligibleAccount();
+        app()->instance(ClientAccount::class, $account);
+        $this->actingAs($user);
+        Http::fake(function ($request) {
+            if ($request->method() === 'POST') {
+                throw new ConnectionException('timed out');
+            }
+
+            if (str_contains($request->url(), '/order-checkings/SC-20260716-ABC123')) {
+                return Http::response($this->fixture('order-checking-lookup-success.json'));
+            }
+
+            if (str_contains($request->url(), '/receivers')) {
+                return Http::response($this->fixture('receivers-success.json'));
+            }
+
+            if (str_contains($request->url(), '/products')) {
+                return Http::response($this->fixture('products-success.json'));
+            }
+
+            return Http::response($this->fixture('units-success.json'));
+        });
+
+        Livewire::test(OrderChecking::class)
+            ->set('selectedReceiver', ['customer_id' => 20001, 'name' => 'บริษัท รับสินค้าไทย จำกัด', 'phone' => '020000001'])
+            ->set('items.0.product_id', 6639)
+            ->set('items.0.product_name', 'น้ำดื่ม 600 ml')
+            ->set('items.0.unit_id', 1)
+            ->set('items.0.unit_name', 'ขวด')
+            ->set('clientReferenceNo', 'SC-20260716-ABC123')
+            ->call('submit')
+            ->assertSet('state', 'unknown_result')
+            ->call('reconcile')
+            ->assertSet('state', 'success');
+    }
+
+    private function eligibleAccount(): array
+    {
+        $user = User::factory()->create();
+        $account = ClientAccount::factory()->create();
+        ClientAccountUser::factory()->for($account)->for($user)->owner()->create(['role' => ClientAccountRole::Owner]);
+        ClientAccountCapability::factory()->for($account)->capability(ClientCapability::OrderCreate)->create();
+        ClientAccountCustomer::factory()->for($account)->sender()->create(['customer_id' => 10001]);
+        app(SisahygoApiCredentialService::class)->create($account, SisahygoApiEnvironment::Sandbox, 'Sandbox', 'secret-api-key');
+
+        return [$user, $account];
+    }
+
+    private function fakeUnitsOnly(): void
+    {
+        Http::fake(['*' => Http::response($this->fixture('units-success.json'))]);
+    }
+
+    private function fakeReferenceData(): void
+    {
+        Http::fake([
+            'https://sandbox-api.sisahygo.online/api/v1/client/units*' => Http::response($this->fixture('units-success.json')),
+            'https://sandbox-api.sisahygo.online/api/v1/client/receivers*' => Http::response($this->fixture('receivers-success.json')),
+            'https://sandbox-api.sisahygo.online/api/v1/client/products*' => Http::response($this->fixture('products-success.json')),
+        ]);
+    }
+
+    private function fakeReferenceDataWithSubmit(): void
+    {
+        Http::fake([
+            'https://sandbox-api.sisahygo.online/api/v1/client/units*' => Http::response($this->fixture('units-success.json')),
+            'https://sandbox-api.sisahygo.online/api/v1/client/receivers*' => Http::response($this->fixture('receivers-success.json')),
+            'https://sandbox-api.sisahygo.online/api/v1/client/products*' => Http::response($this->fixture('products-success.json')),
+            'https://sandbox-api.sisahygo.online/api/v1/client/order-checkings' => Http::response($this->fixture('order-checking-success.json'), 201),
+        ]);
+    }
+
+    private function fixture(string $name): string
+    {
+        return file_get_contents(base_path("tests/Fixtures/Sisahygo/V1/{$name}"));
     }
 }

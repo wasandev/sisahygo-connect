@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "RESOURCE_NOT_FOUND",
+    "message": "ไม่พบข้อมูลที่ต้องการ",
+    "status": 404
+  }
+}

@@ -2,259 +2,367 @@
 
 namespace App\Livewire;
 
+use App\Application\OrderChecking\SubmitSingleOrderChecking;
+use App\Domain\ClientAccount\Models\ClientAccount;
+use App\Integrations\Sisahygo\Exceptions\SisahygoApiException;
+use App\Integrations\Sisahygo\Exceptions\SisahygoAuthenticationException;
+use App\Integrations\Sisahygo\Exceptions\SisahygoAuthorizationException;
+use App\Integrations\Sisahygo\Exceptions\SisahygoConnectionException;
+use App\Integrations\Sisahygo\Exceptions\SisahygoNotFoundException;
+use App\Integrations\Sisahygo\Exceptions\SisahygoRateLimitException;
+use App\Integrations\Sisahygo\Exceptions\SisahygoServerException;
+use App\Integrations\Sisahygo\Exceptions\SisahygoValidationException;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Arr;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
 class OrderChecking extends Component
 {
+    public string $state = 'editing';
+
+    public array $senderOptions = [];
+
+    public ?int $selectedSenderCustomerId = null;
+
+    public bool $unavailable = false;
+
+    public ?string $unavailableMessage = null;
+
     public string $receiverSearch = '';
 
-    public ?string $selectedReceiverId = null;
+    public array $receiverResults = [];
 
-    public string $clientReferenceNo = 'OC-20260716-001';
+    public ?array $selectedReceiver = null;
+
+    public string $productSearch = '';
+
+    public array $productResults = [];
+
+    public array $units = [];
+
+    public string $clientReferenceNo = '';
 
     public string $orderRemark = '';
 
-    public array $items = [
-        [
-            'product' => 'กล่องเอกสาร',
-            'unit' => 'กล่อง',
-            'quantity' => 2,
-            'remark' => 'เอกสารฝ่ายบัญชี',
-        ],
-    ];
+    public array $items = [];
 
-    public array $newItem = [
-        'product' => '',
-        'unit' => 'ชิ้น',
-        'quantity' => 1,
-        'remark' => '',
-    ];
+    public bool $isSubmitting = false;
 
-    public bool $showSuccessDialog = false;
+    public ?string $pageError = null;
 
-    public function mount(): void
+    public ?string $unknownMessage = null;
+
+    public ?array $successResult = null;
+
+    public ?array $submittedSummary = null;
+
+    public function mount(SubmitSingleOrderChecking $orders): void
     {
-        $this->selectedReceiverId = $this->mockReceivers()[0]['id'];
-        $this->receiverSearch = $this->mockReceivers()[0]['name'];
-    }
+        $this->clientReferenceNo = $orders->generatedClientReference();
+        $this->items = [$this->blankItem()];
 
-    public function updatedReceiverSearch(): void
-    {
-        if ($this->selectedReceiverId && $this->selectedReceiver?->name !== $this->receiverSearch) {
-            $this->selectedReceiverId = null;
+        try {
+            $account = $this->currentClientAccount();
+            $this->senderOptions = $orders->senderOptions($account);
+
+            if ($this->senderOptions === []) {
+                $this->unavailable = true;
+                $this->unavailableMessage = __('order_checking.unavailable.no_sender');
+
+                return;
+            }
+
+            if (count($this->senderOptions) === 1) {
+                $this->selectedSenderCustomerId = (int) $this->senderOptions[0]['customer_id'];
+            }
+
+            $this->units = $orders->loadUnits(auth()->user(), $account);
+        } catch (ModelNotFoundException) {
+            $this->unavailable = true;
+            $this->unavailableMessage = __('order_checking.unavailable.no_credential');
+        } catch (\Throwable) {
+            $this->unavailable = true;
+            $this->unavailableMessage = __('order_checking.unavailable.integration');
         }
     }
 
-    public function selectReceiver(string $receiverId): void
+    public function updatedReceiverSearch(SubmitSingleOrderChecking $orders): void
     {
-        $receiver = collect($this->mockReceivers())->firstWhere('id', $receiverId);
+        $this->selectedReceiver = null;
+        $this->receiverResults = [];
 
-        if (! $receiver) {
+        if (mb_strlen(trim($this->receiverSearch)) < 2) {
             return;
         }
 
-        $this->selectedReceiverId = $receiver['id'];
-        $this->receiverSearch = $receiver['name'];
-        $this->resetErrorBag('selectedReceiverId');
+        try {
+            $this->receiverResults = $orders->searchReceivers(auth()->user(), $this->currentClientAccount(), $this->receiverSearch);
+            $this->clearPageError();
+        } catch (SisahygoApiException) {
+            $this->pageError = __('order_checking.errors.receiver_search_failed');
+        }
     }
 
-    public function addProduct(string $productName): void
+    public function selectReceiver(int $customerId): void
     {
-        $product = collect($this->mockProducts())->firstWhere('name', $productName);
+        $receiver = collect($this->receiverResults)->firstWhere('customer_id', $customerId);
+
+        if (! $receiver) {
+            $this->addError('selectedReceiver.customer_id', __('order_checking.validation.receiver_invalid'));
+
+            return;
+        }
+
+        $this->selectedReceiver = $receiver;
+        $this->receiverSearch = $receiver['name'];
+        $this->resetErrorBag('selectedReceiver.customer_id');
+    }
+
+    public function updatedProductSearch(SubmitSingleOrderChecking $orders): void
+    {
+        $this->productResults = [];
+
+        if (mb_strlen(trim($this->productSearch)) < 2) {
+            return;
+        }
+
+        try {
+            $this->productResults = $orders->searchProducts(auth()->user(), $this->currentClientAccount(), $this->productSearch);
+            $this->clearPageError();
+        } catch (SisahygoApiException) {
+            $this->pageError = __('order_checking.errors.product_search_failed');
+        }
+    }
+
+    public function addProduct(int $productId, int $unitId): void
+    {
+        $product = collect($this->productResults)
+            ->first(fn (array $item): bool => (int) $item['product_id'] === $productId && (int) $item['unit_id'] === $unitId);
 
         if (! $product) {
             return;
         }
 
-        $this->items[] = [
-            'product' => $product['name'],
-            'unit' => $product['unit'],
-            'quantity' => 1,
-            'remark' => '',
-        ];
-
-        $this->resetErrorBag('items');
+        $this->items[] = $this->blankItem([
+            'product_id' => (int) $product['product_id'],
+            'product_name' => $product['product_name'],
+            'unit_id' => (int) $product['unit_id'],
+            'unit_name' => $product['unit_name'],
+        ]);
     }
 
-    public function addItem(): void
+    public function removeItem(string $rowKey): void
     {
-        $this->validateOnlyNewItem();
+        $this->items = array_values(array_filter(
+            $this->items,
+            fn (array $item): bool => $item['row_key'] !== $rowKey
+        ));
 
-        $this->items[] = [
-            'product' => trim($this->newItem['product']),
-            'unit' => trim($this->newItem['unit']),
-            'quantity' => (float) $this->newItem['quantity'],
-            'remark' => trim($this->newItem['remark']),
-        ];
-
-        $this->newItem = [
-            'product' => '',
-            'unit' => 'ชิ้น',
-            'quantity' => 1,
-            'remark' => '',
-        ];
-
-        foreach (['items', 'newItem.product', 'newItem.unit', 'newItem.quantity'] as $field) {
-            $this->resetErrorBag($field);
+        if ($this->items === []) {
+            $this->items = [$this->blankItem()];
         }
     }
 
-    public function removeItem(int $index): void
+    public function submit(SubmitSingleOrderChecking $orders): void
     {
-        if (! array_key_exists($index, $this->items)) {
+        if ($this->isSubmitting || $this->unavailable) {
             return;
         }
 
-        unset($this->items[$index]);
-        $this->items = array_values($this->items);
-    }
+        $this->isSubmitting = true;
+        $this->pageError = null;
+        $this->unknownMessage = null;
+        $this->successResult = null;
+        $this->resetErrorBag();
 
-    public function confirmMockOrder(): void
-    {
-        $this->validate();
+        try {
+            if (! $this->selectedReceiver) {
+                throw ValidationException::withMessages([
+                    'selectedReceiver.customer_id' => __('order_checking.validation.selectedReceiver.customer_id.required'),
+                ]);
+            }
 
-        $this->showSuccessDialog = true;
-    }
+            $this->submittedSummary = $this->summary();
 
-    public function closeSuccessDialog(): void
-    {
-        $this->showSuccessDialog = false;
-    }
+            $result = $orders->submit(
+                user: auth()->user(),
+                clientAccount: $this->currentClientAccount(),
+                selectedSenderCustomerId: $this->selectedSenderCustomerId,
+                receiverCustomerId: (int) $this->selectedReceiver['customer_id'],
+                clientReferenceNo: $this->clientReferenceNo,
+                remark: $this->orderRemark,
+                items: $this->serviceItems(),
+            );
 
-    public function getFilteredReceiversProperty(): array
-    {
-        $query = trim($this->receiverSearch);
-
-        if (mb_strlen($query) < 2) {
-            return [];
+            $this->successResult = $result->toSafeArray();
+            $this->state = 'success';
+        } catch (ValidationException $exception) {
+            $this->state = 'api_validation_failed';
+            $this->mapValidationErrors($exception->errors());
+        } catch (SisahygoValidationException $exception) {
+            $this->state = 'api_validation_failed';
+            $this->mapApiValidationErrors($exception->safeContext()['validation_errors'] ?? []);
+            $this->pageError ??= $this->safeApiMessage($exception);
+        } catch (SisahygoConnectionException) {
+            $this->state = 'unknown_result';
+            $this->unknownMessage = __('order_checking.unknown.body');
+        } catch (SisahygoApiException $exception) {
+            $this->state = 'recoverable_failure';
+            $this->pageError = $this->safeApiMessage($exception);
+        } finally {
+            $this->isSubmitting = false;
         }
-
-        return collect($this->mockReceivers())
-            ->filter(fn (array $receiver): bool => str_contains(mb_strtolower($receiver['name'].' '.$receiver['branch'].' '.$receiver['phone']), mb_strtolower($query)))
-            ->values()
-            ->all();
     }
 
-    public function getSelectedReceiverProperty(): ?object
+    public function reconcile(SubmitSingleOrderChecking $orders): void
     {
-        $receiver = collect($this->mockReceivers())->firstWhere('id', $this->selectedReceiverId);
+        $this->pageError = null;
 
-        return $receiver ? (object) $receiver : null;
+        try {
+            $result = $orders->reconcile(auth()->user(), $this->currentClientAccount(), $this->clientReferenceNo);
+            $this->successResult = $result->toSafeArray();
+            $this->state = 'success';
+            $this->unknownMessage = null;
+        } catch (SisahygoNotFoundException) {
+            $this->state = 'unknown_result';
+            $this->unknownMessage = __('order_checking.unknown.not_found');
+        } catch (SisahygoApiException $exception) {
+            $this->pageError = $this->safeApiMessage($exception);
+        }
     }
 
-    public function getTotalQuantityProperty(): float
+    public function createAnother(SubmitSingleOrderChecking $orders): void
     {
-        return collect($this->items)->sum(fn (array $item): float => (float) ($item['quantity'] ?? 0));
+        $this->state = 'editing';
+        $this->receiverSearch = '';
+        $this->receiverResults = [];
+        $this->selectedReceiver = null;
+        $this->productSearch = '';
+        $this->productResults = [];
+        $this->clientReferenceNo = $orders->generatedClientReference();
+        $this->orderRemark = '';
+        $this->items = [$this->blankItem()];
+        $this->pageError = null;
+        $this->unknownMessage = null;
+        $this->successResult = null;
+        $this->submittedSummary = null;
+        $this->resetErrorBag();
     }
 
     public function getReadyForReviewProperty(): bool
     {
-        return $this->selectedReceiverId
+        return ! $this->unavailable
+            && (bool) $this->selectedReceiver
             && trim($this->clientReferenceNo) !== ''
-            && count($this->items) > 0
-            && collect($this->items)->every(fn (array $item): bool => trim((string) Arr::get($item, 'product')) !== ''
-                && trim((string) Arr::get($item, 'unit')) !== ''
-                && (float) Arr::get($item, 'quantity') > 0);
+            && collect($this->items)->contains(fn (array $item): bool => filled($item['product_id']) && filled($item['unit_id']) && (float) $item['amount'] >= 0.0001);
     }
 
     public function render(): View
     {
-        return view('livewire.order-checking', [
-            'mockProducts' => $this->mockProducts(),
-            'mockSender' => $this->mockSender(),
-        ])->layout('layouts.app', [
+        return view('livewire.order-checking')->layout('layouts.app', [
             'title' => __('navigation.order_checking'),
         ]);
     }
 
-    protected function rules(): array
+    private function currentClientAccount(): ClientAccount
+    {
+        return app(ClientAccount::class);
+    }
+
+    private function blankItem(array $overrides = []): array
+    {
+        return array_merge([
+            'row_key' => (string) str()->uuid(),
+            'product_id' => null,
+            'product_name' => '',
+            'unit_id' => null,
+            'unit_name' => '',
+            'amount' => 1,
+            'remark' => '',
+            'client_line_id' => '',
+            'client_item_no' => '',
+            'client_product_code' => '',
+        ], $overrides);
+    }
+
+    private function serviceItems(): array
+    {
+        return array_values(array_map(fn (array $item): array => [
+            'product_id' => $item['product_id'],
+            'unit_id' => $item['unit_id'],
+            'amount' => $item['amount'],
+            'remark' => $item['remark'],
+            'client_line_id' => $item['client_line_id'],
+            'client_item_no' => $item['client_item_no'],
+            'client_product_code' => $item['client_product_code'],
+        ], $this->items));
+    }
+
+    private function summary(): array
     {
         return [
-            'selectedReceiverId' => ['required'],
-            'clientReferenceNo' => ['required', 'string', 'max:40'],
-            'orderRemark' => ['nullable', 'string', 'max:500'],
-            'items' => ['required', 'array', 'min:1'],
-            'items.*.product' => ['required', 'string', 'max:120'],
-            'items.*.unit' => ['required', 'string', 'max:40'],
-            'items.*.quantity' => ['required', 'numeric', 'gt:0'],
-            'items.*.remark' => ['nullable', 'string', 'max:160'],
+            'client_reference_no' => $this->clientReferenceNo,
+            'receiver_name' => $this->selectedReceiver['name'] ?? null,
+            'items_count' => count($this->items),
         ];
     }
 
-    protected function messages(): array
+    private function mapValidationErrors(array $errors): void
     {
-        return __('order_checking.validation');
-    }
-
-    private function validateOnlyNewItem(): void
-    {
-        $validator = validator($this->newItem, [
-            'product' => ['required', 'string', 'max:120'],
-            'unit' => ['required', 'string', 'max:40'],
-            'quantity' => ['required', 'numeric', 'gt:0'],
-            'remark' => ['nullable', 'string', 'max:160'],
-        ], [
-            'product.required' => __('order_checking.validation.new_item_product_required'),
-            'unit.required' => __('order_checking.validation.new_item_unit_required'),
-            'quantity.required' => __('order_checking.validation.new_item_quantity_required'),
-            'quantity.gt' => __('order_checking.validation.new_item_quantity_gt'),
-        ]);
-
-        if ($validator->fails()) {
-            throw ValidationException::withMessages(
-                collect($validator->errors()->messages())
-                    ->mapWithKeys(fn (array $messages, string $key): array => ["newItem.{$key}" => $messages])
-                    ->all()
-            );
+        foreach ($errors as $field => $messages) {
+            $this->addError($this->mapErrorField($field), $messages[0] ?? __('order_checking.errors.validation_failed'));
         }
     }
 
-    private function mockSender(): array
+    private function mapApiValidationErrors(mixed $errors): void
     {
-        return [
-            'name' => 'ABC Company',
-            'code' => 'ABC-BKK',
-            'branch' => __('order_checking.mock.sender_branch'),
-        ];
+        if (! is_array($errors) || $errors === []) {
+            $this->pageError = __('order_checking.errors.validation_failed');
+
+            return;
+        }
+
+        $this->mapValidationErrors($errors);
     }
 
-    private function mockReceivers(): array
+    private function mapErrorField(string $field): string
     {
-        return [
-            [
-                'id' => 'receiver-siam-sample',
-                'name' => 'บริษัท สยามตัวอย่าง จำกัด',
-                'branch' => 'สำนักงานใหญ่ - บางนา',
-                'phone' => '02-555-0198',
-                'tag' => __('order_checking.mock.receiver_frequent'),
-            ],
-            [
-                'id' => 'receiver-north-warehouse',
-                'name' => 'หจก. คลังเหนือ',
-                'branch' => 'คลังสินค้า - เชียงใหม่',
-                'phone' => '053-555-204',
-                'tag' => __('order_checking.mock.receiver_available'),
-            ],
-            [
-                'id' => 'receiver-east-retail',
-                'name' => 'บริษัท อีสต์รีเทล จำกัด',
-                'branch' => 'ศูนย์กระจายสินค้า - ชลบุรี',
-                'phone' => '038-555-782',
-                'tag' => __('order_checking.mock.receiver_available'),
-            ],
-        ];
+        if ($field === 'customer_rec_id') {
+            return 'selectedReceiver.customer_id';
+        }
+
+        if ($field === 'client_reference_no') {
+            return 'clientReferenceNo';
+        }
+
+        if ($field === 'remark') {
+            return 'orderRemark';
+        }
+
+        if (preg_match('/^items\.(\d+)\.(.+)$/', $field, $matches)) {
+            $index = (int) $matches[1];
+            $rowKey = $this->items[$index]['row_key'] ?? $index;
+
+            return 'items.'.$rowKey.'.'.$matches[2];
+        }
+
+        return $field;
     }
 
-    private function mockProducts(): array
+    private function safeApiMessage(SisahygoApiException $exception): string
     {
-        return [
-            ['name' => 'กล่องเอกสาร', 'unit' => 'กล่อง', 'meta' => __('order_checking.mock.product_document_box')],
-            ['name' => 'อะไหล่เครื่องจักร', 'unit' => 'ชิ้น', 'meta' => __('order_checking.mock.product_machine_part')],
-            ['name' => 'วัสดุแพ็กสินค้า', 'unit' => 'แพ็ก', 'meta' => __('order_checking.mock.product_packaging')],
-            ['name' => 'ตัวอย่างสินค้า', 'unit' => 'ชุด', 'meta' => __('order_checking.mock.product_sample')],
-        ];
+        return match (true) {
+            $exception instanceof SisahygoAuthenticationException => __('order_checking.errors.authentication'),
+            $exception instanceof SisahygoAuthorizationException => __('order_checking.errors.authorization'),
+            $exception instanceof SisahygoRateLimitException => __('order_checking.errors.rate_limited'),
+            $exception instanceof SisahygoServerException => __('order_checking.errors.server', ['correlation' => $exception->safeContext()['correlation_id'] ?? '-']),
+            default => __('order_checking.errors.recoverable'),
+        };
+    }
+
+    private function clearPageError(): void
+    {
+        $this->pageError = null;
     }
 }

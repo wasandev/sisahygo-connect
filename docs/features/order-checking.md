@@ -640,3 +640,103 @@ Authoritative source ที่ต้องได้ก่อน coding:
 - `resources/views/ux/order-checking.blade.php`
 - `resources/views/components/connect/`
 - `tests/Fixtures/Sisahygo/V1/`
+
+## 25. Sprint 2A Implementation Status
+
+| รายการ | สถานะ |
+|---|---|
+| Implementation | Implemented for Single Order Checking integration |
+| อัปเดตล่าสุด | 2026-07-16 |
+
+Sprint 2A เชื่อมต่อหน้า Order Checking หลักกับ Sisahygo Core API ผ่าน integration boundary ของ Connect แล้ว โดยยังคง UX 4 การ์ดที่อนุมัติไว้ และไม่เพิ่ม local order persistence หรือ idempotency schema
+
+### Confirmed Endpoints
+
+Connect ใช้ endpoints ภายใต้ base prefix `/api/v1/client` ดังนี้:
+
+- `GET /receivers` พร้อม query `search`
+- `GET /products` พร้อม query `search` หรือ `product_id`
+- `GET /units`
+- `POST /order-checkings`
+- `GET /order-checkings/{client_reference_no}` สำหรับ reconciliation หลัง unknown result
+
+### Request Fields
+
+Connect ส่งเฉพาะ fields ที่ยืนยันแล้ว:
+
+- `client_reference_no`
+- `customer_rec_id`
+- `remark`
+- `items[].product_id`
+- `items[].unit_id`
+- `items[].amount`
+- `items[].remark`
+- `items[].client_line_id`
+- `items[].client_item_no`
+- `items[].client_product_code`
+
+Connect ไม่ส่ง `customer_id`, `branch_id`, `branch_rec_id`, API credential, `order_status`, `order_header_no`, pricing fields หรือ `order_header_date`
+
+### Response Mapping
+
+UI ใช้เฉพาะ safe response fields ที่ต้องแสดง:
+
+- `id`
+- `tracking_no`
+- `order_header_no`
+- `order_status`
+- `client_reference_no`
+- `customer_rec_id`
+- `to_customer_name`
+- `items_count`
+- `api_submitted_at`
+
+สถานะ `checking` แสดงภาษาไทยว่า `รอตรวจสอบ` และต้องไม่สื่อว่า shipment ถูกอนุมัติ รับขึ้นรถ หรือขนส่งแล้ว
+
+### Error Envelope
+
+Connect รองรับ standardized error envelope:
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "...",
+    "details": {
+      "items.0.product_id": ["..."]
+    },
+    "status": 422
+  }
+}
+```
+
+Validation errors จาก Core ถูก map กลับไปยัง receiver, reference หรือ stable item row ใน Livewire โดยไม่แสดง raw JSON, API key, stack trace หรือ exception class name
+
+### Sender Identity Behavior
+
+Core derives sender identity from the authenticated API key. Connect ใช้ active Client Account customer links ที่ `can_send = true` เพื่อบังคับ eligibility และ UI sender selection เท่านั้น และไม่ส่ง sender customer ID ไปยัง Core
+
+ถ้ามี sender เดียว ระบบเลือกให้อัตโนมัติ ถ้ามีหลาย sender ผู้ใช้ต้องเลือกก่อน submit ถ้าไม่มี sender ระบบแสดง unavailable state
+
+### Branch Derivation
+
+Connect ไม่ส่ง `branch_rec_id` ตอน submit. Core derives `branch_rec_id` จาก `customer_rec_id` และข้อมูลพื้นที่บริการของ receiver
+
+### Product And Unit Source
+
+Product options มาจาก `GET /products` และถูก scope โดย Core ตาม sender history. Unit options มาจาก `GET /units`. ก่อน submit application service revalidate receiver, unit และ product/unit pair อีกครั้งผ่าน integration endpoint
+
+### Timeout Reconciliation
+
+ถ้า POST เกิด connection failure หลังเริ่มส่งคำขอ Livewire เข้าสู่ state `unknown_result`, เก็บ `client_reference_no` และ form summary ไว้ และให้ผู้ใช้กดตรวจสอบด้วย `GET /order-checkings/{client_reference_no}` โดยไม่ส่ง POST ซ้ำอัตโนมัติ
+
+### Definition Of Done
+
+Sprint 2A implementation ถือว่าพร้อม human review เมื่อเงื่อนไขเหล่านี้ผ่าน:
+
+- Livewire page ไม่เก็บ credential หรือ raw API response ใน public state
+- Application service เป็นผู้ orchestrate validation, context building, endpoint calls และ safe result mapping
+- Endpoint/DTO/mapper ครอบคลุม receiver, product, unit, create order checking และ reconciliation lookup
+- Submit มี processing flag และ server-side lock guard ต่อ `client_reference_no`
+- Tests ใช้ `Http::fake()` และไม่เรียก Sandbox ใน standard suite
+- ไม่มี migration สำหรับ local order persistence หรือ speculative idempotency schema

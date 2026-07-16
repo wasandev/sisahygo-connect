@@ -31,7 +31,7 @@ class SisahygoApiClient
     ) {}
 
     /**
-     * @param array<string, mixed> $query
+     * @param  array<string, mixed>  $query
      * @return array<string, mixed>
      */
     public function get(SisahygoIntegrationContext $context, string $endpoint, array $query = []): array
@@ -40,7 +40,7 @@ class SisahygoApiClient
     }
 
     /**
-     * @param array<string, mixed> $payload
+     * @param  array<string, mixed>  $payload
      * @return array<string, mixed>
      */
     public function post(SisahygoIntegrationContext $context, string $endpoint, array $payload = []): array
@@ -49,7 +49,7 @@ class SisahygoApiClient
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      * @return array<string, mixed>
      */
     private function send(string $method, SisahygoIntegrationContext $context, string $endpoint, array $data, bool $allowRetry): array
@@ -72,6 +72,7 @@ class SisahygoApiClient
                 if ($this->shouldRetryResponse($method, $response) && $attempt < $attempts) {
                     $retryCount++;
                     usleep($this->configuration->retrySleepMs * 1000);
+
                     continue;
                 }
 
@@ -87,6 +88,7 @@ class SisahygoApiClient
                 if ($allowRetry && $attempt < $attempts) {
                     $retryCount++;
                     usleep($this->configuration->retrySleepMs * 1000);
+
                     continue;
                 }
             } catch (SisahygoApiException $exception) {
@@ -138,11 +140,14 @@ class SisahygoApiClient
             return;
         }
 
+        $error = is_array($payload['error'] ?? null) ? $payload['error'] : $payload;
+
         $safe = array_merge($context->safeLogContext(), [
             'endpoint' => $endpoint,
-            'api_error_code' => $payload['code'] ?? null,
-            'api_error_message' => $payload['message'] ?? null,
-            'validation_errors' => $payload['errors'] ?? null,
+            'api_error_code' => $error['code'] ?? null,
+            'api_error_message' => $error['message'] ?? null,
+            'validation_errors' => $error['details'] ?? $payload['errors'] ?? null,
+            'correlation_id' => $error['correlation_id'] ?? $context->correlationId,
         ]);
 
         throw match ($response->status()) {
