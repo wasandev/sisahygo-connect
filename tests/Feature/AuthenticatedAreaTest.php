@@ -59,10 +59,10 @@ class AuthenticatedAreaTest extends TestCase
     {
         return [
             'dashboard' => ['dashboard', 'หน้าหลัก'],
-            'order checking' => ['order-checking', 'ตรวจสอบรายการส่งสินค้า'],
+            'order checking' => ['order-checking', 'สร้างรายการส่งสินค้า'],
             'shipments' => ['shipments', 'การขนส่ง'],
             'tracking' => ['tracking', 'ติดตามสถานะสินค้า'],
-            'history' => ['history', 'ประวัติการขนส่ง'],
+            'history' => ['history', 'ประวัติรายการ'],
             'payments' => ['payments', 'การชำระเงิน'],
             'reports' => ['reports', 'รายงาน'],
             'settings' => ['settings', 'ตั้งค่า'],

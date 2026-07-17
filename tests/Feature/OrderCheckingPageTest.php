@@ -31,7 +31,7 @@ class OrderCheckingPageTest extends TestCase
         $this->actingAs($user)
             ->get(route('order-checking'))
             ->assertOk()
-            ->assertSee('ตรวจสอบรายการส่งสินค้า')
+            ->assertSee('สร้างรายการส่งสินค้า')
             ->assertSee('1. ผู้รับสินค้า')
             ->assertSee('2. รายการสินค้า')
             ->assertSee('3. หมายเหตุและเลขอ้างอิง')
@@ -51,7 +51,7 @@ class OrderCheckingPageTest extends TestCase
         $this->actingAs($user)
             ->get(route('order-checking'))
             ->assertOk()
-            ->assertSee('ยังไม่พร้อมสร้างรายการตรวจรับ')
+            ->assertSee('ยังไม่พร้อมสร้างรายการส่งสินค้า')
             ->assertSee('ยังไม่มีสิทธิ์ส่งสินค้า');
     }
 

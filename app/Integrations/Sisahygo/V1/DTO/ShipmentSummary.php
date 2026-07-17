@@ -8,6 +8,9 @@ use Carbon\CarbonImmutable;
 
 final readonly class ShipmentSummary
 {
+    /**
+     * @param  array<int, ShipmentItem>  $items
+     */
     public function __construct(
         public string $trackingNo,
         public ?int $id,
@@ -25,5 +28,6 @@ final readonly class ShipmentSummary
         public ?string $destinationBranchName,
         public ?string $senderName,
         public ?string $receiverName,
+        public array $items = [],
     ) {}
 }

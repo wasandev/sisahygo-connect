@@ -20,6 +20,7 @@ return [
         'open_order_checking' => 'Open Order Checking',
         'view_shipments' => 'View Shipments',
         'view_tracking' => 'View Tracking',
+        'view_history' => 'View History',
         'current_status' => 'Current status',
         'authentication' => 'Authentication',
         'dashboard' => 'Dashboard',

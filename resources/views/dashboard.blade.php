@@ -24,6 +24,7 @@
                         <x-connect.button :href="route('order-checking')" wire:navigate>{{ __('page.dashboard.open_order_checking') }}</x-connect.button>
                         <x-connect.button :href="route('shipments')" wire:navigate variant="secondary">{{ __('page.dashboard.view_shipments') }}</x-connect.button>
                         <x-connect.button :href="route('tracking')" wire:navigate variant="secondary">{{ __('page.dashboard.view_tracking') }}</x-connect.button>
+                        <x-connect.button :href="route('history')" wire:navigate variant="secondary">{{ __('page.dashboard.view_history') }}</x-connect.button>
                     </div>
                 </div>
 

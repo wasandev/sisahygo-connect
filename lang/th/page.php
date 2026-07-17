@@ -20,6 +20,7 @@ return [
         'open_order_checking' => 'เปิดตรวจสอบรายการส่งสินค้า',
         'view_shipments' => 'ดูรายการขนส่ง',
         'view_tracking' => 'ดูการติดตาม',
+        'view_history' => 'ดูประวัติรายการ',
         'current_status' => 'สถานะปัจจุบัน',
         'authentication' => 'การยืนยันตัวตน',
         'dashboard' => 'หน้าหลัก',

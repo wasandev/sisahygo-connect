@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ClientAccountSelectionController;
 use App\Livewire\Actions\Logout;
+use App\Livewire\History\OrderHistory;
 use App\Livewire\OrderChecking;
 use App\Livewire\Shipments\ShipmentIndex;
 use App\Livewire\Shipments\ShipmentShow;
@@ -60,10 +61,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/tracking', TrackingLookup::class)
             ->name('tracking');
 
-        Route::view('/history', 'pages.placeholder', [
-            'title' => __('navigation.history'),
-            'description' => __('page.placeholder.history'),
-        ])->name('history');
+        Route::get('/history', OrderHistory::class)
+            ->name('history');
 
         Route::view('/payments', 'pages.placeholder', [
             'title' => __('navigation.payments'),

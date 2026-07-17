@@ -41,6 +41,7 @@ class ShipmentMapper
             destinationBranchName: $this->nullableString($data['branch_rec'] ?? data_get($data, 'branch_rec.name') ?? data_get($data, 'to_branch.name')),
             senderName: $this->nullableString($data['customer'] ?? data_get($data, 'sender.name')),
             receiverName: $this->nullableString($data['customer_rec'] ?? data_get($data, 'receiver.name') ?? data_get($data, 'customer_rec.name')),
+            items: array_map(fn (array $item) => $this->item($item), is_array($data['items'] ?? null) ? $data['items'] : []),
         );
     }
 

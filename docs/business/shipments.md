@@ -57,3 +57,8 @@ Receiver-side shipment visibility ยังไม่ถูก claim ใน Sprin
 - direct shipment mutation
 - local shipment cache table
 - notification/polling workflow
+
+
+## Sprint 2C History
+
+หน้า `/history` ใช้ shipment list contract เดียวกันกับ `/shipments` ผ่าน `ListOrderHistory` และ `ShipmentQueryService` ไม่สร้าง HTTP integration ใหม่ และไม่อ่านฐานข้อมูล Core โดยตรง

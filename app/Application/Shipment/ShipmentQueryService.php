@@ -115,6 +115,7 @@ class ShipmentQueryService
             'destination_branch_name' => $shipment->destinationBranchName,
             'sender_name' => $shipment->senderName,
             'receiver_name' => $shipment->receiverName,
+            'items' => array_map(fn (ShipmentItem $item): array => $this->itemToArray($item), $shipment->items),
         ];
     }
 
@@ -124,20 +125,7 @@ class ShipmentQueryService
         return [
             'summary' => $this->summaryToArray($detail->summary),
             'remark' => $detail->remark,
-            'items' => array_map(fn (ShipmentItem $item): array => [
-                'id' => $item->id,
-                'product_id' => $item->productId,
-                'product_name' => $item->productName,
-                'unit_id' => $item->unitId,
-                'unit_name' => $item->unitName,
-                'price' => $item->price,
-                'amount' => $item->amount,
-                'line_amount' => $item->lineAmount,
-                'remark' => $item->remark,
-                'client_line_id' => $item->clientLineId,
-                'client_item_no' => $item->clientItemNo,
-                'client_product_code' => $item->clientProductCode,
-            ], $detail->items),
+            'items' => array_map(fn (ShipmentItem $item): array => $this->itemToArray($item), $detail->items),
             'timeline' => array_map(fn (ShipmentStatus $status): array => [
                 'status' => $status->status,
                 'label' => ShipmentStatusLabels::label($status->status),
@@ -148,6 +136,25 @@ class ShipmentQueryService
                 'branch_name' => $status->branchName,
                 'actor' => $status->actor,
             ], $detail->statusHistory),
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private function itemToArray(ShipmentItem $item): array
+    {
+        return [
+            'id' => $item->id,
+            'product_id' => $item->productId,
+            'product_name' => $item->productName,
+            'unit_id' => $item->unitId,
+            'unit_name' => $item->unitName,
+            'price' => $item->price,
+            'amount' => $item->amount,
+            'line_amount' => $item->lineAmount,
+            'remark' => $item->remark,
+            'client_line_id' => $item->clientLineId,
+            'client_item_no' => $item->clientItemNo,
+            'client_product_code' => $item->clientProductCode,
         ];
     }
 
