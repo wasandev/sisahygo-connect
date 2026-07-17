@@ -18,6 +18,7 @@ return [
         'workspace_overview' => 'Workspace overview',
         'ready_message' => 'Sisahygo Connect is ready for authenticated workflows. Dashboard is active now, while the remaining modules are prepared as safe placeholders until the external Sisahygo API integration begins.',
         'open_order_checking' => 'Open Order Checking',
+        'view_shipments' => 'View Shipments',
         'view_tracking' => 'View Tracking',
         'current_status' => 'Current status',
         'authentication' => 'Authentication',

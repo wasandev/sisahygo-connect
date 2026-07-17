@@ -198,13 +198,26 @@ class SisahygoHttpClientTest extends TestCase
         $context = $this->context();
         Http::fake(['*' => Http::response($this->fixture('shipments-index-success.json'))]);
 
-        $shipments = app(ShipmentsEndpoint::class)->list($context);
+        $result = app(ShipmentsEndpoint::class)->list($context, [
+            'from_date' => '2026-07-01',
+            'sender_customer_ids' => [10001],
+            'receiver_customer_ids' => [20001],
+            'page' => 1,
+        ]);
+        $shipments = $result->items;
 
         $this->assertCount(2, $shipments);
         $this->assertSame('SH10001', $shipments[0]->trackingNo);
         $this->assertSame('H', $shipments[0]->paymentType->value);
         $this->assertSame(0, $shipments[0]->paymentStatus->value);
         $this->assertSame(20002, $shipments[1]->receiverCustomerId);
+        $this->assertSame(1, $result->meta->currentPage);
+        $this->assertSame(15, $result->meta->perPage);
+        $this->assertSame(2, $result->meta->total);
+        Http::assertSent(fn ($request) => str_contains($request->url(), 'from_date=2026-07-01')
+            && str_contains($request->url(), 'page=1')
+            && ! str_contains($request->url(), 'sender_customer_ids')
+            && ! str_contains($request->url(), 'receiver_customer_ids'));
     }
 
     public function test_shipment_detail_maps_items_and_status_history(): void
@@ -215,7 +228,7 @@ class SisahygoHttpClientTest extends TestCase
         $detail = app(ShipmentsEndpoint::class)->detail($context, 'SH10001');
 
         $this->assertSame('SH10001', $detail->summary->trackingNo);
-        $this->assertSame('Fake parcel', $detail->items[0]->name);
+        $this->assertSame('Fake parcel', $detail->items[0]->productName);
         $this->assertSame('picked_up', $detail->statusHistory[0]->status);
     }
 

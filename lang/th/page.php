@@ -18,6 +18,7 @@ return [
         'workspace_overview' => 'ภาพรวมพื้นที่ทำงาน',
         'ready_message' => 'Sisahygo Connect พร้อมสำหรับ workflow ที่ผ่านการยืนยันตัวตนแล้ว ขณะนี้หน้าหลักใช้งานได้ และโมดูลอื่นถูกเตรียมเป็น placeholder ที่ปลอดภัยจนกว่าจะเริ่มเชื่อมต่อ Sisahygo API',
         'open_order_checking' => 'เปิดตรวจสอบรายการส่งสินค้า',
+        'view_shipments' => 'ดูรายการขนส่ง',
         'view_tracking' => 'ดูการติดตาม',
         'current_status' => 'สถานะปัจจุบัน',
         'authentication' => 'การยืนยันตัวตน',

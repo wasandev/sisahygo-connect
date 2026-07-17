@@ -3,6 +3,9 @@
 use App\Http\Controllers\ClientAccountSelectionController;
 use App\Livewire\Actions\Logout;
 use App\Livewire\OrderChecking;
+use App\Livewire\Shipments\ShipmentIndex;
+use App\Livewire\Shipments\ShipmentShow;
+use App\Livewire\Shipments\TrackingLookup;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -49,15 +52,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/order-checking', OrderChecking::class)
             ->name('order-checking');
 
-        Route::view('/shipments', 'pages.placeholder', [
-            'title' => __('navigation.shipments'),
-            'description' => __('page.placeholder.shipments'),
-        ])->name('shipments');
+        Route::get('/shipments', ShipmentIndex::class)
+            ->name('shipments');
+        Route::get('/shipments/{trackingIdentifier}', ShipmentShow::class)
+            ->name('shipments.show');
 
-        Route::view('/tracking', 'pages.placeholder', [
-            'title' => __('navigation.tracking'),
-            'description' => __('page.placeholder.tracking'),
-        ])->name('tracking');
+        Route::get('/tracking', TrackingLookup::class)
+            ->name('tracking');
 
         Route::view('/history', 'pages.placeholder', [
             'title' => __('navigation.history'),
