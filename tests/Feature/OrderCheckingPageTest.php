@@ -8,6 +8,7 @@ use App\Domain\ClientAccount\Models\ClientAccount;
 use App\Domain\ClientAccount\Models\ClientAccountCapability;
 use App\Domain\ClientAccount\Models\ClientAccountCustomer;
 use App\Domain\ClientAccount\Models\ClientAccountUser;
+use App\Domain\ClientAccount\Services\CurrentClientAccountResolver;
 use App\Domain\Sisahygo\Enums\SisahygoApiEnvironment;
 use App\Domain\Sisahygo\Services\SisahygoApiCredentialService;
 use App\Livewire\OrderChecking;
@@ -52,6 +53,32 @@ class OrderCheckingPageTest extends TestCase
             ->assertOk()
             ->assertSee('ยังไม่พร้อมสร้างรายการตรวจรับ')
             ->assertSee('ยังไม่มีสิทธิ์ส่งสินค้า');
+    }
+
+    public function test_receiver_search_uses_selected_active_account_from_session(): void
+    {
+        [$user, $account] = $this->eligibleAccount();
+        $this->actingAs($user);
+        $this->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id]);
+        $this->fakeReferenceData();
+
+        Livewire::test(OrderChecking::class)
+            ->set('receiverSearch', 'รับ')
+            ->assertSet('pageError', null)
+            ->assertSet('receiverResults.0.customer_id', 20001);
+    }
+
+    public function test_product_search_uses_selected_active_account_from_session(): void
+    {
+        [$user, $account] = $this->eligibleAccount();
+        $this->actingAs($user);
+        $this->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id]);
+        $this->fakeReferenceData();
+
+        Livewire::test(OrderChecking::class)
+            ->set('productSearch', 'น้ำ')
+            ->assertSet('pageError', null)
+            ->assertSet('productResults.0.product_id', 6639);
     }
 
     public function test_receiver_and_product_search_add_item_with_stable_row_keys(): void

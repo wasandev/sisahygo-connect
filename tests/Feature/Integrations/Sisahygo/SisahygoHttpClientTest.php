@@ -18,6 +18,7 @@ use App\Integrations\Sisahygo\Exceptions\SisahygoRateLimitException;
 use App\Integrations\Sisahygo\Exceptions\SisahygoServerException;
 use App\Integrations\Sisahygo\Exceptions\SisahygoUnexpectedResponseException;
 use App\Integrations\Sisahygo\Exceptions\SisahygoValidationException;
+use App\Integrations\Sisahygo\Logging\SisahygoApiLogger;
 use App\Integrations\Sisahygo\Support\SisahygoIntegrationContext;
 use App\Integrations\Sisahygo\Support\SisahygoIntegrationContextBuilder;
 use App\Integrations\Sisahygo\V1\Endpoints\ReceiversEndpoint;
@@ -29,6 +30,7 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
+use Throwable;
 
 class SisahygoHttpClientTest extends TestCase
 {
@@ -92,6 +94,72 @@ class SisahygoHttpClientTest extends TestCase
         app(SisahygoApiClient::class)->get($context, '/receivers');
     }
 
+    public function test_successful_response_logs_actual_http_status(): void
+    {
+        $logs = $this->captureApiLogs();
+        $context = $this->context();
+        Http::fake(['*' => Http::response($this->fixture('receivers-success.json'), 200)]);
+
+        app(ReceiversEndpoint::class)->list($context);
+
+        $this->assertSame(200, $logs->records[0]['status']);
+        $this->assertTrue($logs->records[0]['success']);
+    }
+
+    public function test_forbidden_response_logs_actual_http_status(): void
+    {
+        $logs = $this->captureApiLogs();
+        $context = $this->context();
+        Http::fake(['*' => Http::response($this->fixture('forbidden.json'), 403)]);
+
+        try {
+            app(SisahygoApiClient::class)->get($context, '/receivers');
+            $this->fail('Expected SisahygoAuthorizationException was not thrown.');
+        } catch (SisahygoAuthorizationException) {
+            // Expected path.
+        }
+
+        $this->assertSame(403, $logs->records[0]['status']);
+        $this->assertFalse($logs->records[0]['success']);
+        $this->assertSame(SisahygoAuthorizationException::class, $logs->records[0]['exception']::class);
+    }
+
+    public function test_unauthorized_response_logs_actual_http_status(): void
+    {
+        $logs = $this->captureApiLogs();
+        $context = $this->context();
+        Http::fake(['*' => Http::response($this->fixture('unauthorized.json'), 401)]);
+
+        try {
+            app(SisahygoApiClient::class)->get($context, '/receivers');
+            $this->fail('Expected SisahygoAuthenticationException was not thrown.');
+        } catch (SisahygoAuthenticationException) {
+            // Expected path.
+        }
+
+        $this->assertSame(401, $logs->records[0]['status']);
+        $this->assertFalse($logs->records[0]['success']);
+        $this->assertSame(SisahygoAuthenticationException::class, $logs->records[0]['exception']::class);
+    }
+
+    public function test_connection_failure_logs_null_http_status(): void
+    {
+        $logs = $this->captureApiLogs();
+        $context = $this->context();
+        Http::fake(fn () => throw new ConnectionException('timed out'));
+
+        try {
+            app(SisahygoApiClient::class)->get($context, '/receivers');
+            $this->fail('Expected SisahygoConnectionException was not thrown.');
+        } catch (SisahygoConnectionException) {
+            // Expected path.
+        }
+
+        $this->assertNull($logs->records[0]['status']);
+        $this->assertFalse($logs->records[0]['success']);
+        $this->assertSame(SisahygoConnectionException::class, $logs->records[0]['exception']::class);
+    }
+
     #[DataProvider('errorProvider')]
     public function test_status_errors_map_to_specific_exceptions(string $fixture, int $status, string $exception): void
     {
@@ -149,6 +217,36 @@ class SisahygoHttpClientTest extends TestCase
         $this->assertSame('SH10001', $detail->summary->trackingNo);
         $this->assertSame('Fake parcel', $detail->items[0]->name);
         $this->assertSame('picked_up', $detail->statusHistory[0]->status);
+    }
+
+    private function captureApiLogs(): object
+    {
+        $logs = new class
+        {
+            public array $records = [];
+        };
+
+        $this->instance(SisahygoApiLogger::class, new class($logs) extends SisahygoApiLogger
+        {
+            public function __construct(private readonly object $logs) {}
+
+            public function record(SisahygoIntegrationContext $context, string $endpoint, string $method, ?int $status, int $durationMs, int $retryCount, bool $success, ?Throwable $exception = null, array $extra = []): void
+            {
+                $this->logs->records[] = [
+                    'context' => $context,
+                    'endpoint' => $endpoint,
+                    'method' => $method,
+                    'status' => $status,
+                    'duration_ms' => $durationMs,
+                    'retry_count' => $retryCount,
+                    'success' => $success,
+                    'exception' => $exception,
+                    'extra' => $extra,
+                ];
+            }
+        });
+
+        return $logs;
     }
 
     private function context(): SisahygoIntegrationContext

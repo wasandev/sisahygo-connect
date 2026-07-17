@@ -100,7 +100,9 @@ class SisahygoApiClient
             }
         }
 
-        $this->log($context, $endpoint, $method, null, $startedAt, $retryCount, false, $lastException);
+        $failureStatus = $lastException instanceof SisahygoApiException ? $lastException->status : null;
+
+        $this->log($context, $endpoint, $method, $failureStatus, $startedAt, $retryCount, false, $lastException);
 
         throw $lastException;
     }

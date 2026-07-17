@@ -48,10 +48,32 @@ class SisahygoIntegrationContextTest extends TestCase
         app(SisahygoIntegrationContextBuilder::class)->build($user, $account, ClientCapability::ShipmentView);
     }
 
+    public function test_active_account_passes_status_validation(): void
+    {
+        [$user, $account] = $this->accountWithCapability(ClientCapability::ShipmentView);
+        $account->update(['status' => ClientAccountStatus::Active]);
+        app(SisahygoApiCredentialService::class)->create($account, SisahygoApiEnvironment::Sandbox, 'Sandbox', 'secret-key');
+
+        $context = app(SisahygoIntegrationContextBuilder::class)->build($user, $account, ClientCapability::ShipmentView);
+
+        $this->assertSame($account->id, $context->clientAccountId);
+    }
+
     public function test_inactive_account_or_membership_is_rejected(): void
     {
         [$user, $account] = $this->accountWithCapability(ClientCapability::ShipmentView);
         $account->update(['status' => ClientAccountStatus::Suspended]);
+        app(SisahygoApiCredentialService::class)->create($account, SisahygoApiEnvironment::Sandbox, 'Sandbox', 'secret-key');
+
+        $this->expectException(AuthorizationException::class);
+
+        app(SisahygoIntegrationContextBuilder::class)->build($user, $account, ClientCapability::ShipmentView);
+    }
+
+    public function test_archived_account_is_rejected(): void
+    {
+        [$user, $account] = $this->accountWithCapability(ClientCapability::ShipmentView);
+        $account->update(['status' => ClientAccountStatus::Archived]);
         app(SisahygoApiCredentialService::class)->create($account, SisahygoApiEnvironment::Sandbox, 'Sandbox', 'secret-key');
 
         $this->expectException(AuthorizationException::class);

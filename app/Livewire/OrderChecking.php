@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Application\OrderChecking\SubmitSingleOrderChecking;
 use App\Domain\ClientAccount\Models\ClientAccount;
+use App\Domain\ClientAccount\Services\CurrentClientAccountResolver;
 use App\Integrations\Sisahygo\Exceptions\SisahygoApiException;
 use App\Integrations\Sisahygo\Exceptions\SisahygoAuthenticationException;
 use App\Integrations\Sisahygo\Exceptions\SisahygoAuthorizationException;
@@ -267,6 +268,21 @@ class OrderChecking extends Component
 
     private function currentClientAccount(): ClientAccount
     {
+        if (app()->bound(ClientAccount::class)) {
+            return app(ClientAccount::class);
+        }
+
+        $clientAccount = app(CurrentClientAccountResolver::class)->resolve(
+            auth()->user(),
+            session()->get(CurrentClientAccountResolver::SESSION_KEY),
+        )->clientAccount;
+
+        if ($clientAccount) {
+            app()->instance(ClientAccount::class, $clientAccount);
+
+            return $clientAccount;
+        }
+
         return app(ClientAccount::class);
     }
 
