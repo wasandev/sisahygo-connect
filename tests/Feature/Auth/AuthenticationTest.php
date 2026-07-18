@@ -59,13 +59,30 @@ class AuthenticationTest extends TestCase
 
     public function test_navigation_menu_can_be_rendered(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['name' => 'Navigation User']);
         $this->createClientAccountFor($user);
 
         $this->actingAs($user)
             ->get('/dashboard')
             ->assertOk()
-            ->assertSeeVolt('layout.navigation');
+            ->assertSeeVolt('layout.navigation')
+            ->assertSee('SISAHYGO CONNECT')
+            ->assertSee('Customer Portal')
+            ->assertSee('หน้าหลัก')
+            ->assertSee('สร้างรายการส่งสินค้า')
+            ->assertSee('การขนส่ง')
+            ->assertSee('ติดตามสถานะสินค้า')
+            ->assertSee('ประวัติรายการ')
+            ->assertSee('การชำระเงิน')
+            ->assertSee('รายงาน')
+            ->assertSee('ตั้งค่า')
+            ->assertSee('ABC Company')
+            ->assertSee('Navigation User')
+            ->assertSee(__('navigation.open_navigation'))
+            ->assertSee(__('navigation.close_navigation'))
+            ->assertSee(__('navigation.notifications'))
+            ->assertSee(__('navigation.profile'))
+            ->assertSee(__('navigation.logout'));
     }
 
     public function test_users_can_logout(): void

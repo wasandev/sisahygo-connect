@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ClientAccountSelectionController;
 use App\Livewire\Actions\Logout;
+use App\Livewire\Dashboard\CustomerDashboard;
 use App\Livewire\History\OrderHistory;
 use App\Livewire\OrderChecking;
 use App\Livewire\Shipments\ShipmentIndex;
@@ -47,7 +48,7 @@ Route::middleware(['auth'])->group(function () {
             Route::view('/profile', 'ux.profile')->name('profile');
             Route::view('/notifications', 'ux.notifications')->name('notifications');
         });
-        Route::view('/dashboard', 'dashboard')
+        Route::get('/dashboard', CustomerDashboard::class)
             ->name('dashboard');
 
         Route::get('/order-checking', OrderChecking::class)

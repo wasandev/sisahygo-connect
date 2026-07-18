@@ -3,14 +3,14 @@
 @endphp
 
 <div class="space-y-6">
-    <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div class="min-w-0">
-            <p class="text-sm font-semibold text-connect-blue-700">{{ __('order_checking.eyebrow') }}</p>
-            <h2 class="mt-2 text-2xl font-semibold text-connect-navy-900 sm:text-3xl">{{ __('order_checking.title') }}</h2>
-            <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-600">{{ __('order_checking.description') }}</p>
+            <p class="text-xs font-semibold uppercase text-connect-blue-700">{{ __('order_checking.eyebrow') }}</p>
+            <h1 class="mt-0.5 text-xl font-bold text-connect-navy-900 sm:text-2xl">{{ __('order_checking.title') }}</h1>
+            <p class="mt-1 max-w-3xl text-sm leading-6 text-slate-600">{{ __('order_checking.description') }}</p>
         </div>
 
-        <div class="rounded-lg border border-connect-blue-100 bg-connect-blue-50 px-4 py-3 text-sm text-connect-navy-900">
+        <div class="rounded-lg border border-connect-blue-100 bg-connect-blue-50 px-3 py-2 text-sm text-connect-navy-900">
             <p class="font-semibold">{{ __('order_checking.environment.title') }}</p>
             <p class="mt-1">{{ __('order_checking.environment.body') }}</p>
         </div>

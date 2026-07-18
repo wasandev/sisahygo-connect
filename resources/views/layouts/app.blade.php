@@ -21,8 +21,8 @@
         <div class="min-h-screen bg-slate-50 text-slate-900">
             <livewire:layout.navigation :title="$title" />
 
-            <main class="min-h-screen pt-20 lg:pl-72">
-                <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+            <main class="min-h-screen pt-14 lg:pl-64">
+                <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
                     {{ $slot }}
                 </div>
             </main>
