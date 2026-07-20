@@ -70,10 +70,9 @@
             </form>
         </x-connect.card>
 
-        <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
-            <div class="space-y-4">
-                <x-connect.card :title="__('history.results.title')" padding="none">
-                    <div wire:loading.delay wire:target="search,refresh,clearFilters,nextPage,previousPage,selectDatePreset" class="border-b border-slate-100 px-5 py-3 text-sm text-connect-blue-700">
+        <div class="space-y-4">
+            <x-connect.card :title="__('history.results.title')" padding="none">
+                <div wire:loading.delay wire:target="search,refresh,clearFilters,nextPage,previousPage,selectDatePreset" class="border-b border-slate-100 px-5 py-3 text-sm text-connect-blue-700">
                         {{ __('history.loading') }}
                     </div>
 
@@ -82,37 +81,41 @@
                             <x-connect.empty-state :title="__('history.empty.title')" :description="__('history.empty.description')" />
                         </div>
                     @else
-                        <div class="hidden overflow-x-auto lg:block">
-                            <table class="min-w-full divide-y divide-slate-100 text-sm">
-                                <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                                    <tr>
-                                        <th scope="col" class="px-5 py-3">{{ __('history.fields.order') }}</th>
-                                        <th scope="col" class="px-5 py-3">{{ __('history.fields.date') }}</th>
-                                        <th scope="col" class="px-5 py-3">{{ __('history.fields.receiver') }}</th>
-                                        <th scope="col" class="px-5 py-3">{{ __('history.fields.destination') }}</th>
-                                        <th scope="col" class="px-5 py-3">{{ __('history.fields.status') }}</th>
-                                        <th scope="col" class="px-5 py-3 text-right">{{ __('history.fields.action') }}</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-slate-100 bg-white">
-                                    @foreach ($historyItems as $item)
-                                        <tr wire:key="history-row-{{ $item['tracking_no'] }}">
-                                            <td class="px-5 py-4">
-                                                <a href="{{ route('shipments.show', $item['tracking_no']) }}" wire:navigate class="connect-focus break-all font-semibold text-connect-blue-700 hover:text-connect-blue-900">{{ $item['order_header_no'] ?: $item['tracking_no'] }}</a>
-                                                <p class="mt-1 break-all text-xs text-slate-500">{{ __('history.fields.tracking_no') }}: {{ $item['tracking_no'] }}</p>
-                                                @if ($item['client_reference_no'])
-                                                    <p class="mt-0.5 break-all text-xs text-slate-500">{{ __('history.fields.client_reference_no') }}: {{ $item['client_reference_no'] }}</p>
-                                                @endif
-                                            </td>
-                                            <td class="px-5 py-4 text-slate-600">{{ $item['order_header_date'] ?: '-' }}</td>
-                                            <td class="max-w-xs px-5 py-4"><span class="break-words text-slate-700">{{ $item['receiver_name'] ?: '-' }}</span></td>
-                                            <td class="max-w-xs px-5 py-4"><span class="break-words text-slate-700">{{ $item['destination_branch_name'] ?: '-' }}</span></td>
-                                            <td class="px-5 py-4"><x-connect.badge :variant="$item['order_status_variant']">{{ $item['order_status_label'] }}</x-connect.badge></td>
-                                            <td class="px-5 py-4 text-right"><x-connect.button size="sm" :href="route('shipments.show', $item['tracking_no'])" wire:navigate>{{ __('history.actions.view_detail') }}</x-connect.button></td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+                        <div class="hidden bg-white lg:block">
+                            <div class="grid grid-cols-[minmax(13rem,1.15fr)_minmax(9rem,0.85fr)_minmax(9rem,0.85fr)_7rem_7rem_auto] gap-3 border-b border-slate-100 bg-slate-50 px-4 py-3 text-xs font-semibold uppercase text-slate-500">
+                                <span>{{ __('history.fields.order') }}</span>
+                                <span>{{ __('history.fields.receiver') }}</span>
+                                <span>{{ __('history.fields.destination') }}</span>
+                                <span>{{ __('history.fields.date') }}</span>
+                                <span>{{ __('history.fields.status') }}</span>
+                                <span class="text-right">{{ __('history.fields.action') }}</span>
+                            </div>
+
+                            <div class="divide-y divide-slate-100">
+                                @foreach ($historyItems as $item)
+                                    @php
+                                        $trackingNo = data_get($item, 'tracking_no');
+                                        $displayNo = data_get($item, 'order_header_no') ?: $trackingNo;
+                                        $statusVariant = data_get($item, 'order_status_variant', 'neutral');
+                                        $statusLabel = data_get($item, 'order_status_label', '-');
+                                    @endphp
+
+                                    <article wire:key="history-row-{{ $trackingNo ?? $loop->index }}" class="grid grid-cols-[minmax(13rem,1.15fr)_minmax(9rem,0.85fr)_minmax(9rem,0.85fr)_7rem_7rem_auto] items-center gap-3 px-4 py-3 text-sm transition hover:bg-slate-50">
+                                        <div class="min-w-0">
+                                            <a href="{{ route('shipments.show', $trackingNo) }}" wire:navigate class="connect-focus break-all font-semibold text-connect-blue-700 hover:text-connect-blue-900">{{ $displayNo ?: '-' }}</a>
+                                            <p class="mt-1 break-all text-xs font-medium text-slate-500">{{ __('history.fields.tracking_no') }}: {{ $trackingNo ?: '-' }}</p>
+                                            @if (data_get($item, 'client_reference_no'))
+                                                <p class="mt-0.5 break-all text-xs text-slate-500">{{ __('history.fields.client_reference_no') }}: {{ data_get($item, 'client_reference_no') }}</p>
+                                            @endif
+                                        </div>
+                                        <p class="min-w-0 break-words text-slate-700">{{ data_get($item, 'receiver_name') ?: '-' }}</p>
+                                        <p class="min-w-0 break-words text-slate-700">{{ data_get($item, 'destination_branch_name') ?: '-' }}</p>
+                                        <p class="text-slate-600">{{ data_get($item, 'order_header_date') ?: '-' }}</p>
+                                        <div><x-connect.badge :variant="$statusVariant">{{ $statusLabel }}</x-connect.badge></div>
+                                        <div class="text-right"><x-connect.button size="sm" :href="route('shipments.show', $trackingNo)" wire:navigate>{{ __('history.actions.view_detail') }}</x-connect.button></div>
+                                    </article>
+                                @endforeach
+                            </div>
                         </div>
 
                         <div class="divide-y divide-slate-100 lg:hidden">
@@ -148,34 +151,39 @@
                             </div>
                         </div>
                     @endif
-                </x-connect.card>
-            </div>
+            </x-connect.card>
 
-            <aside class="space-y-4">
-                <x-connect.card :title="__('history.recent_receivers.title')" :description="__('history.recent_receivers.description')">
-                    @forelse ($recentReceivers as $receiver)
-                        <div wire:key="recent-receiver-{{ $receiver['receiver_customer_id'] ?? md5($receiver['name']) }}" class="border-b border-slate-100 py-3 first:pt-0 last:border-b-0 last:pb-0">
-                            <p class="break-words text-sm font-semibold text-connect-navy-900">{{ $receiver['name'] }}</p>
-                            <p class="mt-1 text-xs text-slate-500">{{ __('history.recent_receivers.latest', ['date' => $receiver['latest_order_date'] ?: '-']) }}</p>
-                            <p class="mt-1 text-xs text-slate-500">{{ trans_choice('history.recent_receivers.count', $receiver['count'], ['count' => $receiver['count']]) }}</p>
-                        </div>
-                    @empty
-                        <p class="text-sm text-slate-500">{{ __('history.recent_receivers.empty') }}</p>
-                    @endforelse
-                </x-connect.card>
+            <x-connect.card :title="__('history.recent_receivers.title')" :description="__('history.recent_receivers.description')" padding="none">
+                <div class="grid gap-2 p-3 sm:grid-cols-2 xl:grid-cols-3">
+                        @forelse ($recentReceivers as $receiver)
+                            <div wire:key="recent-receiver-{{ data_get($receiver, 'receiver_customer_id') ?? md5(data_get($receiver, 'name', '')) }}" class="rounded-md border border-slate-100 bg-slate-50 px-3 py-2">
+                                <p class="break-words text-sm font-semibold leading-5 text-connect-navy-900">{{ data_get($receiver, 'name') }}</p>
+                                <div class="mt-1 flex flex-wrap gap-x-2 gap-y-0.5 text-xs text-slate-500">
+                                    <span>{{ __('history.recent_receivers.latest', ['date' => data_get($receiver, 'latest_order_date') ?: '-']) }}</span>
+                                    <span>{{ trans_choice('history.recent_receivers.count', data_get($receiver, 'count', 0), ['count' => data_get($receiver, 'count', 0)]) }}</span>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="text-sm text-slate-500 sm:col-span-2 xl:col-span-3">{{ __('history.recent_receivers.empty') }}</p>
+                        @endforelse
+                    </div>
+            </x-connect.card>
 
-                <x-connect.card :title="__('history.recent_products.title')" :description="__('history.recent_products.description')">
+            <x-connect.card :title="__('history.recent_products.title')" :description="__('history.recent_products.description')" padding="none">
+                <div class="grid gap-2 p-3 sm:grid-cols-2 xl:grid-cols-3">
                     @forelse ($recentProducts as $product)
-                        <div wire:key="recent-product-{{ $product['product_id'] ?? md5($product['product_name'].$product['unit_name']) }}" class="border-b border-slate-100 py-3 first:pt-0 last:border-b-0 last:pb-0">
-                            <p class="break-words text-sm font-semibold text-connect-navy-900">{{ $product['product_name'] }}</p>
-                            <p class="mt-1 text-xs text-slate-500">{{ $product['unit_name'] ?: '-' }}</p>
-                            <p class="mt-1 text-xs text-slate-500">{{ trans_choice('history.recent_products.count', $product['count'], ['count' => $product['count']]) }}</p>
+                        <div wire:key="recent-product-{{ data_get($product, 'product_id') ?? md5(data_get($product, 'product_name', '').data_get($product, 'unit_name', '')) }}" class="rounded-md border border-slate-100 bg-slate-50 px-3 py-2">
+                            <p class="break-words text-sm font-semibold leading-5 text-connect-navy-900">{{ data_get($product, 'product_name') }}</p>
+                            <div class="mt-1 flex flex-wrap gap-x-2 gap-y-0.5 text-xs text-slate-500">
+                                <span>{{ data_get($product, 'unit_name') ?: '-' }}</span>
+                                <span>{{ trans_choice('history.recent_products.count', data_get($product, 'count', 0), ['count' => data_get($product, 'count', 0)]) }}</span>
+                            </div>
                         </div>
                     @empty
-                        <p class="text-sm text-slate-500">{{ __('history.recent_products.empty') }}</p>
+                        <p class="text-sm text-slate-500 sm:col-span-2 xl:col-span-3">{{ __('history.recent_products.empty') }}</p>
                     @endforelse
-                </x-connect.card>
-            </aside>
+                </div>
+            </x-connect.card>
         </div>
     @endif
 </div>

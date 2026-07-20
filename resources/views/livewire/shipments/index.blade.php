@@ -67,26 +67,55 @@
                     <x-connect.empty-state :title="__('shipments.empty.title')" :description="__('shipments.empty.description')" />
                 </div>
             @else
-                <div class="divide-y divide-slate-100">
+                <div class="space-y-3 bg-slate-50/70 p-3 sm:p-4">
                     @foreach ($shipments as $shipment)
-                        <article wire:key="shipment-{{ $shipment['tracking_no'] }}" class="p-5 transition hover:bg-slate-50 sm:p-6">
-                            <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                                <div class="min-w-0 space-y-2">
-                                    <div class="flex flex-wrap items-center gap-2">
-                                        <a href="{{ route('shipments.show', $shipment['tracking_no']) }}" wire:navigate class="connect-focus break-all text-base font-semibold text-connect-blue-700 hover:text-connect-blue-900">
-                                            {{ $shipment['order_header_no'] ?: $shipment['tracking_no'] }}
-                                        </a>
-                                        <x-connect.badge :variant="$shipment['order_status_variant']">{{ $shipment['order_status_label'] }}</x-connect.badge>
+                        @php
+                            $trackingNo = data_get($shipment, 'tracking_no');
+                            $displayNo = data_get($shipment, 'order_header_no') ?: $trackingNo;
+                            $statusVariant = data_get($shipment, 'order_status_variant', 'neutral');
+                            $statusLabel = data_get($shipment, 'order_status_label', '-');
+                        @endphp
+
+                        <article wire:key="shipment-{{ $trackingNo ?? $loop->index }}" class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition hover:border-connect-blue-200 hover:shadow-md sm:p-5">
+                            <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                        <div class="min-w-0">
+                                            <a href="{{ route('shipments.show', $trackingNo) }}" wire:navigate class="connect-focus break-all text-base font-semibold text-connect-blue-700 hover:text-connect-blue-900">
+                                                {{ $displayNo ?: '-' }}
+                                            </a>
+                                            <p class="mt-1 break-all text-xs font-medium text-slate-500">
+                                                {{ __('shipments.fields.tracking_no') }}: {{ $trackingNo ?: '-' }}
+                                            </p>
+                                        </div>
+
+                                        <div class="flex shrink-0 items-center gap-2">
+                                            <x-connect.badge :variant="$statusVariant">{{ $statusLabel }}</x-connect.badge>
+                                        </div>
                                     </div>
-                                    <dl class="grid gap-2 text-sm text-slate-600 sm:grid-cols-2 xl:grid-cols-4">
-                                        <div><dt class="text-xs text-slate-500">{{ __('shipments.fields.tracking_no') }}</dt><dd class="break-all font-medium text-connect-navy-900">{{ $shipment['tracking_no'] }}</dd></div>
-                                        <div><dt class="text-xs text-slate-500">{{ __('shipments.fields.date') }}</dt><dd>{{ $shipment['order_header_date'] ?: '-' }}</dd></div>
-                                        <div><dt class="text-xs text-slate-500">{{ __('shipments.fields.receiver') }}</dt><dd class="break-words">{{ $shipment['receiver_name'] ?: '-' }}</dd></div>
-                                        <div><dt class="text-xs text-slate-500">{{ __('shipments.fields.destination') }}</dt><dd class="break-words">{{ $shipment['destination_branch_name'] ?: '-' }}</dd></div>
+
+                                    <dl class="mt-4 grid gap-3 text-sm text-slate-600 sm:grid-cols-2 xl:grid-cols-4">
+                                        <div class="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
+                                            <dt class="text-xs font-medium text-slate-500">{{ __('shipments.fields.date') }}</dt>
+                                            <dd class="mt-1 font-semibold text-connect-navy-900">{{ data_get($shipment, 'order_header_date') ?: '-' }}</dd>
+                                        </div>
+                                        <div class="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 sm:col-span-2 xl:col-span-1">
+                                            <dt class="text-xs font-medium text-slate-500">{{ __('shipments.fields.receiver') }}</dt>
+                                            <dd class="mt-1 break-words font-semibold text-connect-navy-900">{{ data_get($shipment, 'receiver_name') ?: '-' }}</dd>
+                                        </div>
+                                        <div class="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 sm:col-span-2 xl:col-span-1">
+                                            <dt class="text-xs font-medium text-slate-500">{{ __('shipments.fields.destination') }}</dt>
+                                            <dd class="mt-1 break-words font-semibold text-connect-navy-900">{{ data_get($shipment, 'destination_branch_name') ?: '-' }}</dd>
+                                        </div>
+                                        <div class="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
+                                            <dt class="text-xs font-medium text-slate-500">{{ __('shipments.fields.order_header_no') }}</dt>
+                                            <dd class="mt-1 break-all font-semibold text-connect-navy-900">{{ data_get($shipment, 'order_header_no') ?: '-' }}</dd>
+                                        </div>
                                     </dl>
                                 </div>
-                                <div class="flex shrink-0 flex-col gap-2 sm:flex-row lg:flex-col lg:items-end">
-                                    <x-connect.button size="sm" :href="route('shipments.show', $shipment['tracking_no'])" wire:navigate>{{ __('shipments.actions.view_detail') }}</x-connect.button>
+
+                                <div class="flex shrink-0 sm:justify-end xl:self-stretch">
+                                    <x-connect.button size="sm" :href="route('shipments.show', $trackingNo)" wire:navigate class="w-full sm:w-auto xl:self-center">{{ __('shipments.actions.view_detail') }}</x-connect.button>
                                 </div>
                             </div>
                         </article>

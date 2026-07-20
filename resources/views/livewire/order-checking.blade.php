@@ -127,11 +127,15 @@
 
                     <div class="mt-5 space-y-3">
                         @foreach ($items as $index => $item)
-                            @php($rowKey = $item['row_key'])
+                            @php
+                                $rowKey = data_get($item, 'row_key', $index);
+                                $productName = data_get($item, 'product_name');
+                            @endphp
+
                             <div wire:key="item-row-{{ $rowKey }}" class="grid gap-3 rounded-lg border border-slate-200 p-4 lg:grid-cols-[minmax(0,1fr)_9rem_7rem_auto] lg:items-start">
                                 <div class="min-w-0">
                                     <label for="item-{{ $rowKey }}-product" class="text-xs font-semibold text-slate-500">{{ __('order_checking.items.product') }}</label>
-                                    <input id="item-{{ $rowKey }}-product" value="{{ $item['product_name'] ?: __('order_checking.items.product_empty') }}" class="mt-1 block min-h-11 w-full rounded-lg border-slate-300 bg-slate-50 text-sm shadow-sm" disabled>
+                                    <input id="item-{{ $rowKey }}-product" value="{{ filled($productName) ? $productName : __('order_checking.items.product_empty') }}" class="mt-1 block min-h-11 w-full rounded-lg border-slate-300 bg-slate-50 text-sm shadow-sm" disabled>
                                     @error("items.{$rowKey}.product_id") <p class="mt-1 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
                                 </div>
                                 <div>
@@ -139,7 +143,7 @@
                                     <select id="item-{{ $rowKey }}-unit" wire:model.blur="items.{{ $index }}.unit_id" class="connect-focus mt-1 block min-h-11 w-full rounded-lg border-slate-300 text-sm shadow-sm">
                                         <option value="">{{ __('order_checking.items.unit_placeholder') }}</option>
                                         @foreach ($units as $unit)
-                                            <option value="{{ $unit['unit_id'] }}">{{ $unit['unit_name'] }}</option>
+                                            <option value="{{ data_get($unit, 'unit_id') }}">{{ data_get($unit, 'unit_name', '-') }}</option>
                                         @endforeach
                                     </select>
                                     @error("items.{$rowKey}.unit_id") <p class="mt-1 text-xs font-medium text-red-600">{{ $message }}</p> @enderror
@@ -208,7 +212,7 @@
                     <div class="space-y-3">
                         @foreach ([
                             ['done' => (bool) $selectedReceiver, 'label' => __('order_checking.progress.receiver')],
-                            ['done' => collect($items)->contains(fn ($item) => filled($item['product_id'])), 'label' => __('order_checking.progress.items')],
+                            ['done' => collect($items)->contains(fn ($item) => filled(data_get($item, 'product_id'))), 'label' => __('order_checking.progress.items')],
                             ['done' => trim($clientReferenceNo) !== '', 'label' => __('order_checking.progress.reference')],
                             ['done' => $readyForReview, 'label' => __('order_checking.progress.review')],
                         ] as $step)

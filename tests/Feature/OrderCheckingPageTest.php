@@ -94,14 +94,24 @@ class OrderCheckingPageTest extends TestCase
             ->call('selectReceiver', 20001)
             ->assertSet('selectedReceiver.customer_id', 20001)
             ->set('productSearch', 'น้ำ')
-            ->assertSee('น้ำดื่ม 600 ml')
-            ->call('addProduct', 6639, 1)
-            ->assertSet('items.1.product_id', 6639);
+            ->assertSee('น้ำดื่ม 600 ml');
 
-        $firstRowKey = $component->get('items')[0]['row_key'];
+        $initialRowKey = $component->get('items')[0]['row_key'];
 
-        $component->call('removeItem', $firstRowKey)
-            ->assertSet('items.0.product_id', 6639);
+        $component->call('addProduct', 6639, 1)
+            ->assertSet('items.0.product_id', 6639)
+            ->assertSet('items.0.row_key', $initialRowKey);
+
+        $this->assertCount(1, $component->get('items'));
+
+        $component->call('addProduct', 7001, 3)
+            ->assertSet('items.1.product_id', 7001);
+
+        $secondRowKey = $component->get('items')[1]['row_key'];
+
+        $component->call('removeItem', $initialRowKey)
+            ->assertSet('items.0.product_id', 7001)
+            ->assertSet('items.0.row_key', $secondRowKey);
     }
 
     public function test_valid_submission_posts_once_and_shows_checking_success(): void

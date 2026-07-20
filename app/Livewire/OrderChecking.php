@@ -145,19 +145,31 @@ class OrderChecking extends Component
             return;
         }
 
-        $this->items[] = $this->blankItem([
+        $selectedItem = [
             'product_id' => (int) $product['product_id'],
             'product_name' => $product['product_name'],
             'unit_id' => (int) $product['unit_id'],
             'unit_name' => $product['unit_name'],
-        ]);
+        ];
+
+        $blankIndex = collect($this->items)->search(
+            fn (array $item): bool => blank(data_get($item, 'product_id'))
+        );
+
+        if ($blankIndex !== false) {
+            $this->items[$blankIndex] = array_merge($this->items[$blankIndex], $selectedItem);
+
+            return;
+        }
+
+        $this->items[] = $this->blankItem($selectedItem);
     }
 
     public function removeItem(string $rowKey): void
     {
         $this->items = array_values(array_filter(
             $this->items,
-            fn (array $item): bool => $item['row_key'] !== $rowKey
+            fn (array $item): bool => data_get($item, 'row_key') !== $rowKey
         ));
 
         if ($this->items === []) {
@@ -256,7 +268,15 @@ class OrderChecking extends Component
         return ! $this->unavailable
             && (bool) $this->selectedReceiver
             && trim($this->clientReferenceNo) !== ''
-            && collect($this->items)->contains(fn (array $item): bool => filled($item['product_id']) && filled($item['unit_id']) && (float) $item['amount'] >= 0.0001);
+            && collect($this->items)->contains(function ($item): bool {
+                if (! is_array($item)) {
+                    return false;
+                }
+
+                return filled(data_get($item, 'product_id'))
+                    && filled(data_get($item, 'unit_id'))
+                    && (float) data_get($item, 'amount', 0) >= 0.0001;
+            });
     }
 
     public function render(): View
