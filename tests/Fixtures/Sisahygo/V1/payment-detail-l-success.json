@@ -1,0 +1,24 @@
+{
+  "data": {
+    "payment_identifier": "AR-P-1002",
+    "source": "ar_balances",
+    "payment_type": "L",
+    "payer_role": "receiver",
+    "order_header_no": "OH-L-1002",
+    "order_header_date": "2026-07-03",
+    "client_reference_no": "REF-L",
+    "billing_date": "2026-07-04",
+    "payment_date": "2026-07-10",
+    "payment_status": "paid",
+    "total_amount": "800.00",
+    "paid_amount": "800.00",
+    "outstanding_amount": "0.00",
+    "invoice_no": "INV-L-1",
+    "invoice_date": "2026-07-04",
+    "receipt_no": "REC-L-1",
+    "receipt_date": "2026-07-10",
+    "sender": {"customer_id": 10002, "name": "Sender Two"},
+    "receiver": {"customer_id": 20002, "name": "Receiver Two"},
+    "tracking_reference": "SH-L-1002"
+  }
+}

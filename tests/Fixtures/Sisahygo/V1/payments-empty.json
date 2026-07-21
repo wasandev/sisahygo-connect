@@ -1,0 +1,15 @@
+{
+  "data": [],
+  "summary": {
+    "record_count": 0,
+    "total_amount": "0.00",
+    "paid_record_count": 0,
+    "outstanding_record_count": 0
+  },
+  "meta": {
+    "current_page": 1,
+    "per_page": 15,
+    "total": 0,
+    "last_page": 1
+  }
+}

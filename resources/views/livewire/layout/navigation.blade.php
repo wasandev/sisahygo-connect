@@ -23,7 +23,7 @@ new class extends Component
         ['label' => __('navigation.shipments'), 'route' => 'shipments'],
         ['label' => __('navigation.tracking'), 'route' => 'tracking'],
         ['label' => __('navigation.history'), 'route' => 'history'],
-        ['label' => __('navigation.payments'), 'route' => 'payments'],
+        ['label' => __('navigation.payments'), 'route' => 'payments', 'active' => 'payments*'],
         ['label' => __('navigation.reports'), 'route' => 'reports'],
         ['label' => __('navigation.settings'), 'route' => 'settings'],
     ];
@@ -48,7 +48,7 @@ new class extends Component
             @foreach ($menuItems as $item)
                 <x-connect.nav-link
                     :href="route($item['route'])"
-                    :active="request()->routeIs($item['route'])"
+                    :active="request()->routeIs($item['active'] ?? $item['route'])"
                     wire:navigate
                 >
                     {{ $item['label'] }}
@@ -87,7 +87,7 @@ new class extends Component
 
             <nav class="flex-1 space-y-1 overflow-y-auto px-3 py-4" aria-label="Mobile primary">
                 @foreach ($menuItems as $item)
-                    <x-connect.nav-link :href="route($item['route'])" :active="request()->routeIs($item['route'])" wire:navigate x-on:click="drawerOpen = false">
+                    <x-connect.nav-link :href="route($item['route'])" :active="request()->routeIs($item['active'] ?? $item['route'])" wire:navigate x-on:click="drawerOpen = false">
                         {{ $item['label'] }}
                     </x-connect.nav-link>
                 @endforeach

@@ -5,6 +5,8 @@ use App\Livewire\Actions\Logout;
 use App\Livewire\Dashboard\CustomerDashboard;
 use App\Livewire\History\OrderHistory;
 use App\Livewire\OrderChecking;
+use App\Livewire\Payments\PaymentIndex;
+use App\Livewire\Payments\PaymentShow;
 use App\Livewire\Shipments\ShipmentIndex;
 use App\Livewire\Shipments\ShipmentShow;
 use App\Livewire\Shipments\TrackingLookup;
@@ -65,10 +67,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/history', OrderHistory::class)
             ->name('history');
 
-        Route::view('/payments', 'pages.placeholder', [
-            'title' => __('navigation.payments'),
-            'description' => __('page.placeholder.payments'),
-        ])->name('payments');
+        Route::get('/payments', PaymentIndex::class)
+            ->name('payments');
+        Route::get('/payments/{paymentIdentifier}', PaymentShow::class)
+            ->name('payments.show');
 
         Route::view('/reports', 'pages.placeholder', [
             'title' => __('navigation.reports'),

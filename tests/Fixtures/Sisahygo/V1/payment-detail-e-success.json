@@ -1,0 +1,21 @@
+{
+  "data": {
+    "payment_identifier": "BR-2001",
+    "source": "branch_balances",
+    "payment_type": "E",
+    "payer_role": "receiver",
+    "order_header_no": "OH-E-2001",
+    "order_header_date": "2026-07-05",
+    "client_reference_no": "REF-E",
+    "billing_date": "2026-07-05",
+    "payment_date": null,
+    "payment_status": "outstanding",
+    "bal_amount": "350.00",
+    "pay_amount": null,
+    "discount_amount": "0.00",
+    "tax_amount": "0.00",
+    "sender_name": "Sender Three",
+    "receiver_name": "Receiver Three",
+    "waybill_no": "SH-E-2001"
+  }
+}
