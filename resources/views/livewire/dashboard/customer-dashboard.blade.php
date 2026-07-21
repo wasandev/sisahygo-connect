@@ -4,6 +4,8 @@
     $attentionShipments = $dashboard['attention_shipments'] ?? [];
     $recentReceivers = $dashboard['recent_receivers'] ?? [];
     $recentProducts = $dashboard['recent_products'] ?? [];
+    $paymentOverview = $dashboard['payment_overview'] ?? ['available' => false, 'summary' => null, 'recent' => [], 'links' => [], 'cache' => []];
+    $paymentCache = $paymentOverview['cache'] ?? [];
     $canCreateOrder = (bool) ($dashboard['can_create_order'] ?? false);
     $userName = auth()->user()?->name ?: __('dashboard.account.current');
 @endphp
@@ -79,6 +81,131 @@
                     </x-connect.card>
                 @endforeach
             </section>
+
+
+            <x-connect.card :title="__('dashboard.payments.title')" :description="__('dashboard.payments.description')" padding="none">
+                <div wire:loading.delay wire:target="refresh" class="border-b border-slate-100 p-5 sm:p-6" role="status" aria-live="polite" aria-busy="true">
+                    <p class="sr-only">{{ __('dashboard.payments.cache.loading') }}</p>
+                    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                        @for ($i = 0; $i < 4; $i++)
+                            <div class="rounded-lg border border-slate-100 bg-slate-50 p-4">
+                                <div class="h-4 w-24 animate-pulse rounded bg-slate-200"></div>
+                                <div class="mt-3 h-7 w-32 animate-pulse rounded bg-slate-200"></div>
+                            </div>
+                        @endfor
+                    </div>
+                    <div class="mt-5 space-y-3">
+                        @for ($i = 0; $i < 3; $i++)
+                            <div class="h-12 animate-pulse rounded bg-slate-100"></div>
+                        @endfor
+                    </div>
+                </div>
+                @if (! ($paymentOverview['available'] ?? false))
+                    <div class="p-5 sm:p-6">
+                        <div class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900" role="alert">
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <span>{{ $paymentOverview['error'] ?? __('dashboard.payments.errors.unavailable') }}</span>
+                                <x-connect.button size="sm" variant="secondary" wire:click="refresh" wire:loading.attr="disabled" wire:target="refresh">{{ __('dashboard.actions.retry') }}</x-connect.button>
+                            </div>
+                        </div>
+                    </div>
+                @else
+                    @php
+                        $paymentSummary = $paymentOverview['summary'] ?? [];
+                        $recentPayments = $paymentOverview['recent'] ?? [];
+                        $paymentLinks = $paymentOverview['links'] ?? [];
+                    @endphp
+
+                    @if (($paymentCache['is_stale'] ?? false) && ($paymentCache['cached_at'] ?? null))
+                        <div class="border-b border-amber-100 bg-amber-50 px-5 py-3 text-sm text-amber-900" role="status" aria-live="polite">
+                            {{ __('dashboard.payments.cache.stale_warning', ['time' => $paymentCache['cached_at']]) }}
+                        </div>
+                    @elseif (($paymentCache['status'] ?? null) === 'hit' && ($paymentCache['cached_at'] ?? null))
+                        <div class="border-b border-slate-100 px-5 py-3 text-xs text-slate-500" role="status">
+                            {{ __('dashboard.payments.cache.cached_at', ['time' => $paymentCache['cached_at']]) }}
+                        </div>
+                    @endif
+
+                    <div class="border-b border-slate-100 p-5 sm:p-6">
+                        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="{{ __('dashboard.payments.summary_label') }}">
+                            <a href="{{ $paymentLinks['all'] ?? route('payments') }}" wire:navigate class="connect-focus rounded-lg border border-slate-100 bg-slate-50 p-4 hover:border-connect-blue-200 hover:bg-connect-blue-50">
+                                <p class="text-sm font-semibold text-slate-500">{{ __('dashboard.payments.summary.total_amount') }}</p>
+                                <p class="mt-2 text-2xl font-bold text-connect-navy-900">{{ $paymentSummary['total_amount_display'] ?? '-' }}</p>
+                            </a>
+                            <a href="{{ $paymentLinks['outstanding'] ?? route('payments', ['payment_status' => 'outstanding']) }}" wire:navigate class="connect-focus rounded-lg border border-slate-100 bg-slate-50 p-4 hover:border-connect-blue-200 hover:bg-connect-blue-50">
+                                <p class="text-sm font-semibold text-slate-500">{{ __('dashboard.payments.summary.outstanding_record_count') }}</p>
+                                <p class="mt-2 text-2xl font-bold text-connect-navy-900">{{ $paymentSummary['outstanding_record_count'] ?? '-' }}</p>
+                            </a>
+                            <a href="{{ $paymentLinks['paid'] ?? route('payments', ['payment_status' => 'paid']) }}" wire:navigate class="connect-focus rounded-lg border border-slate-100 bg-slate-50 p-4 hover:border-connect-blue-200 hover:bg-connect-blue-50">
+                                <p class="text-sm font-semibold text-slate-500">{{ __('dashboard.payments.summary.paid_record_count') }}</p>
+                                <p class="mt-2 text-2xl font-bold text-connect-navy-900">{{ $paymentSummary['paid_record_count'] ?? '-' }}</p>
+                            </a>
+                            <a href="{{ $paymentLinks['all'] ?? route('payments') }}" wire:navigate class="connect-focus rounded-lg border border-slate-100 bg-slate-50 p-4 hover:border-connect-blue-200 hover:bg-connect-blue-50">
+                                <p class="text-sm font-semibold text-slate-500">{{ __('dashboard.payments.summary.record_count') }}</p>
+                                <p class="mt-2 text-2xl font-bold text-connect-navy-900">{{ $paymentSummary['record_count'] ?? '-' }}</p>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                        <h3 class="text-base font-semibold text-connect-navy-900">{{ __('dashboard.payments.recent_title') }}</h3>
+                        <x-connect.button size="sm" variant="secondary" :href="$paymentLinks['all'] ?? route('payments')" wire:navigate>{{ __('dashboard.payments.view_all') }}</x-connect.button>
+                    </div>
+
+                    @if ($recentPayments === [])
+                        <div class="p-6">
+                            <x-connect.empty-state :title="__('dashboard.payments.empty_title')" :description="__('dashboard.payments.empty_description')" />
+                        </div>
+                    @else
+                        <div class="hidden overflow-x-auto lg:block">
+                            <table class="min-w-full divide-y divide-slate-100 text-sm">
+                                <caption class="sr-only">{{ __('dashboard.payments.recent_title') }}</caption>
+                                <thead class="bg-slate-50 text-left text-xs font-semibold text-slate-500">
+                                    <tr>
+                                        <th scope="col" class="px-5 py-3">{{ __('dashboard.fields.order') }}</th>
+                                        <th scope="col" class="px-5 py-3">{{ __('payment.fields.type') }}</th>
+                                        <th scope="col" class="px-5 py-3 text-right">{{ __('payment.fields.total_amount') }}</th>
+                                        <th scope="col" class="px-5 py-3">{{ __('payment.fields.status') }}</th>
+                                        <th scope="col" class="px-5 py-3">{{ __('payment.fields.billing_date') }}</th>
+                                        <th scope="col" class="px-5 py-3 text-right">{{ __('dashboard.fields.action') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 bg-white">
+                                    @foreach ($recentPayments as $payment)
+                                        <tr wire:key="dashboard-payment-row-{{ $payment['payment_identifier'] }}">
+                                            <td class="px-5 py-4"><a href="{{ route('payments.show', $payment['payment_identifier']) }}" wire:navigate class="connect-focus break-all font-semibold text-connect-blue-700 hover:text-connect-blue-900">{{ $payment['order_header_no'] ?: $payment['payment_identifier'] }}</a></td>
+                                            <td class="px-5 py-4"><x-connect.badge variant="blue">{{ $payment['payment_type_label'] }}</x-connect.badge></td>
+                                            <td class="px-5 py-4 text-right font-semibold text-connect-navy-900">{{ $payment['total_amount_display'] }}</td>
+                                            <td class="px-5 py-4"><x-connect.badge :variant="$payment['payment_status_variant']">{{ $payment['payment_status_label'] }}</x-connect.badge></td>
+                                            <td class="px-5 py-4 text-slate-600">{{ $payment['billing_date'] }}</td>
+                                            <td class="px-5 py-4 text-right"><x-connect.button size="sm" :href="route('payments.show', $payment['payment_identifier'])" wire:navigate>{{ __('dashboard.actions.view_detail') }}</x-connect.button></td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="divide-y divide-slate-100 lg:hidden">
+                            @foreach ($recentPayments as $payment)
+                                <article wire:key="dashboard-payment-card-{{ $payment['payment_identifier'] }}" class="p-5">
+                                    <div class="flex flex-col gap-3">
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <a href="{{ route('payments.show', $payment['payment_identifier']) }}" wire:navigate class="connect-focus break-all text-base font-semibold text-connect-blue-700 hover:text-connect-blue-900">{{ $payment['order_header_no'] ?: $payment['payment_identifier'] }}</a>
+                                            <x-connect.badge :variant="$payment['payment_status_variant']">{{ $payment['payment_status_label'] }}</x-connect.badge>
+                                        </div>
+                                        <dl class="grid gap-2 text-sm text-slate-600">
+                                            <div><dt class="text-xs text-slate-500">{{ __('payment.fields.type') }}</dt><dd><x-connect.badge variant="blue">{{ $payment['payment_type_label'] }}</x-connect.badge></dd></div>
+                                            <div><dt class="text-xs text-slate-500">{{ __('payment.fields.total_amount') }}</dt><dd class="font-semibold text-connect-navy-900">{{ $payment['total_amount_display'] }}</dd></div>
+                                            <div><dt class="text-xs text-slate-500">{{ __('payment.fields.billing_date') }}</dt><dd>{{ $payment['billing_date'] }}</dd></div>
+                                        </dl>
+                                        <x-connect.button size="sm" :href="route('payments.show', $payment['payment_identifier'])" wire:navigate>{{ __('dashboard.actions.view_detail') }}</x-connect.button>
+                                    </div>
+                                </article>
+                            @endforeach
+                        </div>
+                    @endif
+                @endif
+            </x-connect.card>
 
             <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
                 <div class="space-y-4">

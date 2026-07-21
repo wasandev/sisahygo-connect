@@ -37,7 +37,7 @@ class PaymentQueryService
             orderHeaderNo: $normalized['order_header_no'] ?? null,
             clientReferenceNo: $normalized['client_reference_no'] ?? null,
             page: (int) ($normalized['page'] ?? 1),
-            perPage: (int) ($normalized['per_page'] ?? 15),
+            perPage: (int) ($normalized['per_page'] ?? 20),
         );
         $result = $this->payments->list($this->context($user, $clientAccount), $query);
 
@@ -77,7 +77,7 @@ class PaymentQueryService
             'order_header_no' => ['nullable', 'string', 'max:100'],
             'client_reference_no' => ['nullable', 'string', 'max:100'],
             'page' => ['nullable', 'integer', 'min:1'],
-            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'per_page' => ['nullable', 'integer', Rule::in([5, 10, 20, 50])],
         ], [
             'date_to.after_or_equal' => __('payment.validation.date_to_after_or_equal'),
             'payment_status.in' => __('payment.validation.payment_status'),
@@ -92,7 +92,7 @@ class PaymentQueryService
             'order_header_no' => isset($data['order_header_no']) ? trim((string) $data['order_header_no']) : null,
             'client_reference_no' => isset($data['client_reference_no']) ? trim((string) $data['client_reference_no']) : null,
             'page' => isset($data['page']) ? (int) $data['page'] : 1,
-            'per_page' => isset($data['per_page']) ? (int) $data['per_page'] : 15,
+            'per_page' => isset($data['per_page']) ? (int) $data['per_page'] : 20,
         ], fn (mixed $value): bool => $value !== null && $value !== '');
     }
 

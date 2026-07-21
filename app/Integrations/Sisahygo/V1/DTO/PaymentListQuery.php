@@ -12,7 +12,7 @@ final readonly class PaymentListQuery
         public ?string $orderHeaderNo = null,
         public ?string $clientReferenceNo = null,
         public int $page = 1,
-        public int $perPage = 15,
+        public int $perPage = 20,
     ) {}
 
     /** @return array<string, mixed> */

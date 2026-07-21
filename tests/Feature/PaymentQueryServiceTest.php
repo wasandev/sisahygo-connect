@@ -38,7 +38,7 @@ class PaymentQueryServiceTest extends TestCase
             'client_reference_no' => 'REF-F',
             'sender_customer_ids' => [10001],
             'page' => 2,
-            'per_page' => 15,
+            'per_page' => 20,
         ]);
 
         $this->assertSame('AR-P-1001', $result['items'][0]['payment_identifier']);
@@ -51,6 +51,7 @@ class PaymentQueryServiceTest extends TestCase
             && str_contains($request->url(), 'order_header_no=OH-F-1001')
             && str_contains($request->url(), 'client_reference_no=REF-F')
             && str_contains($request->url(), 'page=2')
+            && str_contains($request->url(), 'per_page=20')
             && ! str_contains($request->url(), 'sender_customer_ids'));
     }
 

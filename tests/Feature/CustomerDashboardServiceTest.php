@@ -31,7 +31,7 @@ class CustomerDashboardServiceTest extends TestCase
 
         $result = app(GetCustomerDashboard::class)($user, $account);
 
-        $this->assertSame(4, $result['request_count']);
+        $this->assertSame(5, $result['request_count']);
         $this->assertSame(7, $result['summary_cards'][0]['value']);
         $this->assertFalse($result['summary_cards'][1]['available']);
         $this->assertNull($result['summary_cards'][1]['value']);
@@ -42,14 +42,18 @@ class CustomerDashboardServiceTest extends TestCase
         $this->assertSame('บริษัท รับสินค้าไทย จำกัด', $result['recent_receivers'][0]['name']);
         $this->assertSame('น้ำดื่ม 600 ml', $result['recent_products'][0]['product_name']);
         $this->assertTrue($result['can_create_order']);
+        $this->assertSame('2,350.50', $result['payment_overview']['summary']['total_amount_display']);
+        $this->assertCount(3, $result['payment_overview']['recent']);
 
-        Http::assertSentCount(4);
+        Http::assertSentCount(5);
         Http::assertSent(fn ($request) => str_contains($request->url(), 'from_date=2026-07-17')
             && str_contains($request->url(), 'to_date=2026-07-17')
             && str_contains($request->url(), 'per_page=1'));
         Http::assertSent(fn ($request) => str_contains($request->url(), 'order_status=completed')
             && str_contains($request->url(), 'per_page=1'));
         Http::assertSent(fn ($request) => str_contains($request->url(), 'order_status=problem')
+            && str_contains($request->url(), 'per_page=5'));
+        Http::assertSent(fn ($request) => str_contains($request->url(), '/payments')
             && str_contains($request->url(), 'per_page=5'));
         Http::assertNotSent(fn ($request) => str_contains($request->url(), '/shipments/10001'));
         Http::assertNotSent(fn ($request) => str_contains($request->url(), 'receiver_customer_id')
@@ -103,31 +107,34 @@ class CustomerDashboardServiceTest extends TestCase
         $result = app(GetCustomerDashboard::class)($user, $account);
 
         $this->assertFalse($result['can_create_order']);
-        Http::assertSentCount(4);
+        Http::assertSentCount(5);
     }
 
     private function fakeDashboardResponses(): void
     {
-        Http::fake(['https://sandbox-api.sisahygo.online/api/v1/client/shipments*' => function ($request) {
-            parse_str((string) parse_url($request->url(), PHP_URL_QUERY), $query);
+        Http::fake([
+            'https://sandbox-api.sisahygo.online/api/v1/client/payments*' => Http::response($this->fixture('payments-index-success.json')),
+            'https://sandbox-api.sisahygo.online/api/v1/client/shipments*' => function ($request) {
+                parse_str((string) parse_url($request->url(), PHP_URL_QUERY), $query);
 
-            if (($query['order_status'] ?? null) === 'completed') {
-                return Http::response($this->shipmentResponse([], 11, 1));
-            }
+                if (($query['order_status'] ?? null) === 'completed') {
+                    return Http::response($this->shipmentResponse([], 11, 1));
+                }
 
-            if (($query['order_status'] ?? null) === 'problem') {
-                return Http::response($this->shipmentResponse([$this->shipment(90001, 'OH90001', 'problem')], 2, 5));
-            }
+                if (($query['order_status'] ?? null) === 'problem') {
+                    return Http::response($this->shipmentResponse([$this->shipment(90001, 'OH90001', 'problem')], 2, 5));
+                }
 
-            if (($query['from_date'] ?? null) === '2026-07-17' && ($query['to_date'] ?? null) === '2026-07-17') {
-                return Http::response($this->shipmentResponse([], 7, 1));
-            }
+                if (($query['from_date'] ?? null) === '2026-07-17' && ($query['to_date'] ?? null) === '2026-07-17') {
+                    return Http::response($this->shipmentResponse([], 7, 1));
+                }
 
-            return Http::response($this->shipmentResponse([
-                $this->shipment(10001, 'OH10001', 'delivered'),
-                $this->shipment(10002, 'OH10002', 'created'),
-            ], 30, 5));
-        }]);
+                return Http::response($this->shipmentResponse([
+                    $this->shipment(10001, 'OH10001', 'delivered'),
+                    $this->shipment(10002, 'OH10002', 'created'),
+                ], 30, 5));
+            },
+        ]);
     }
 
     /** @return array{0: User, 1: ClientAccount} */
@@ -143,6 +150,7 @@ class CustomerDashboardServiceTest extends TestCase
         if ($withShipmentView) {
             ClientAccountCapability::factory()->for($account)->capability(ClientCapability::ShipmentView)->create();
         }
+        ClientAccountCapability::factory()->for($account)->capability(ClientCapability::PaymentView)->create();
         if ($withOrderCreate) {
             ClientAccountCapability::factory()->for($account)->capability(ClientCapability::OrderCreate)->create();
         }
@@ -177,5 +185,10 @@ class CustomerDashboardServiceTest extends TestCase
                 ['product_id' => 6639, 'product_name' => 'น้ำดื่ม 600 ml', 'unit_id' => 1, 'unit' => 'ขวด', 'amount' => 2],
             ],
         ];
+    }
+
+    private function fixture(string $name): string
+    {
+        return file_get_contents(base_path("tests/Fixtures/Sisahygo/V1/{$name}"));
     }
 }

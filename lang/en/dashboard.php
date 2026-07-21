@@ -78,6 +78,29 @@ return [
         'count' => '{1}Found :count time in latest records|[2,*]Found :count times in latest records',
         'empty' => 'No product data in recent records yet.',
     ],
+    'payments' => [
+        'title' => 'Payment Overview',
+        'description' => 'Summary from Core Payment API with at most 5 recent records loaded.',
+        'summary_label' => 'Dashboard payment summary',
+        'recent_title' => 'Recent payments',
+        'view_all' => 'View all payments',
+        'empty_title' => 'No recent payments yet',
+        'empty_description' => 'Recent Core-visible payments will appear here.',
+        'cache' => [
+            'cached_at' => 'Cached data: :time',
+            'stale_warning' => 'Showing last saved data: :time',
+            'loading' => 'Loading payment overview...',
+        ],
+        'summary' => [
+            'total_amount' => 'Total Amount',
+            'outstanding_record_count' => 'Outstanding Records',
+            'paid_record_count' => 'Paid Records',
+            'record_count' => 'Records',
+        ],
+        'errors' => [
+            'unavailable' => 'Payment data is unavailable right now.',
+        ],
+    ],
     'unavailable' => ['title' => 'Dashboard is not ready'],
     'errors' => [
         'no_credential' => 'Sisahygo connection details are not available yet.',

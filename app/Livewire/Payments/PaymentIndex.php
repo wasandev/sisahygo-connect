@@ -18,25 +18,34 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
 class PaymentIndex extends Component
 {
+    #[Url(as: 'from_date', except: null)]
     public ?string $dateFrom = null;
 
+    #[Url(as: 'to_date', except: null)]
     public ?string $dateTo = null;
 
+    #[Url(as: 'payment_type', except: '')]
     public string $paymentType = '';
 
+    #[Url(as: 'payment_status', except: '')]
     public string $paymentStatus = '';
 
+    #[Url(as: 'order_header_no', except: '')]
     public string $orderHeaderNo = '';
 
+    #[Url(as: 'client_reference_no', except: '')]
     public string $clientReferenceNo = '';
 
+    #[Url(except: 1)]
     public int $page = 1;
 
-    public int $perPage = 15;
+    #[Url(as: 'per_page', except: 20)]
+    public int $perPage = 20;
 
     public array $payments = [];
 
@@ -50,9 +59,13 @@ class PaymentIndex extends Component
 
     public ?string $unavailableMessage = null;
 
+    public ?string $lastRefreshedAt = null;
+
     public array $typeOptions = [];
 
     public array $statusOptions = [];
+
+    public array $perPageOptions = [10, 20, 50];
 
     public function mount(PaymentQueryService $payments): void
     {
@@ -73,6 +86,28 @@ class PaymentIndex extends Component
 
     public function refresh(PaymentQueryService $payments): void
     {
+        $this->loadPayments($payments);
+    }
+
+    public function updated(string $property): void
+    {
+        if (in_array($property, ['dateFrom', 'dateTo', 'paymentType', 'paymentStatus', 'perPage'], true)) {
+            $this->page = 1;
+        }
+    }
+
+    public function clearFilter(PaymentQueryService $payments, string $filter): void
+    {
+        match ($filter) {
+            'date' => [$this->dateFrom, $this->dateTo] = [null, null],
+            'paymentType' => $this->paymentType = '',
+            'paymentStatus' => $this->paymentStatus = '',
+            'orderHeaderNo' => $this->orderHeaderNo = '',
+            'clientReferenceNo' => $this->clientReferenceNo = '',
+            default => null,
+        };
+
+        $this->page = 1;
         $this->loadPayments($payments);
     }
 
@@ -109,6 +144,38 @@ class PaymentIndex extends Component
         $this->loadPayments($payments);
     }
 
+    public function hasActiveFilters(): bool
+    {
+        return $this->dateFrom || $this->dateTo || $this->paymentType !== '' || $this->paymentStatus !== '' || $this->orderHeaderNo !== '' || $this->clientReferenceNo !== '';
+    }
+
+    public function activeFilterChips(): array
+    {
+        $chips = [];
+
+        if ($this->paymentType !== '') {
+            $chips[] = ['key' => 'paymentType', 'label' => __('payment.filters.chip_type', ['value' => PaymentPresenter::typeLabel($this->paymentType)])];
+        }
+
+        if ($this->paymentStatus !== '') {
+            $chips[] = ['key' => 'paymentStatus', 'label' => __('payment.filters.chip_status', ['value' => PaymentPresenter::statusLabel($this->paymentStatus)])];
+        }
+
+        if ($this->dateFrom || $this->dateTo) {
+            $chips[] = ['key' => 'date', 'label' => __('payment.filters.chip_date', ['value' => ($this->dateFrom ?: __('payment.fallback.empty')).'–'.($this->dateTo ?: __('payment.fallback.empty'))])];
+        }
+
+        if ($this->orderHeaderNo !== '') {
+            $chips[] = ['key' => 'orderHeaderNo', 'label' => __('payment.filters.chip_order', ['value' => $this->orderHeaderNo])];
+        }
+
+        if ($this->clientReferenceNo !== '') {
+            $chips[] = ['key' => 'clientReferenceNo', 'label' => __('payment.filters.chip_reference', ['value' => $this->clientReferenceNo])];
+        }
+
+        return $chips;
+    }
+
     public function render(): View
     {
         return view('livewire.payments.index')->layout('layouts.app', [
@@ -138,6 +205,7 @@ class PaymentIndex extends Component
             $this->payments = $result['items'];
             $this->summary = $result['summary'];
             $this->meta = $result['meta'];
+            $this->lastRefreshedAt = now(config('app.timezone'))->format('Y-m-d H:i');
         } catch (ValidationException $exception) {
             foreach ($exception->errors() as $field => $messages) {
                 $this->addError($this->fieldName($field), $messages[0] ?? __('payment.errors.validation'));

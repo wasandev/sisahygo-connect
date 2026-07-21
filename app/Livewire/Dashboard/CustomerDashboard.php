@@ -35,7 +35,7 @@ class CustomerDashboard extends Component
 
     public function refresh(GetCustomerDashboard $dashboard): void
     {
-        $this->loadDashboard($dashboard);
+        $this->loadDashboard($dashboard, forcePaymentRefresh: true);
     }
 
     public function render(): View
@@ -45,14 +45,14 @@ class CustomerDashboard extends Component
         ]);
     }
 
-    private function loadDashboard(GetCustomerDashboard $service): void
+    private function loadDashboard(GetCustomerDashboard $service, bool $forcePaymentRefresh = false): void
     {
         $this->pageError = null;
         $this->unavailable = false;
         $this->unavailableMessage = null;
 
         try {
-            $this->dashboard = $service(auth()->user(), $this->currentClientAccount());
+            $this->dashboard = $service(auth()->user(), $this->currentClientAccount(), $forcePaymentRefresh);
         } catch (ModelNotFoundException) {
             $this->dashboard = null;
             $this->unavailable = true;

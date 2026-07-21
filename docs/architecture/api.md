@@ -19,3 +19,11 @@ Sisahygo integration foundation ใช้ `app/Integrations/Sisahygo` สำห�
 API credentials ถูกเข้ารหัสแยกตาม Client Account และ environment credentials เหล่านี้ใช้เพื่อ authentication เท่านั้น ไม่ใช่ customer identity ขอบเขตของผู้ส่งสินค้าและผู้รับสินค้ามาจาก active `client_account_customers` links
 
 Receiver-only integration ยังมี Core API compatibility dependency ที่ต้องยืนยันก่อน โดยเฉพาะ authorization จาก `order_headers.customer_rec_id` และ receiver payment rules
+
+## Dashboard Payment Cache
+
+Dashboard Payment Overview มี cache boundary เฉพาะที่ `App\Application\Dashboard\DashboardPaymentOverviewService` เพื่อหลีกเลี่ยงการเรียก Core Payment API ซ้ำสำหรับ query คงที่ `page=1&per_page=5` ภายใน TTL สั้น ๆ ค่า default 60 วินาที และปิดได้ผ่าน config
+
+Cache key ใช้ environment, locale, local Client Account id และ query shape version เท่านั้น ไม่ใช้ API key, credential payload, Core customer id หรือข้อมูลส่วนบุคคล Cached value เป็น mapped application array ที่ได้จาก `PaymentQueryService` แล้วเท่านั้น ไม่เก็บ raw HTTP response/header/body และไม่ cache exception หรือ unavailable state
+
+Observability ใช้ structured debug logs สำหรับ cache hit/miss/bypass/fetch success/failure พร้อม duration, cache status, local Client Account id, environment และ result count โดยไม่ log API credentials หรือ payment identifiers Retry ยังเป็น responsibility ของ `SisahygoApiClient`; service layer ไม่มี retry loop ซ้อน

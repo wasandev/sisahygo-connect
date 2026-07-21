@@ -34,6 +34,7 @@ class PaymentPagesTest extends TestCase
             ->assertSee('ศูนย์การชำระเงิน')
             ->assertSee('AR-P-1001')
             ->assertSee('REF-F')
+            ->assertSee('Selected Account')
             ->assertSee('รายการชำระแล้ว')
             ->assertDontSee('secret-api-key');
     }
@@ -71,6 +72,77 @@ class PaymentPagesTest extends TestCase
             && str_contains($request->url(), 'client_reference_no=REF-E')
             && str_contains($request->url(), 'from_date=2026-07-01')
             && str_contains($request->url(), 'to_date=2026-07-31'));
+    }
+
+    public function test_query_string_hydrates_active_filter_chips(): void
+    {
+        [$user, $account] = $this->eligibleAccount();
+        $this->actingAs($user)->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id]);
+        $this->fakePaymentList();
+
+        $this->get(route('payments', ['payment_status' => 'outstanding', 'payment_type' => 'F']))
+            ->assertOk()
+            ->assertSee('ประเภท: วางบิลต้นทาง')
+            ->assertSee('สถานะ: ค้างชำระ');
+    }
+
+    public function test_clear_one_filter_preserves_other_filters(): void
+    {
+        [$user, $account] = $this->eligibleAccount();
+        $this->actingAs($user)->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id]);
+        $this->fakePaymentList();
+
+        Livewire::test(PaymentIndex::class)
+            ->set('paymentType', 'F')
+            ->set('paymentStatus', 'outstanding')
+            ->set('page', 3)
+            ->call('clearFilter', 'paymentType')
+            ->assertSet('paymentType', '')
+            ->assertSet('paymentStatus', 'outstanding')
+            ->assertSet('page', 1)
+            ->assertSee('สถานะ: ค้างชำระ');
+    }
+
+    public function test_type_status_date_and_per_page_changes_reset_page(): void
+    {
+        [$user, $account] = $this->eligibleAccount();
+        $this->actingAs($user)->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id]);
+        $this->fakePaymentList();
+
+        Livewire::test(PaymentIndex::class)
+            ->set('page', 3)
+            ->set('paymentType', 'F')
+            ->assertSet('page', 1)
+            ->set('page', 3)
+            ->set('paymentStatus', 'paid')
+            ->assertSet('page', 1)
+            ->set('page', 3)
+            ->set('dateFrom', '2026-07-01')
+            ->assertSet('page', 1)
+            ->set('page', 3)
+            ->set('perPage', 50)
+            ->assertSet('page', 1);
+    }
+
+    public function test_refresh_preserves_filters_and_does_not_expose_credentials(): void
+    {
+        [$user, $account] = $this->eligibleAccount();
+        $this->actingAs($user)->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id]);
+        $this->fakePaymentList();
+
+        Livewire::test(PaymentIndex::class)
+            ->set('paymentType', 'E')
+            ->set('paymentStatus', 'outstanding')
+            ->set('page', 2)
+            ->call('refresh')
+            ->assertSet('paymentType', 'E')
+            ->assertSet('paymentStatus', 'outstanding')
+            ->assertSet('page', 2)
+            ->assertDontSee('secret-api-key');
+
+        Http::assertSent(fn ($request) => str_contains($request->url(), 'payment_type=E')
+            && str_contains($request->url(), 'payment_status=outstanding')
+            && str_contains($request->url(), 'page=2'));
     }
 
     public function test_h_and_t_filters_are_not_available(): void
@@ -118,6 +190,29 @@ class PaymentPagesTest extends TestCase
             ->call('search')
             ->assertHasErrors(['dateTo'])
             ->assertSee('วันที่สิ้นสุดต้องไม่น้อยกว่าวันที่เริ่มต้น');
+    }
+
+    public function test_detail_omits_empty_invoice_and_receipt_sections(): void
+    {
+        [$user, $account] = $this->eligibleAccount();
+        $this->actingAs($user)->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id]);
+        Http::fake(['https://sandbox-api.sisahygo.online/api/v1/client/payments/BR-2001' => Http::response($this->fixture('payment-detail-e-success.json'))]);
+
+        Livewire::test(PaymentShow::class, ['paymentIdentifier' => 'BR-2001'])
+            ->assertSee('BR-2001')
+            ->assertDontSee('เลขที่ Invoice')
+            ->assertDontSee('เลขที่ Receipt');
+    }
+
+    public function test_rendered_payment_center_does_not_expose_internal_customer_ids(): void
+    {
+        [$user, $account] = $this->eligibleAccount();
+        $this->actingAs($user)->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id]);
+        $this->fakePaymentList();
+
+        Livewire::test(PaymentIndex::class)
+            ->assertDontSee('10001')
+            ->assertDontSee('20001');
     }
 
     public function test_detail_renders_f_l_and_e(): void

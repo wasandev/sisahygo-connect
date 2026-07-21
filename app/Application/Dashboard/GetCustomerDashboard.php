@@ -14,10 +14,11 @@ class GetCustomerDashboard
 {
     private const RECENT_LIMIT = 5;
 
-    private const REQUEST_COUNT = 4;
+    private const REQUEST_COUNT = 5;
 
     public function __construct(
         private readonly ShipmentQueryService $shipments,
+        private readonly DashboardPaymentOverviewService $payments,
         private readonly ListOrderHistory $history,
         private readonly ClientAccountAuthorizationService $authorization,
     ) {}
@@ -25,7 +26,7 @@ class GetCustomerDashboard
     /**
      * @return array<string, mixed>
      */
-    public function __invoke(User $user, ClientAccount $clientAccount): array
+    public function __invoke(User $user, ClientAccount $clientAccount, bool $forcePaymentRefresh = false): array
     {
         $ranges = $this->dateRanges();
 
@@ -55,6 +56,8 @@ class GetCustomerDashboard
             'page' => 1,
             'per_page' => self::RECENT_LIMIT,
         ]);
+
+        $paymentOverview = $this->payments->get($user, $clientAccount, $forcePaymentRefresh);
 
         return [
             'client_account' => [
@@ -96,6 +99,7 @@ class GetCustomerDashboard
             'attention_shipments' => array_slice($attention['items'], 0, self::RECENT_LIMIT),
             'recent_receivers' => $latest['recent_receivers'],
             'recent_products' => $latest['recent_products'],
+            'payment_overview' => $paymentOverview,
         ];
     }
 

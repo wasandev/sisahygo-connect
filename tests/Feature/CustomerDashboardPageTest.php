@@ -41,7 +41,7 @@ class CustomerDashboardPageTest extends TestCase
             ->assertSee('สร้างรายการส่งสินค้า')
             ->assertDontSee('secret-api-key');
 
-        Http::assertSentCount(4);
+        Http::assertSentCount(5);
     }
 
     public function test_guest_is_redirected(): void
@@ -85,7 +85,7 @@ class CustomerDashboardPageTest extends TestCase
             ->assertSet('pageError', null)
             ->assertSee('OH10001');
 
-        Http::assertSentCount(8);
+        Http::assertSentCount(10);
     }
 
     public function test_render_refresh_does_not_call_remote_api_again(): void
@@ -98,7 +98,7 @@ class CustomerDashboardPageTest extends TestCase
             ->call('$refresh')
             ->assertSee('OH10001');
 
-        Http::assertSentCount(4);
+        Http::assertSentCount(5);
     }
 
     public function test_selected_account_stays_stable_during_hydrated_refresh(): void
@@ -153,26 +153,29 @@ class CustomerDashboardPageTest extends TestCase
 
     private function fakeDashboardResponses(): void
     {
-        Http::fake(['https://sandbox-api.sisahygo.online/api/v1/client/shipments*' => function ($request) {
-            parse_str((string) parse_url($request->url(), PHP_URL_QUERY), $query);
+        Http::fake([
+            'https://sandbox-api.sisahygo.online/api/v1/client/payments*' => Http::response($this->fixture('payments-index-success.json')),
+            'https://sandbox-api.sisahygo.online/api/v1/client/shipments*' => function ($request) {
+                parse_str((string) parse_url($request->url(), PHP_URL_QUERY), $query);
 
-            if (($query['order_status'] ?? null) === 'completed') {
-                return Http::response($this->shipmentResponse([], 11, 1));
-            }
+                if (($query['order_status'] ?? null) === 'completed') {
+                    return Http::response($this->shipmentResponse([], 11, 1));
+                }
 
-            if (($query['order_status'] ?? null) === 'problem') {
-                return Http::response($this->shipmentResponse([$this->shipment(90001, 'OH90001', 'problem')], 2, 5));
-            }
+                if (($query['order_status'] ?? null) === 'problem') {
+                    return Http::response($this->shipmentResponse([$this->shipment(90001, 'OH90001', 'problem')], 2, 5));
+                }
 
-            if (($query['from_date'] ?? null) === '2026-07-17' && ($query['to_date'] ?? null) === '2026-07-17') {
-                return Http::response($this->shipmentResponse([], 7, 1));
-            }
+                if (($query['from_date'] ?? null) === '2026-07-17' && ($query['to_date'] ?? null) === '2026-07-17') {
+                    return Http::response($this->shipmentResponse([], 7, 1));
+                }
 
-            return Http::response($this->shipmentResponse([
-                $this->shipment(10001, 'OH10001', 'delivered'),
-                $this->shipment(10002, 'OH10002', 'created'),
-            ], 30, 5));
-        }]);
+                return Http::response($this->shipmentResponse([
+                    $this->shipment(10001, 'OH10001', 'delivered'),
+                    $this->shipment(10002, 'OH10002', 'created'),
+                ], 30, 5));
+            },
+        ]);
     }
 
     /** @return array{0: User, 1: ClientAccount} */
@@ -191,6 +194,7 @@ class CustomerDashboardPageTest extends TestCase
         if ($withShipmentView) {
             ClientAccountCapability::factory()->for($account)->capability(ClientCapability::ShipmentView)->create();
         }
+        ClientAccountCapability::factory()->for($account)->capability(ClientCapability::PaymentView)->create();
         if ($withOrderCreate) {
             ClientAccountCapability::factory()->for($account)->capability(ClientCapability::OrderCreate)->create();
         }
@@ -225,5 +229,10 @@ class CustomerDashboardPageTest extends TestCase
                 ['product_id' => 6639, 'product_name' => 'น้ำดื่ม 600 ml', 'unit_id' => 1, 'unit' => 'ขวด', 'amount' => 2],
             ],
         ];
+    }
+
+    private function fixture(string $name): string
+    {
+        return file_get_contents(base_path("tests/Fixtures/Sisahygo/V1/{$name}"));
     }
 }
