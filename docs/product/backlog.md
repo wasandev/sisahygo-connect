@@ -1,3 +1,5 @@
+> Source-of-truth note: this backlog is historical. Use `../project/backlog.md` for current planning.
+
 # Backlog
 
 - Onboarding สำหรับ Client Account

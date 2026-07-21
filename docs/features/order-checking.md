@@ -1,3 +1,5 @@
+> Source-of-truth note: this document is a historical feature contract. Current implementation status is audited in `../project/feature-matrix.md` and `../project/roadmap-v2.md`.
+
 # Order Checking Feature Contract
 
 | รายการ | รายละเอียด |
