@@ -1,0 +1,12 @@
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "ข้อมูลไม่ถูกต้อง",
+    "status": 422,
+    "details": {
+      "orders.1.items.0.amount": [
+        "จำนวนต้องไม่น้อยกว่า 0.0001"
+      ]
+    }
+  }
+}

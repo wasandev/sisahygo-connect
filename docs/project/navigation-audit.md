@@ -46,3 +46,11 @@ Production navigation is defined in `resources/views/livewire/layout/navigation.
 | Livewire internals | `/livewire/*` | internal | web | Livewire | Framework | Runtime assets/upload/update | Hidden/Internal | Not product screens. |
 | Storage/up | `/storage/{path}`, `/up` | framework | web | Framework | Framework | local storage/health | Hidden/Internal | Not product screens. |
 | UX previews | `/ux/*` | `ux.*` | auth, client.account | UX Prototype | Static views or `OrderChecking` | Design previews | Placeholder/Deprecated | Not completion evidence for production features. |
+
+## Sprint 6 Navigation Update
+
+Bulk Order Checking is available at /order-checking/bulk under the existing Order Checking area. The global navigation still has one Order Checking item, whose active state covers order-checking subroutes, avoiding a duplicate sidebar entry.
+
+## Sprint 6.2 Navigation Addendum
+
+The `/order-checking/bulk` route remains under the Order Checking area. The page now includes a back link to single Order Checking, active Order previous/next controls, validation-summary jump buttons, and result links to Tracking and History.

@@ -17,3 +17,11 @@
 | Reports | `/reports` | Reports | Yes | Yes | None | Placeholder | Placeholder | Basic | Planned | Static placeholder. |
 | Settings | `/settings`, `/settings/client-account` | Client Account Settings | Yes | Yes | Local Client Account DB | Partial | Responsive grid | Adequate | Adequate | Read-only overview/members/access. |
 | UX Preview Pages | `/ux/*` | UX prototypes | Yes | Yes | Static views or real component | Placeholder/Deprecated | Prototype | Adequate smoke | Historical | Not production feature completion evidence. |
+
+## Sprint 6 Screen Update
+
+Added production screen: /order-checking/bulk. It provides manual Bulk Order Checking entry, Batch metadata, receiver/product lookup reuse, row-level result display, failed-row retry preparation, and unknown-result warning state.
+
+## Sprint 6.2 Screen Inventory Addendum
+
+`/order-checking/bulk` now contains three screen states in one Livewire page: edit, review, and result. The edit state uses a desktop sidebar navigator plus active editor and a mobile-friendly active-order flow.

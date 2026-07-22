@@ -34,3 +34,11 @@ This matrix covers endpoints evidenced in Connect code, fixtures, tests, and doc
 ## Retry And Logging Ownership
 
 `SisahygoApiClient` owns transport retry and structured request logging. GET requests may retry 429 and selected 5xx/network failures using bounded attempts from config. POST requests do not retry automatically. Application services should not add nested retry loops.
+
+## Sprint 6 Bulk Order Checking Coverage
+
+Consumed locally: POST /order-checkings/bulk through OrderCheckingsEndpoint::createBulk. The endpoint sends only verified contract fields and treats HTTP 207 as a processed response. HTTP 422 remains mapped through the existing SisahygoValidationException path. POST retry behavior remains one attempt through SisahygoApiClient.
+
+## Sprint 6.2 API Coverage Addendum
+
+No new Core API endpoint was introduced. Bulk Order Checking continues to use the Client API `POST /api/v1/client/order-checkings/bulk` for submission and existing Client API lookups for units, receivers, and products. The review step does not call Core.

@@ -46,3 +46,11 @@ Bulk is the next unimplemented order workflow evidenced by roadmap/docs/capabili
 2. Notifications only after product behavior is defined.
 3. Payment submission/invoice/receipt work only after Core/accounting contracts exist.
 4. Export/analytics and configurable Dashboard work after core operational workflows are stable.
+
+## Sprint 6 Update
+
+Bulk Order Checking is implemented locally. The next review gate should validate UX, focused/full tests, and documentation before considering commit or deployment. Remaining future order work excludes rebuilding Single Order Checking.
+
+## Sprint 6.2 Roadmap Note
+
+Bulk Order Checking UX polish is complete locally. The next practical step is human review of the refactored page at desktop and mobile widths before any commit or deployment decision.

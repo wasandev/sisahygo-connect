@@ -62,3 +62,11 @@ Conclusion: Sprint 2A delivered Single Order Checking create/submit/reconcile. I
 | Retry/idempotency | Partial | ADR-009 and Single lock/reconcile | Bulk idempotency key/reference behavior unverified. |
 
 Decision: Sprint 6 should be Bulk Order Checking implementation only after the contract verification gate is satisfied. If Core cannot confirm the Bulk contract, run a short Bulk prerequisite/API-contract sprint first.
+
+## Sprint 6 Feature Matrix Update
+
+Bulk Order Checking is implemented locally with route /order-checking/bulk, OrderCheckingBulk Livewire component, SubmitBulkOrderChecking application service, Bulk request/response DTOs, mapper, endpoint method, fixtures, focused tests, and documentation. It remains localhost-only until reviewed; no deploy has been performed.
+
+## Sprint 6.2 Feature Matrix Addendum
+
+Bulk Order Checking now includes: active Order navigator, active Order editor, contextual receiver/product lookup, duplicate Order, mandatory review, filtered result view, copy controls, dirty-state warning, and failed-only retry. It still excludes drafts, CSV/Excel import, automatic retry, direct Core database reads, and local reconstruction of Core business results.

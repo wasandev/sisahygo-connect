@@ -11,3 +11,11 @@
 | Minor | Shipment dashboard all-or-nothing for shipment failures | Dashboard | Payment failure isolated; shipment service exceptions still page-level | A shipment API issue can hide dashboard content | Less granular resilience | Consider section-level dashboard services if needed | Future reliability | No |
 | Minor | `/ux/*` routes remain in authenticated selected-account group | UX prototypes | Route file contains prototype routes | Possible confusion during audits/demo | Prototype/prod route overlap | Keep documented or move behind local-only guard | Maintenance | No |
 | Informational | Dashboard payment cache freshness is TTL-bound | Dashboard payments | 60 second default TTL | Core changes may lag briefly on dashboard | Accepted performance tradeoff | Keep documented; tune config if users report staleness | Operations | No |
+
+## Sprint 6 Bulk Technical Debt
+
+Bulk manual entry is intentionally implemented without CSV/Excel import, templates, persisted drafts, or background jobs. Future import or draft work should preserve the same Client API boundary and failed-row-only retry rule.
+
+## Sprint 6.2 Technical Debt Addendum
+
+Bulk Order Checking still does not include persisted drafts, import/export files, background processing, browser-level visual regression tests, or automated clipboard/browser-beforeunload assertions. These remain future enhancements, not blockers for the Client API workflow.

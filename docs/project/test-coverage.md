@@ -30,3 +30,11 @@ No skipped test files were found during repository inventory.
 - Shipments/History/Dashboard: `ShipmentQueryServiceTest`, `ShipmentPagesTest`, `History*`, `CustomerDashboard*`
 
 Do not report coverage percentages unless a coverage tool is run.
+
+## Sprint 6 Bulk Coverage
+
+Added focused Bulk tests for endpoint request shape, 201 mapping, 207 processed partial success, 422 validation envelope, no blind POST retry, service classification, failed-row retry payload, local duplicate client reference validation, route protection, dynamic rows/items, result rendering, nested error mapping, and unknown-result warning.
+
+## Sprint 6.2 Test Coverage Addendum
+
+Focused coverage for Bulk Order Checking now includes active Order state, mandatory review before POST, duplicate Order behavior, validation navigation, result filtering/copy controls, failed-only retry, Core 422 mapping, transport uncertainty, and contextual receiver/product lookup.

@@ -59,3 +59,13 @@ Verified next sprint: `Sprint 6 — Bulk Order Checking implementation`, provide
 | Payment API proposal says payment endpoints were missing | Superseded | `docs/architecture/core-payment-api-contract-proposal.md` | Preserve as proposal history; current code implements `/payments`. |
 | Reports appears in nav but is placeholder | Accurate but easy to misread | `routes/web.php`, `pages.placeholder` | Track as Placeholder in source-of-truth. |
 | UX prototype routes exist | Accurate but easy to misread | `/ux/*` routes | Treat as prototype/deprecated, not production status. |
+
+## Sprint 6 Bulk Order Checking Update
+
+Bulk Order Checking is now implemented locally on feature/bulk-order-checking. The production route is /order-checking/bulk and uses the existing auth plus selected Client Account middleware. The workflow uses Sisahygo Client API POST /order-checkings/bulk only, handles HTTP 201, 207, and 422 distinctly, and never retries a full partially successful Batch automatically.
+
+Current limitation: no Excel/CSV import, templates, persisted drafts, background jobs, or editing after Core acceptance.
+
+## Sprint 6.2 Local Status
+
+Bulk Order Checking UX refactor is implemented locally on `feature/bulk-order-checking`. The work is layered on top of uncommitted Sprint 6 and Sprint 6.1 changes. No deploy and no commit have been performed.

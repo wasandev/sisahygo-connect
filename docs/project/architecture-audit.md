@@ -36,3 +36,11 @@ Core API -> `SisahygoApiClient` -> Endpoint/Gateway -> Mapper -> DTO/Read Model 
 - `AuthorizedOrderQuery` and `AuthorizedPaymentQuery` are legacy/local authorization query objects from earlier architecture work. They create tension with the current “Core via Client API only” direction and should not be used for new Connect-to-Core feature work unless intentionally repurposed for test-only/local demo contexts.
 - Dashboard Payment Overview remains in the existing dashboard Livewire component rather than a lazy child component. This is an acceptable deviation because failure isolation and targeted loading exist, and cache reduces repeat Core payment calls without serializing credentials.
 - `/ux/*` routes should not be used as completion evidence for production features.
+
+## Sprint 6 Architecture Update
+
+Bulk Order Checking follows the existing Connect boundary: Livewire component to application service to Sisahygo integration context to OrderCheckingsEndpoint to SisahygoApiClient. No Core database dependency, API credential exposure, local financial reconstruction, persisted draft storage, or automatic Bulk POST retry was introduced.
+
+## Sprint 6.2 Architecture Addendum
+
+Bulk Order Checking UX was refactored inside the existing `OrderCheckingBulk` Livewire component. API submission remains delegated to `SubmitBulkOrderChecking`, which continues to use the selected Client Account and Sisahygo Client API endpoint. No Core database access, local financial/business reconstruction, or credential exposure was introduced.

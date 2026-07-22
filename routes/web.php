@@ -5,6 +5,7 @@ use App\Livewire\Actions\Logout;
 use App\Livewire\Dashboard\CustomerDashboard;
 use App\Livewire\History\OrderHistory;
 use App\Livewire\OrderChecking;
+use App\Livewire\OrderCheckingBulk;
 use App\Livewire\Payments\PaymentIndex;
 use App\Livewire\Payments\PaymentShow;
 use App\Livewire\Shipments\ShipmentIndex;
@@ -55,6 +56,8 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/order-checking', OrderChecking::class)
             ->name('order-checking');
+        Route::get('/order-checking/bulk', OrderCheckingBulk::class)
+            ->name('order-checking.bulk');
 
         Route::get('/shipments', ShipmentIndex::class)
             ->name('shipments');

@@ -27,3 +27,13 @@
 - Single Order Checking create/submit/reconcile is already implemented and tested.
 - Payment Center F/L/E list/detail is already implemented and tested.
 - Dashboard Payment Overview/cache is already implemented and tested.
+
+## Sprint 6 Backlog Update
+
+Bulk Order Checking implementation moved out of MVP / Next. Future backlog for Bulk is import/templates, persisted drafts, richer reconciliation screens, and operational reporting, only after product scope and Core contract confirmation.
+
+## Sprint 6.2 Backlog Update
+
+Completed locally: Hybrid Order Navigator Plus Active Order Item Grid for Bulk Order Checking, mandatory review step, result filters, clipboard actions, duplicate Order, contextual lookup, dirty warning, and failed-only retry review flow.
+
+Future candidates: draft persistence, CSV/Excel import, browser screenshot regression tests, and richer bulk result export.

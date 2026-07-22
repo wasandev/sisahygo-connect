@@ -14,6 +14,8 @@
             <p class="font-semibold">{{ __('order_checking.environment.title') }}</p>
             <p class="mt-1">{{ __('order_checking.environment.body') }}</p>
         </div>
+
+        <x-connect.button variant="secondary" href="{{ route('order-checking.bulk') }}" wire:navigate>{{ __('bulk_order_checking.actions.bulk_order') }}</x-connect.button>
     </div>
 
     @if ($unavailable)

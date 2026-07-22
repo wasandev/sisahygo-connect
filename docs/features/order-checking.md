@@ -742,3 +742,15 @@ Sprint 2A implementation ถือว่าพร้อม human review เม�
 - Submit มี processing flag และ server-side lock guard ต่อ `client_reference_no`
 - Tests ใช้ `Http::fake()` และไม่เรียก Sandbox ใน standard suite
 - ไม่มี migration สำหรับ local order persistence หรือ speculative idempotency schema
+
+## Sprint 6 Bulk Implementation Note
+
+The Bulk contract has now been verified and implemented locally in Connect. Bulk uses POST /order-checkings/bulk, supports HTTP 201 all-success, HTTP 207 processed partial/all-row failure, and HTTP 422 request-level rejection. Bulk does not replace Single Order Checking, does not persist drafts, and does not retry a full Batch automatically after partial success or network uncertainty.
+
+See docs/features/bulk-order-checking.md for the focused Bulk feature behavior.
+
+## Bulk Order Checking UX
+
+Sprint 6.2 refactored Bulk Order Checking into an `edit -> review -> result` workflow. Bulk users now edit one active Order at a time with a compact navigator, contextual receiver/product lookup, Duplicate Order, local validation navigation, mandatory review before submit, filtered result rows, copy controls, and failed-only retry that returns to edit mode.
+
+The single Order Checking page remains unchanged by this UX refactor.
