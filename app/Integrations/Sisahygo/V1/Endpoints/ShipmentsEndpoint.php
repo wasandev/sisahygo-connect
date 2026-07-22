@@ -18,6 +18,8 @@ class ShipmentsEndpoint
         'tracking_no',
         'id',
         'order_header_no',
+        'client_reference_no',
+        'batch_reference_no',
         'page',
         'per_page',
     ];

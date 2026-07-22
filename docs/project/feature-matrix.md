@@ -8,7 +8,7 @@ Status values: Completed, Partial, Placeholder, Planned, Deprecated, Unverified.
 | Profile | Update profile/password/delete user | `/profile` | Breeze/Volt profile forms | None | Working | Adequate | Adequate | Completed | `resources/views/profile.blade.php`, `tests/Feature/ProfileTest.php`. |
 | Client Account | Select/change account | `/client-accounts/select`, POST select/change | `CurrentClientAccountResolver`, controller, middleware | None | Working | Strong | Strong | Completed | `EnsureClientAccountSelected`, `ClientAccountSelectionController`, ClientAccount tests. |
 | Client Account | Settings visibility | `/settings`, `/settings/client-account` | Volt components query local Client Account models | None | Read-only working | Adequate | Adequate | Partial | Shows overview/members/access; no mutation workflows. |
-| Dashboard | Shipment summary/latest/attention | `/dashboard` | `GetCustomerDashboard`, shipment/history services | `GET /shipments` | Working | Strong | Strong | Completed | Dashboard tests and docs. |
+| Dashboard | Workspace summary/latest/attention/search/pending/notification preview | `/dashboard` | `GetCustomerDashboard`, shipment/history/search services | `GET /shipments`, `GET /payments` | Working | Strong | Strong | Completed | Dashboard tests, workspace tests, `docs/features/customer-workspace.md`. |
 | Dashboard | Payment widgets/cache | `/dashboard` | `DashboardPaymentOverviewService`, `PaymentQueryService` | `GET /payments` | Working | Strong | Strong | Completed | Payment overview/cache tests. |
 | Single Order Checking | Single create/submit/reconcile | `/order-checking` | `SubmitSingleOrderChecking` | `/receivers`, `/products`, `/units`, POST `/order-checkings`, GET `/order-checkings/{client_reference_no}` | Working | Strong | Conflicted but source-of-truth updated | Completed | Route, Livewire page, endpoint, mapper, service, tests. |
 | Single Order Checking | List/detail/edit/draft/rejection management | None | None | Unverified/not implemented | None | Missing | Mentioned as not in current scope | Planned | No routes/components/services. |
@@ -16,9 +16,11 @@ Status values: Completed, Partial, Placeholder, Planned, Deprecated, Unverified.
 | Shipment Tracking | Tracking lookup | `/tracking` | `TrackingLookup` redirect | `GET /shipments/{trackingIdentifier}` via detail page | Working | Adequate | Adequate | Completed | `ShipmentPagesTest`. |
 | Shipments | List/detail | `/shipments`, `/shipments/{trackingIdentifier}` | `ShipmentQueryService`, `ShipmentsEndpoint` | `GET /shipments`, `GET /shipments/{tracking_no}` | Working | Strong | Adequate | Completed | Shipment page/service tests. |
 | Shipment History | History list/filter | `/history` | `ListOrderHistory` | `GET /shipments` | Working | Strong | Adequate | Completed | History tests. |
+| Order Detail | Customer order detail from shipment detail | `/orders/{trackingIdentifier}` | `ShipmentQueryService`, `ShipmentMapper` | `GET /shipments/{tracking_no}` | Working | Adequate | Strong | Completed | Shipment page tests, `docs/features/customer-workspace.md`. |
+| Universal Search | Tracking/client reference/batch reference resolver | Dashboard search component | `ResolveUniversalSearch`, `ShipmentQueryService` | `GET /shipments` filters | Working | Adequate | Strong | Completed | `CustomerWorkspaceEnhancementTest`. |
 | Payment Center | List/filter/detail F/L/E | `/payments`, `/payments/{paymentIdentifier}` | `PaymentQueryService`, `PaymentsEndpoint`, presenter | `GET /payments`, `GET /payments/{paymentIdentifier}` | Working | Strong | Strong | Completed | Payment tests/localization tests. |
 | Reports | Placeholder page | `/reports` | Static placeholder view | None | Placeholder | Basic route coverage only | Planned | Placeholder | `pages.placeholder`, nav entry. |
-| Notifications | Header icon / UX prototype | `/ux/notifications` only | None | None | Prototype only | UX prototype test | Planned | Placeholder | No production notification route. |
+| Notifications | Phase 1 mock notification center | `/notifications`, `/ux/notifications` | `NotificationCenter` mock data | None | Working mock UI | Adequate | Strong | Partial | Production route uses mock data only; no polling/push/read persistence. |
 | UX Prototypes | Static previews | `/ux/*` | Static views plus OrderChecking preview route | Mixed | Internal/preview | Adequate smoke | Historical/prototype | Deprecated | Production routes exist separately. |
 
 ## Single Order Checking Deep Audit
@@ -70,3 +72,7 @@ Bulk Order Checking is implemented locally with route /order-checking/bulk, Orde
 ## Sprint 6.2 Feature Matrix Addendum
 
 Bulk Order Checking now includes: active Order navigator, active Order editor, contextual receiver/product lookup, duplicate Order, mandatory review, filtered result view, copy controls, dirty-state warning, and failed-only retry. It still excludes drafts, CSV/Excel import, automatic retry, direct Core database reads, and local reconstruction of Core business results.
+
+## Sprint 7 Feature Matrix Addendum
+
+Customer Workspace Enhancement is implemented locally. Dashboard now includes universal search, pending actions, and notification preview. Order History links to the new Order Detail page at `/orders/{trackingIdentifier}` backed by the existing Shipment Detail Core API. `/notifications` is a production mock-data UI for Phase 1 only, with no polling, push notifications, or persisted read state. No deploy or commit has been performed.

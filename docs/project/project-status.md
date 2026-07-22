@@ -1,6 +1,6 @@
 # Project Status
 
-Last verified: 2026-07-21
+Last verified: 2026-07-22
 Branch: `chore/project-roadmap-consolidation`
 Commit audited: `2d2947e`
 Starting worktree: clean
@@ -17,14 +17,15 @@ Sisahygo Connect is a Laravel/Livewire customer portal with authenticated tenant
 - Client Account foundation: selection middleware, membership/capability/customer-link models, settings read-only overview, credential storage.
 - Single Order Checking create/submit/reconcile flow through Core Client API.
 - Shipment Tracking, Shipment list/detail, and History using Core shipment endpoints.
-- Customer Dashboard with shipment metrics and Dashboard Payment Overview.
+- Customer Dashboard workspace with shipment metrics, Dashboard Payment Overview, universal search, pending actions, and notification preview.
+- Order Detail page backed by the existing Shipment Detail Core API.
 - Payment Center list/detail for payment types `F`, `L`, and `E`, plus Dashboard payment cache.
 
 ## Partial Or Placeholder
 
 - Reports route is a placeholder page.
 - Settings is operational for Client Account visibility but not full account/member/access management mutation UI.
-- Notifications has a UX prototype route and header icon, but no operational module.
+- Notifications has a Phase 1 production route using mock data only; polling, push notifications, and persisted read state are not implemented.
 - `/ux/*` routes are prototype/internal preview screens, not production modules.
 
 ## Next Milestone
@@ -69,3 +70,7 @@ Current limitation: no Excel/CSV import, templates, persisted drafts, background
 ## Sprint 6.2 Local Status
 
 Bulk Order Checking UX refactor is implemented locally on `feature/bulk-order-checking`. The work is layered on top of uncommitted Sprint 6 and Sprint 6.1 changes. No deploy and no commit have been performed.
+
+## Sprint 7 Customer Workspace Update
+
+Customer Workspace Enhancement is implemented locally on the current worktree. The dashboard remains the main customer workspace and now includes universal search, pending actions, and notification preview. Order History opens a dedicated Order Detail route that reuses the existing Shipment Detail Core API and DTO/mapper path. `/notifications` is Phase 1 UI with mock data only. No deploy and no commit have been performed.

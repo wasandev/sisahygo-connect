@@ -11,6 +11,7 @@ use App\Domain\ClientAccount\Models\ClientAccountUser;
 use App\Domain\ClientAccount\Services\CurrentClientAccountResolver;
 use App\Domain\Sisahygo\Enums\SisahygoApiEnvironment;
 use App\Domain\Sisahygo\Services\SisahygoApiCredentialService;
+use App\Livewire\Orders\OrderShow;
 use App\Livewire\Shipments\ShipmentIndex;
 use App\Livewire\Shipments\ShipmentShow;
 use App\Livewire\Shipments\TrackingLookup;
@@ -79,6 +80,24 @@ class ShipmentPagesTest extends TestCase
             ->assertSee('Fake parcel')
             ->assertSee('รับสินค้าแล้ว')
             ->assertDontSee('secret-api-key');
+    }
+
+    public function test_order_detail_page_renders_from_shipment_api(): void
+    {
+        [$user, $account] = $this->eligibleAccount();
+        $this->actingAs($user)->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id]);
+        Http::fake(['https://sandbox-api.sisahygo.online/api/v1/client/shipments/SH10001' => Http::response($this->fixture('shipment-detail-success.json'))]);
+
+        $this->get(route('orders.show', 'SH10001'))
+            ->assertOk()
+            ->assertSee('รายละเอียดรายการ')
+            ->assertSee('Fake parcel')
+            ->assertSee('สรุปค่าขนส่ง')
+            ->assertDontSee('secret-api-key');
+
+        Livewire::test(OrderShow::class, ['trackingIdentifier' => 'SH10001'])
+            ->assertSet('pageError', null)
+            ->assertSee('ประวัติสถานะ');
     }
 
     public function test_tracking_lookup_redirects_to_detail_page(): void

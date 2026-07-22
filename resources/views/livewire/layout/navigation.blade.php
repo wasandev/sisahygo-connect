@@ -24,6 +24,7 @@ new class extends Component
         ['label' => __('navigation.tracking'), 'route' => 'tracking'],
         ['label' => __('navigation.history'), 'route' => 'history'],
         ['label' => __('navigation.payments'), 'route' => 'payments', 'active' => 'payments*'],
+        ['label' => __('navigation.notifications'), 'route' => 'notifications'],
         ['label' => __('navigation.reports'), 'route' => 'reports'],
         ['label' => __('navigation.settings'), 'route' => 'settings'],
     ];
@@ -128,13 +129,13 @@ new class extends Component
             </div>
 
             <div class="flex items-center gap-2">
-                <button type="button" class="connect-focus rounded-lg border border-slate-200 bg-white p-2 text-slate-500 shadow-sm transition hover:bg-slate-50 hover:text-connect-navy-900">
+                <a href="{{ route('notifications') }}" wire:navigate class="connect-focus rounded-lg border border-slate-200 bg-white p-2 text-slate-500 shadow-sm transition hover:bg-slate-50 hover:text-connect-navy-900">
                     <span class="sr-only">{{ __('navigation.notifications') }}</span>
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5" />
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 17a3 3 0 0 0 6 0" />
                     </svg>
-                </button>
+                </a>
 
                 <div class="relative">
                     <button type="button" x-on:click="userMenuOpen = ! userMenuOpen" class="connect-focus flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-left shadow-sm transition hover:bg-slate-50">

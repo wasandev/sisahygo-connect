@@ -39,6 +39,9 @@ class CustomerDashboardPageTest extends TestCase
             ->assertSee('รายการวันนี้')
             ->assertSee('ยังคำนวณไม่ได้')
             ->assertSee('สร้างรายการส่งสินค้า')
+            ->assertSee('ค้นหาทั่ว Workspace')
+            ->assertSee('งานที่รอดำเนินการ')
+            ->assertSee('การแจ้งเตือนล่าสุด')
             ->assertDontSee('secret-api-key');
 
         Http::assertSentCount(5);

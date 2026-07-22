@@ -61,6 +61,10 @@ class ShipmentQueryService
             'date_to' => ['nullable', 'date', 'after_or_equal:date_from'],
             'status' => ['nullable', 'string', 'max:50'],
             'keyword' => ['nullable', 'string', 'max:100'],
+            'tracking_no' => ['nullable', 'string', 'max:100'],
+            'order_header_no' => ['nullable', 'string', 'max:100'],
+            'client_reference_no' => ['nullable', 'string', 'max:100'],
+            'batch_reference_no' => ['nullable', 'string', 'max:100'],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ], [
@@ -71,6 +75,10 @@ class ShipmentQueryService
             'from_date' => $data['date_from'] ?? null,
             'to_date' => $data['date_to'] ?? null,
             'order_status' => $data['status'] ?? null,
+            'tracking_no' => $data['tracking_no'] ?? null,
+            'order_header_no' => $data['order_header_no'] ?? null,
+            'client_reference_no' => $data['client_reference_no'] ?? null,
+            'batch_reference_no' => $data['batch_reference_no'] ?? null,
             'page' => isset($data['page']) ? (int) $data['page'] : 1,
             'per_page' => isset($data['per_page']) ? (int) $data['per_page'] : 15,
         ];
@@ -100,6 +108,7 @@ class ShipmentQueryService
             'tracking_no' => $shipment->trackingNo,
             'id' => $shipment->id,
             'client_reference_no' => $shipment->clientReferenceNo,
+            'batch_reference_no' => $shipment->batchReferenceNo,
             'order_header_no' => $shipment->orderHeaderNo,
             'order_header_date' => $shipment->orderHeaderDate?->format('Y-m-d'),
             'order_status' => $shipment->orderStatus,
@@ -107,6 +116,7 @@ class ShipmentQueryService
             'order_status_variant' => ShipmentStatusLabels::variant($shipment->orderStatus),
             'order_type' => $shipment->orderType,
             'order_amount' => $shipment->orderAmount,
+            'order_amount_display' => $this->moneyDisplay($shipment->orderAmount),
             'payment_type' => $shipment->paymentType?->value,
             'payment_status' => $shipment->paymentStatus?->value,
             'sender_customer_id' => $shipment->senderCustomerId,
@@ -156,6 +166,11 @@ class ShipmentQueryService
             'client_item_no' => $item->clientItemNo,
             'client_product_code' => $item->clientProductCode,
         ];
+    }
+
+    private function moneyDisplay(?string $amount): string
+    {
+        return is_numeric($amount) ? number_format((float) $amount, 2) : '-';
     }
 
     /** @return array<string, mixed>|null */

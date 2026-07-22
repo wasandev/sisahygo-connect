@@ -6,6 +6,8 @@ use App\Livewire\Dashboard\CustomerDashboard;
 use App\Livewire\History\OrderHistory;
 use App\Livewire\OrderChecking;
 use App\Livewire\OrderCheckingBulk;
+use App\Livewire\Notifications\NotificationCenter;
+use App\Livewire\Orders\OrderShow;
 use App\Livewire\Payments\PaymentIndex;
 use App\Livewire\Payments\PaymentShow;
 use App\Livewire\Shipments\ShipmentIndex;
@@ -69,6 +71,11 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/history', OrderHistory::class)
             ->name('history');
+        Route::get('/orders/{trackingIdentifier}', OrderShow::class)
+            ->name('orders.show');
+
+        Route::get('/notifications', NotificationCenter::class)
+            ->name('notifications');
 
         Route::get('/payments', PaymentIndex::class)
             ->name('payments');

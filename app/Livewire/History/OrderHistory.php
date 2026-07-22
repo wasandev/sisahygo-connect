@@ -59,6 +59,7 @@ class OrderHistory extends Component
         $this->statusOptions = ShipmentStatusLabels::options();
         $this->datePresetOptions = __('history.presets');
         $this->applyDefaults($history);
+        $this->status = (string) request()->query('status', $this->status);
         $this->loadHistory($history);
     }
 

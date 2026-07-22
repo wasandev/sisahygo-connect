@@ -6,6 +6,8 @@
     $recentProducts = $dashboard['recent_products'] ?? [];
     $paymentOverview = $dashboard['payment_overview'] ?? ['available' => false, 'summary' => null, 'recent' => [], 'links' => [], 'cache' => []];
     $paymentCache = $paymentOverview['cache'] ?? [];
+    $pendingActions = $dashboard['pending_actions'] ?? [];
+    $notificationPreview = $dashboard['notification_preview'] ?? [];
     $canCreateOrder = (bool) ($dashboard['can_create_order'] ?? false);
     $userName = auth()->user()?->name ?: __('dashboard.account.current');
 @endphp
@@ -20,6 +22,10 @@
             </x-connect.button>
         </x-slot:actions>
     </x-connect.page-header>
+
+    <x-connect.card :title="__('dashboard.workspace_search.title')" :description="__('dashboard.workspace_search.description')">
+        <livewire:workspace.universal-search />
+    </x-connect.card>
 
     @if ($unavailable)
         <x-connect.card :title="__('dashboard.unavailable.title')">
@@ -82,6 +88,41 @@
                 @endforeach
             </section>
 
+
+            <div class="grid gap-4 xl:grid-cols-2">
+                <x-connect.card :title="__('dashboard.pending.title')" :description="__('dashboard.pending.description')">
+                    <div class="space-y-3">
+                        @forelse ($pendingActions as $action)
+                            <article wire:key="dashboard-pending-{{ $action['key'] }}" class="rounded-lg border border-slate-100 bg-slate-50 p-4">
+                                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                    <div class="min-w-0">
+                                        <p class="break-words text-sm font-semibold text-connect-navy-900">{{ $action['title'] }}</p>
+                                        <p class="mt-1 break-words text-sm text-slate-600">{{ $action['description'] }}</p>
+                                    </div>
+                                    <x-connect.button size="sm" variant="secondary" :href="$action['href']" wire:navigate>{{ __('dashboard.actions.review') }}</x-connect.button>
+                                </div>
+                            </article>
+                        @empty
+                            <x-connect.empty-state :title="__('dashboard.pending.empty_title')" :description="__('dashboard.pending.empty_description')" />
+                        @endforelse
+                    </div>
+                </x-connect.card>
+
+                <x-connect.card :title="__('dashboard.notifications.title')" :description="__('dashboard.notifications.description')">
+                    <div class="space-y-3">
+                        @foreach ($notificationPreview as $notification)
+                            <article wire:key="dashboard-notification-{{ md5($notification['title']) }}" class="border-b border-slate-100 pb-3 last:border-b-0 last:pb-0">
+                                <p class="break-words text-sm font-semibold text-connect-navy-900">{{ $notification['title'] }}</p>
+                                <p class="mt-1 break-words text-sm text-slate-600">{{ $notification['message'] }}</p>
+                                <p class="mt-1 text-xs text-slate-500">{{ $notification['time'] }}</p>
+                            </article>
+                        @endforeach
+                    </div>
+                    <div class="mt-4">
+                        <x-connect.button size="sm" variant="secondary" :href="route('notifications')" wire:navigate>{{ __('dashboard.notifications.view_all') }}</x-connect.button>
+                    </div>
+                </x-connect.card>
+            </div>
 
             <x-connect.card :title="__('dashboard.payments.title')" :description="__('dashboard.payments.description')" padding="none">
                 <div wire:loading.delay wire:target="refresh" class="border-b border-slate-100 p-5 sm:p-6" role="status" aria-live="polite" aria-busy="true">

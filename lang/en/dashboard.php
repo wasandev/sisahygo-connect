@@ -64,6 +64,7 @@ return [
         'refreshing' => 'Refreshing...',
         'retry' => 'Retry',
         'view_detail' => 'Open detail',
+        'review' => 'Review',
     ],
     'recent_receivers' => [
         'title' => 'Recently used receivers',
@@ -100,6 +101,25 @@ return [
         'errors' => [
             'unavailable' => 'Payment data is unavailable right now.',
         ],
+    ],
+    'workspace_search' => [
+        'title' => 'Workspace search',
+        'description' => 'Search by tracking number, client reference, or batch reference and open the matching detail page.',
+    ],
+    'pending' => [
+        'title' => 'Pending actions',
+        'description' => 'Items worth reviewing from the latest dashboard data.',
+        'attention_title' => 'Shipments need attention',
+        'attention_description' => '{1}:count problem shipment found|[2,*]:count problem shipments found',
+        'payments_title' => 'Outstanding payments',
+        'payments_description' => '{1}:count outstanding payment found|[2,*]:count outstanding payments found',
+        'empty_title' => 'No pending actions',
+        'empty_description' => 'Problem shipments or outstanding payments will appear here when present.',
+    ],
+    'notifications' => [
+        'title' => 'Latest notifications',
+        'description' => 'Phase 1 mock notification preview without polling or push notifications.',
+        'view_all' => 'Open notification center',
     ],
     'unavailable' => ['title' => 'Dashboard is not ready'],
     'errors' => [

@@ -15,6 +15,7 @@ final readonly class ShipmentSummary
         public string $trackingNo,
         public ?int $id,
         public ?string $clientReferenceNo,
+        public ?string $batchReferenceNo,
         public ?string $orderHeaderNo,
         public ?CarbonImmutable $orderHeaderDate,
         public ?string $orderStatus,

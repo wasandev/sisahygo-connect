@@ -66,6 +66,7 @@ return [
         'refreshing' => 'กำลังโหลด...',
         'retry' => 'ลองใหม่',
         'view_detail' => 'เปิดรายละเอียด',
+        'review' => 'ตรวจสอบ',
     ],
     'recent_receivers' => [
         'title' => 'ผู้รับที่ใช้ล่าสุด',
@@ -102,6 +103,25 @@ return [
         'errors' => [
             'unavailable' => 'ยังไม่สามารถโหลดข้อมูลการชำระเงินได้ในขณะนี้',
         ],
+    ],
+    'workspace_search' => [
+        'title' => 'ค้นหาทั่ว Workspace',
+        'description' => 'ค้นหาเลขติดตาม เลขอ้างอิงลูกค้า หรือ Batch Reference แล้วเปิดหน้ารายละเอียดที่เกี่ยวข้อง',
+    ],
+    'pending' => [
+        'title' => 'งานที่รอดำเนินการ',
+        'description' => 'สรุปสิ่งที่ควรเปิดตรวจจากข้อมูลล่าสุดที่โหลดบนหน้าหลัก',
+        'attention_title' => 'รายการขนส่งต้องติดตาม',
+        'attention_description' => '{1}พบรายการสถานะ problem :count รายการ|[2,*]พบรายการสถานะ problem :count รายการ',
+        'payments_title' => 'รายการค้างชำระ',
+        'payments_description' => '{1}พบรายการค้างชำระ :count รายการ|[2,*]พบรายการค้างชำระ :count รายการ',
+        'empty_title' => 'ยังไม่มีงานที่ต้องติดตาม',
+        'empty_description' => 'เมื่อมีรายการ problem หรือค้างชำระ ระบบจะแสดงให้ตรวจจากที่นี่',
+    ],
+    'notifications' => [
+        'title' => 'การแจ้งเตือนล่าสุด',
+        'description' => 'ตัวอย่างการแจ้งเตือน Phase 1 ยังไม่เชื่อม polling หรือ push notification',
+        'view_all' => 'เปิดศูนย์แจ้งเตือน',
     ],
     'unavailable' => [
         'title' => 'ยังไม่พร้อมแสดงหน้าหลัก',

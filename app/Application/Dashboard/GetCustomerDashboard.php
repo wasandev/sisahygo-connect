@@ -69,6 +69,8 @@ class GetCustomerDashboard
             'date_ranges' => $ranges,
             'request_count' => self::REQUEST_COUNT,
             'can_create_order' => $this->authorization->userCan($user, $clientAccount, ClientCapability::OrderCreate),
+            'pending_actions' => $this->pendingActions($attention, $paymentOverview),
+            'notification_preview' => $this->notificationPreview(),
             'summary_cards' => [
                 [
                     'key' => 'today',
@@ -119,6 +121,50 @@ class GetCustomerDashboard
                 'date_from' => $today->subDays(29)->toDateString(),
                 'date_to' => $today->toDateString(),
             ],
+        ];
+    }
+
+    /**
+     * @param  array{items: array<int, array<string, mixed>>, meta: array<string, mixed>|null}  $attention
+     * @param  array<string, mixed>  $paymentOverview
+     * @return array<int, array<string, mixed>>
+     */
+    private function pendingActions(array $attention, array $paymentOverview): array
+    {
+        $actions = [];
+        $attentionTotal = $this->metaTotal($attention['meta']);
+
+        if ($attentionTotal > 0) {
+            $actions[] = [
+                'key' => 'attention_shipments',
+                'title' => __('dashboard.pending.attention_title'),
+                'description' => trans_choice('dashboard.pending.attention_description', $attentionTotal, ['count' => $attentionTotal]),
+                'href' => route('history', ['status' => 'problem']),
+                'variant' => 'warning',
+            ];
+        }
+
+        $outstanding = (int) data_get($paymentOverview, 'summary.outstanding_record_count', 0);
+
+        if ($outstanding > 0) {
+            $actions[] = [
+                'key' => 'outstanding_payments',
+                'title' => __('dashboard.pending.payments_title'),
+                'description' => trans_choice('dashboard.pending.payments_description', $outstanding, ['count' => $outstanding]),
+                'href' => route('payments', ['payment_status' => 'outstanding']),
+                'variant' => 'danger',
+            ];
+        }
+
+        return array_slice($actions, 0, self::RECENT_LIMIT);
+    }
+
+    /** @return array<int, array<string, string>> */
+    private function notificationPreview(): array
+    {
+        return [
+            ['title' => __('notifications.mock.shipment.title'), 'message' => __('notifications.mock.shipment.message'), 'time' => '2026-07-17 10:30'],
+            ['title' => __('notifications.mock.payment.title'), 'message' => __('notifications.mock.payment.message'), 'time' => '2026-07-16 15:45'],
         ];
     }
 

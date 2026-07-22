@@ -28,6 +28,7 @@ class ShipmentMapper
             trackingNo: (string) $trackingNo,
             id: $this->nullableInt($data['id'] ?? null),
             clientReferenceNo: $this->nullableString($data['client_reference_no'] ?? null),
+            batchReferenceNo: $this->nullableString($data['batch_reference_no'] ?? $data['batch_ref'] ?? null),
             orderHeaderNo: $this->nullableString($data['order_header_no'] ?? null),
             orderHeaderDate: $this->date($data['order_header_date'] ?? null),
             orderStatus: $this->nullableString($data['order_status'] ?? null),
@@ -52,7 +53,7 @@ class ShipmentMapper
             summary: $this->summary($data),
             items: array_map(fn (array $item) => $this->item($item), is_array($data['items'] ?? null) ? $data['items'] : []),
             statusHistory: array_map(fn (array $status) => $this->status($status), $this->statusHistory($data)),
-            remark: $this->nullableString($data['remark'] ?? null),
+            remark: $this->nullableString($data['remark'] ?? $data['remarks'] ?? null),
         );
     }
 
@@ -92,7 +93,7 @@ class ShipmentMapper
             unitName: $this->nullableString($data['unit'] ?? $data['unit_name'] ?? null),
             price: $this->money($data['price'] ?? null),
             amount: $this->money($data['amount'] ?? $data['quantity'] ?? null),
-            lineAmount: $this->money($data['line_amount'] ?? null),
+            lineAmount: $this->money($data['line_amount'] ?? $data['total_amount'] ?? null),
             remark: $this->nullableString($data['remark'] ?? null),
             clientLineId: $this->nullableString($data['client_line_id'] ?? null),
             clientItemNo: $this->nullableString($data['client_item_no'] ?? null),
