@@ -2,10 +2,10 @@
 
 return [
     'dashboard' => 'หน้าหลัก',
-    'order_checking' => 'ตรวจสอบรายการส่งสินค้า',
+    'order_checking' => 'สร้างรายการส่งสินค้า',
     'shipments' => 'การขนส่ง',
     'tracking' => 'ติดตามสถานะสินค้า',
-    'history' => 'ประวัติการขนส่ง',
+    'history' => 'ประวัติรายการ',
     'payments' => 'การชำระเงิน',
     'reports' => 'รายงาน',
     'settings' => 'ตั้งค่า',

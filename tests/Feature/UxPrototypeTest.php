@@ -31,7 +31,7 @@ class UxPrototypeTest extends TestCase
     {
         return [
             'ux dashboard' => ['ux.dashboard', 'ภาพรวมวันนี้'],
-            'ux order checking' => ['ux.order-checking', 'ตรวจสอบรายการส่งสินค้า'],
+            'ux order checking' => ['ux.order-checking', 'สร้างรายการส่งสินค้า'],
             'ux tracking' => ['ux.tracking', 'ติดตามสถานะสินค้า'],
             'ux shipment detail' => ['ux.shipment-detail', 'SH-240715-001'],
             'ux payments' => ['ux.payments', 'การชำระเงิน'],

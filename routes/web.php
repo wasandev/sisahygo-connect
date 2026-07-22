@@ -2,6 +2,15 @@
 
 use App\Http\Controllers\ClientAccountSelectionController;
 use App\Livewire\Actions\Logout;
+use App\Livewire\Dashboard\CustomerDashboard;
+use App\Livewire\History\OrderHistory;
+use App\Livewire\OrderChecking;
+use App\Livewire\OrderCheckingBulk;
+use App\Livewire\Payments\PaymentIndex;
+use App\Livewire\Payments\PaymentShow;
+use App\Livewire\Shipments\ShipmentIndex;
+use App\Livewire\Shipments\ShipmentShow;
+use App\Livewire\Shipments\TrackingLookup;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -33,7 +42,7 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['client.account'])->group(function () {
         Route::prefix('ux')->name('ux.')->group(function () {
             Route::view('/dashboard', 'ux.dashboard')->name('dashboard');
-            Route::view('/order-checking', 'ux.order-checking')->name('order-checking');
+            Route::get('/order-checking', OrderChecking::class)->name('order-checking');
             Route::view('/tracking', 'ux.tracking')->name('tracking');
             Route::view('/shipment-detail', 'ux.shipment-detail')->name('shipment-detail');
             Route::view('/payments', 'ux.payments')->name('payments');
@@ -42,33 +51,29 @@ Route::middleware(['auth'])->group(function () {
             Route::view('/profile', 'ux.profile')->name('profile');
             Route::view('/notifications', 'ux.notifications')->name('notifications');
         });
-        Route::view('/dashboard', 'dashboard')
+        Route::get('/dashboard', CustomerDashboard::class)
             ->name('dashboard');
 
-        Route::view('/order-checking', 'pages.placeholder', [
-            'title' => __('navigation.order_checking'),
-            'description' => __('page.placeholder.order_checking'),
-        ])->name('order-checking');
+        Route::get('/order-checking', OrderChecking::class)
+            ->name('order-checking');
+        Route::get('/order-checking/bulk', OrderCheckingBulk::class)
+            ->name('order-checking.bulk');
 
-        Route::view('/shipments', 'pages.placeholder', [
-            'title' => __('navigation.shipments'),
-            'description' => __('page.placeholder.shipments'),
-        ])->name('shipments');
+        Route::get('/shipments', ShipmentIndex::class)
+            ->name('shipments');
+        Route::get('/shipments/{trackingIdentifier}', ShipmentShow::class)
+            ->name('shipments.show');
 
-        Route::view('/tracking', 'pages.placeholder', [
-            'title' => __('navigation.tracking'),
-            'description' => __('page.placeholder.tracking'),
-        ])->name('tracking');
+        Route::get('/tracking', TrackingLookup::class)
+            ->name('tracking');
 
-        Route::view('/history', 'pages.placeholder', [
-            'title' => __('navigation.history'),
-            'description' => __('page.placeholder.history'),
-        ])->name('history');
+        Route::get('/history', OrderHistory::class)
+            ->name('history');
 
-        Route::view('/payments', 'pages.placeholder', [
-            'title' => __('navigation.payments'),
-            'description' => __('page.placeholder.payments'),
-        ])->name('payments');
+        Route::get('/payments', PaymentIndex::class)
+            ->name('payments');
+        Route::get('/payments/{paymentIdentifier}', PaymentShow::class)
+            ->name('payments.show');
 
         Route::view('/reports', 'pages.placeholder', [
             'title' => __('navigation.reports'),

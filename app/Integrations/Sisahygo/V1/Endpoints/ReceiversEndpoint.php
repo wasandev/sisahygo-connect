@@ -4,6 +4,7 @@ namespace App\Integrations\Sisahygo\V1\Endpoints;
 
 use App\Integrations\Sisahygo\Exceptions\SisahygoUnexpectedResponseException;
 use App\Integrations\Sisahygo\Support\SisahygoIntegrationContext;
+use App\Integrations\Sisahygo\V1\DTO\ReceiverSummary;
 use App\Integrations\Sisahygo\V1\Mappers\ReceiverMapper;
 use App\Integrations\Sisahygo\V1\SisahygoApiClient;
 
@@ -11,11 +12,12 @@ class ReceiversEndpoint
 {
     public function __construct(private readonly SisahygoApiClient $client, private readonly ReceiverMapper $mapper) {}
 
-    public function list(SisahygoIntegrationContext $context): array
+    /** @return array<int, ReceiverSummary> */
+    public function list(SisahygoIntegrationContext $context, ?string $search = null): array
     {
-        $response = $this->client->get($context, '/receivers', [
-            'receiver_customer_ids' => $context->authorizedReceiverCustomerIds,
-        ]);
+        $response = $this->client->get($context, '/receivers', array_filter([
+            'search' => filled($search) ? $search : null,
+        ], fn ($value): bool => $value !== null && $value !== ''));
 
         $items = $response['data'] ?? null;
 
@@ -24,5 +26,11 @@ class ReceiversEndpoint
         }
 
         return $this->mapper->mapList($items);
+    }
+
+    public function findScoped(SisahygoIntegrationContext $context, int $receiverCustomerId): ?ReceiverSummary
+    {
+        return collect($this->list($context, (string) $receiverCustomerId))
+            ->first(fn (ReceiverSummary $receiver): bool => $receiver->customerId === $receiverCustomerId);
     }
 }

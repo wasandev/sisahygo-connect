@@ -1,5 +1,7 @@
 <x-app-layout :title="__('navigation.profile')">
-    <div class="space-y-6">
+    <div class="space-y-4">
+        <x-connect.page-header :title="__('navigation.profile')" :description="__('profile.update_information')" />
+
         <x-connect.card :title="__('profile.information')">
             <livewire:profile.update-profile-information-form />
         </x-connect.card>

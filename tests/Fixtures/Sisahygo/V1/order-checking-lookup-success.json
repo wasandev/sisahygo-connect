@@ -1,0 +1,27 @@
+{
+  "data": {
+    "id": 456789,
+    "tracking_no": "456789",
+    "order_status": "checking",
+    "client_reference_no": "SC-20260716-ABC123",
+    "customer_rec_id": 20001,
+    "to_customer_name": "บริษัท รับสินค้าไทย จำกัด",
+    "items_count": 1,
+    "items": [
+      {
+        "product_id": 6639,
+        "product_name": "น้ำดื่ม 600 ml",
+        "unit_id": 1,
+        "unit_name": "ขวด",
+        "amount": 2
+      }
+    ],
+    "history": [
+      {
+        "status": "checking",
+        "changed_at": "2026-07-16T10:30:00+07:00",
+        "user_id": 1
+      }
+    ]
+  }
+}

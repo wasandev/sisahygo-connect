@@ -5,7 +5,7 @@ return [
     'order_checking' => 'Order Checking',
     'shipments' => 'Shipments',
     'tracking' => 'Shipment Tracking',
-    'history' => 'Shipment History',
+    'history' => 'Order History',
     'payments' => 'Payments',
     'reports' => 'Reports',
     'settings' => 'Settings',

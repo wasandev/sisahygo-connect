@@ -19,11 +19,11 @@ new class extends Component
 @php
     $menuItems = [
         ['label' => __('navigation.dashboard'), 'route' => 'dashboard'],
-        ['label' => __('navigation.order_checking'), 'route' => 'order-checking'],
+        ['label' => __('navigation.order_checking'), 'route' => 'order-checking', 'active' => 'order-checking*'],
         ['label' => __('navigation.shipments'), 'route' => 'shipments'],
         ['label' => __('navigation.tracking'), 'route' => 'tracking'],
         ['label' => __('navigation.history'), 'route' => 'history'],
-        ['label' => __('navigation.payments'), 'route' => 'payments'],
+        ['label' => __('navigation.payments'), 'route' => 'payments', 'active' => 'payments*'],
         ['label' => __('navigation.reports'), 'route' => 'reports'],
         ['label' => __('navigation.settings'), 'route' => 'settings'],
     ];
@@ -33,18 +33,22 @@ new class extends Component
 @endphp
 
 <div x-data="{ drawerOpen: false, userMenuOpen: false }" x-on:keydown.escape.window="drawerOpen = false; userMenuOpen = false">
-    <aside class="fixed inset-y-0 left-0 z-40 hidden w-72 border-r border-slate-200 bg-white lg:flex lg:flex-col">
-        <div class="flex h-20 items-center border-b border-slate-100 px-6">
-            <a href="{{ route('dashboard') }}" wire:navigate class="connect-focus rounded-lg">
-                <x-connect.logo class="h-10 w-auto" />
+    <aside class="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-slate-200 bg-white lg:flex lg:flex-col">
+        <div class="flex h-24 items-center border-b border-slate-100 px-5">
+            <a href="{{ route('dashboard') }}" wire:navigate class="connect-focus flex min-w-0 items-center gap-3 rounded-lg">
+                <x-connect.logo variant="symbol" class="h-9 w-9 shrink-0" />
+                <span class="min-w-0">
+                    <span class="block truncate text-sm font-semibold uppercase tracking-wide text-connect-navy-900">SISAHYGO CONNECT</span>
+                    <span class="mt-0.5 block truncate text-xs font-medium text-slate-500">Customer Portal</span>
+                </span>
             </a>
         </div>
 
-        <nav class="flex-1 space-y-1 overflow-y-auto px-4 py-6" aria-label="Primary">
+        <nav class="flex-1 space-y-1 overflow-y-auto px-3 py-4" aria-label="Primary">
             @foreach ($menuItems as $item)
                 <x-connect.nav-link
                     :href="route($item['route'])"
-                    :active="request()->routeIs($item['route'])"
+                    :active="request()->routeIs($item['active'] ?? $item['route'])"
                     wire:navigate
                 >
                     {{ $item['label'] }}
@@ -68,9 +72,9 @@ new class extends Component
         <div x-show="drawerOpen" x-transition.opacity class="fixed inset-0 bg-slate-950/40" x-on:click="drawerOpen = false"></div>
 
         <aside x-show="drawerOpen" x-transition class="fixed inset-y-0 left-0 flex w-80 max-w-[85vw] flex-col bg-white shadow-xl">
-            <div class="flex h-20 items-center justify-between border-b border-slate-100 px-5">
+            <div class="flex h-14 items-center justify-between border-b border-slate-100 px-4">
                 <a href="{{ route('dashboard') }}" wire:navigate x-on:click="drawerOpen = false" class="connect-focus rounded-lg">
-                    <x-connect.logo class="h-9 w-auto" />
+                    <x-connect.logo variant="symbol" class="h-8 w-8" />
                 </a>
 
                 <button type="button" x-on:click="drawerOpen = false" class="connect-focus rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700">
@@ -81,9 +85,9 @@ new class extends Component
                 </button>
             </div>
 
-            <nav class="flex-1 space-y-1 overflow-y-auto px-4 py-6" aria-label="Mobile primary">
+            <nav class="flex-1 space-y-1 overflow-y-auto px-3 py-4" aria-label="Mobile primary">
                 @foreach ($menuItems as $item)
-                    <x-connect.nav-link :href="route($item['route'])" :active="request()->routeIs($item['route'])" wire:navigate x-on:click="drawerOpen = false">
+                    <x-connect.nav-link :href="route($item['route'])" :active="request()->routeIs($item['active'] ?? $item['route'])" wire:navigate x-on:click="drawerOpen = false">
                         {{ $item['label'] }}
                     </x-connect.nav-link>
                 @endforeach
@@ -100,7 +104,7 @@ new class extends Component
         </aside>
     </div>
 
-    <header class="fixed left-0 right-0 top-0 z-30 h-20 border-b border-slate-200 bg-white/95 backdrop-blur lg:left-72">
+    <header class="fixed left-0 right-0 top-0 z-30 h-14 border-b border-slate-200 bg-white/95 backdrop-blur lg:left-64">
         <div class="flex h-full items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
             <div class="flex min-w-0 items-center gap-3">
                 <button type="button" x-on:click="drawerOpen = true" class="connect-focus rounded-lg p-2 text-slate-600 hover:bg-slate-100 hover:text-connect-navy-900 lg:hidden">
@@ -110,14 +114,21 @@ new class extends Component
                     </svg>
                 </button>
 
-                <div class="min-w-0">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-connect-blue-600">Sisahygo Connect</p>
-                    <h1 class="truncate text-xl font-semibold text-connect-navy-900 sm:text-2xl">{{ $localizedTitle }}</h1>
+                <div class="flex min-w-0 items-center gap-2 sm:gap-3 lg:hidden">
+                    <a href="{{ route('dashboard') }}" wire:navigate class="connect-focus flex min-w-0 items-center gap-2 rounded-lg">
+                        <x-connect.logo variant="symbol" class="h-7 w-7 shrink-0" />
+                        <span class="hidden whitespace-nowrap text-sm font-semibold uppercase text-connect-navy-900 sm:inline">SISAHYGO CONNECT</span>
+                    </a>
+                    <span class="hidden h-5 w-px bg-slate-200 sm:block" aria-hidden="true"></span>
+                    <span class="min-w-0 truncate text-sm font-medium text-slate-600 sm:max-w-[16rem] md:max-w-sm">{{ $localizedTitle }}</span>
+                </div>
+                <div class="hidden min-w-0 lg:block">
+                    <span class="block truncate text-sm font-medium text-slate-600">{{ $localizedTitle }}</span>
                 </div>
             </div>
 
             <div class="flex items-center gap-2">
-                <button type="button" class="connect-focus rounded-lg border border-slate-200 bg-white p-2.5 text-slate-500 shadow-sm transition hover:bg-slate-50 hover:text-connect-navy-900">
+                <button type="button" class="connect-focus rounded-lg border border-slate-200 bg-white p-2 text-slate-500 shadow-sm transition hover:bg-slate-50 hover:text-connect-navy-900">
                     <span class="sr-only">{{ __('navigation.notifications') }}</span>
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5" />
@@ -126,7 +137,7 @@ new class extends Component
                 </button>
 
                 <div class="relative">
-                    <button type="button" x-on:click="userMenuOpen = ! userMenuOpen" class="connect-focus flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2 py-2 text-left shadow-sm transition hover:bg-slate-50">
+                    <button type="button" x-on:click="userMenuOpen = ! userMenuOpen" class="connect-focus flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-left shadow-sm transition hover:bg-slate-50">
                         <span class="flex h-8 w-8 items-center justify-center rounded-full bg-connect-blue-600 text-sm font-semibold text-white">
                             {{ \Illuminate\Support\Str::of(auth()->user()->name)->substr(0, 1)->upper() }}
                         </span>

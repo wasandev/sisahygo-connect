@@ -1,3 +1,5 @@
+> Source-of-truth note: this backlog is historical. Use `../project/backlog.md` for current planning.
+
 # Backlog
 
 - Onboarding สำหรับ Client Account
@@ -6,3 +8,5 @@
 - การเชื่อมต่อข้อมูล Shipment visibility
 - การเชื่อมต่อข้อมูล Payment visibility
 - หน้าดู audit log
+- Payment Center UX polish และ Dashboard Payment widgets: implemented in Sprint 5B, pending commit/review
+- Dashboard Payment cache/performance reliability: implemented in Sprint 5C, pending commit/review

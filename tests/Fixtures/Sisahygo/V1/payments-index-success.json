@@ -1,0 +1,72 @@
+{
+  "data": [
+    {
+      "payment_identifier": "AR-P-1001",
+      "source": "ar_balances",
+      "payment_type": "F",
+      "payer_role": "sender",
+      "order_header_no": "OH-F-1001",
+      "order_header_date": "2026-07-01",
+      "client_reference_no": "REF-F",
+      "billing_date": "2026-07-02",
+      "payment_date": null,
+      "payment_status": "outstanding",
+      "total_amount": "1200.50",
+      "paid_amount": null,
+      "outstanding_amount": "1200.50",
+      "sender": {"customer_id": 10001, "name": "Sender Co"},
+      "receiver": {"customer_id": 20001, "name": "Receiver Co"},
+      "tracking_reference": "SH-F-1001"
+    },
+    {
+      "payment_identifier": "AR-P-1002",
+      "source": "ar_balances",
+      "payment_type": "L",
+      "payer_role": "receiver",
+      "order_header_no": "OH-L-1002",
+      "order_header_date": "2026-07-03",
+      "client_reference_no": "REF-L",
+      "billing_date": "2026-07-04",
+      "payment_date": "2026-07-10",
+      "payment_status": "paid",
+      "total_amount": "800.00",
+      "paid_amount": "800.00",
+      "outstanding_amount": "0.00",
+      "sender": {"customer_id": 10002, "name": "Sender Two"},
+      "receiver": {"customer_id": 20002, "name": "Receiver Two"},
+      "tracking_reference": "SH-L-1002"
+    },
+    {
+      "payment_identifier": "BR-2001",
+      "source": "branch_balances",
+      "payment_type": "E",
+      "payer_role": "receiver",
+      "order_header_no": "OH-E-2001",
+      "order_header_date": "2026-07-05",
+      "client_reference_no": "REF-E",
+      "billing_date": "2026-07-05",
+      "payment_date": null,
+      "payment_status": "outstanding",
+      "total_amount": "350.00",
+      "paid_amount": null,
+      "outstanding_amount": null,
+      "discount_amount": "0.00",
+      "tax_amount": "0.00",
+      "sender": {"customer_id": 10003, "name": "Sender Three"},
+      "receiver": {"customer_id": 20003, "name": "Receiver Three"},
+      "tracking_reference": "SH-E-2001"
+    }
+  ],
+  "summary": {
+    "record_count": 3,
+    "total_amount": "2350.50",
+    "paid_record_count": 1,
+    "outstanding_record_count": 2
+  },
+  "meta": {
+    "current_page": 1,
+    "per_page": 15,
+    "total": 3,
+    "last_page": 1
+  }
+}

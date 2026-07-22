@@ -1,0 +1,22 @@
+{
+  "data": {
+    "payment_identifier": "AR-P-1001",
+    "source": "ar_balances",
+    "payment_type": "F",
+    "payer_role": "sender",
+    "order_header_no": "OH-F-1001",
+    "order_header_date": "2026-07-01",
+    "client_reference_no": "REF-F",
+    "billing_date": "2026-07-02",
+    "payment_date": null,
+    "payment_status": "outstanding",
+    "total_amount": "1200.50",
+    "paid_amount": null,
+    "outstanding_amount": "1200.50",
+    "invoice": {"number": "INV-F-1", "date": "2026-07-02"},
+    "receipt": {"number": null, "date": null},
+    "sender": {"customer_id": 10001, "name": "Sender Co"},
+    "receiver": {"customer_id": 20001, "name": "Receiver Co"},
+    "tracking_reference": "SH-F-1001"
+  }
+}

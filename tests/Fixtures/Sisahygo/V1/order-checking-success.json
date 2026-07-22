@@ -1,0 +1,25 @@
+{
+  "data": {
+    "id": 456789,
+    "order_header_no": null,
+    "tracking_no": "456789",
+    "order_status": "checking",
+    "source": "api",
+    "client_reference_no": "SC-20260716-ABC123",
+    "api_batch_no": null,
+    "api_batch_reference_no": null,
+    "api_batch_date": null,
+    "order_header_date": null,
+    "api_submitted_at": "2026-07-16T10:30:00+07:00",
+    "customer_id": 10001,
+    "customer_rec_id": 20001,
+    "to_customer_name": "บริษัท รับสินค้าไทย จำกัด",
+    "branch_id": 1,
+    "branch_rec_id": 901,
+    "paymenttype": "H",
+    "order_type": "general",
+    "order_amount": 0,
+    "base_order_amount": 0,
+    "items_count": 1
+  }
+}

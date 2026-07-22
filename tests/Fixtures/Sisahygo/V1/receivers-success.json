@@ -1,6 +1,16 @@
 {
   "data": [
-    {"customer_rec_id": 20001, "to_customer_name": "Receiver Demo Co., Ltd.", "to_customer_phone": "020000001", "branch_rec_id": 901, "extra": "ignored"},
-    {"customer_rec_id": 20002, "to_customer_name": "Receiver Example Co., Ltd.", "branch_rec_id": 902}
+    {
+      "customer_rec_id": 20001,
+      "to_customer_name": "บริษัท รับสินค้าไทย จำกัด",
+      "to_customer_phone": "020000001",
+      "branch_rec_id": 901
+    },
+    {
+      "customer_rec_id": 20002,
+      "to_customer_name": "บริษัท ตัวอย่างปลายทาง จำกัด",
+      "to_customer_phone": "020000002",
+      "branch_rec_id": 902
+    }
   ]
 }

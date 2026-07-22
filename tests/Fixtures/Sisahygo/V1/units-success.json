@@ -1,0 +1,16 @@
+{
+  "data": [
+    {
+      "unit_id": 1,
+      "unit_name": "ขวด"
+    },
+    {
+      "unit_id": 3,
+      "unit_name": "กล่อง"
+    },
+    {
+      "unit_id": 10,
+      "unit_name": "ชิ้น"
+    }
+  ]
+}

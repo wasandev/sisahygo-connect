@@ -1,0 +1,116 @@
+<?php
+
+return [
+    'eyebrow' => 'Customer Dashboard',
+    'title' => 'Dashboard',
+    'greeting' => 'Hello, :name',
+    'description' => 'Overview of shipment activity and records needing attention for the current Client Account.',
+    'loading' => 'Loading dashboard data...',
+    'account' => [
+        'label' => 'Current Client Account',
+        'current' => 'Current Client Account',
+        'refreshed_at' => 'Last updated: :time',
+    ],
+    'metrics' => ['label' => 'Shipment status summary'],
+    'cards' => [
+        'unavailable_value' => 'Not available yet',
+        'today' => [
+            'label' => "Today\'s orders",
+            'helper' => 'Counted from Core meta.total for today.',
+        ],
+        'in_progress' => [
+            'label' => 'In progress',
+            'helper' => 'Requires a Core summary endpoint or multi-status filter to calculate accurately.',
+        ],
+        'completed' => [
+            'label' => 'Completed in 30 days',
+            'helper' => 'Completed records in the last 30 days.',
+        ],
+        'attention' => [
+            'label' => 'Needs attention',
+            'helper' => 'Problem records in the last 30 days.',
+        ],
+    ],
+    'shortcuts' => [
+        'order_checking' => 'Create shipment order',
+        'order_checking_disabled' => 'No order-create access',
+        'shipments' => 'Shipments',
+        'tracking' => 'Tracking',
+        'history' => 'History',
+    ],
+    'latest' => [
+        'title' => 'Latest records',
+        'description' => 'Loads only a bounded recent list from Core API, not full history.',
+        'empty_title' => 'No recent records yet',
+        'empty_description' => 'Recent Core-visible records will appear here.',
+    ],
+    'attention' => [
+        'title' => 'Records needing attention',
+        'description' => 'Latest problem records in the last 30 days.',
+        'empty' => 'No records need attention right now.',
+    ],
+    'fields' => [
+        'order' => 'Order',
+        'date' => 'Date',
+        'receiver' => 'Receiver',
+        'destination' => 'Destination',
+        'status' => 'Status',
+        'action' => 'Action',
+        'tracking_no' => 'Tracking number',
+    ],
+    'actions' => [
+        'open_history' => 'Open history',
+        'refresh' => 'Refresh',
+        'refreshing' => 'Refreshing...',
+        'retry' => 'Retry',
+        'view_detail' => 'Open detail',
+    ],
+    'recent_receivers' => [
+        'title' => 'Recently used receivers',
+        'description' => 'Derived from the latest records loaded on this page.',
+        'latest' => 'Latest: :date',
+        'count' => '{1}Found :count time in latest records|[2,*]Found :count times in latest records',
+        'empty' => 'No receiver data in recent records yet.',
+    ],
+    'recent_products' => [
+        'title' => 'Recently used products',
+        'description' => 'Derived from item data returned with the latest Core records.',
+        'count' => '{1}Found :count time in latest records|[2,*]Found :count times in latest records',
+        'empty' => 'No product data in recent records yet.',
+    ],
+    'payments' => [
+        'title' => 'Payment Overview',
+        'description' => 'Summary from Core Payment API with at most 5 recent records loaded.',
+        'summary_label' => 'Dashboard payment summary',
+        'recent_title' => 'Recent payments',
+        'view_all' => 'View all payments',
+        'empty_title' => 'No recent payments yet',
+        'empty_description' => 'Recent Core-visible payments will appear here.',
+        'cache' => [
+            'cached_at' => 'Cached data: :time',
+            'stale_warning' => 'Showing last saved data: :time',
+            'loading' => 'Loading payment overview...',
+        ],
+        'summary' => [
+            'total_amount' => 'Total Amount',
+            'outstanding_record_count' => 'Outstanding Records',
+            'paid_record_count' => 'Paid Records',
+            'record_count' => 'Records',
+        ],
+        'errors' => [
+            'unavailable' => 'Payment data is unavailable right now.',
+        ],
+    ],
+    'unavailable' => ['title' => 'Dashboard is not ready'],
+    'errors' => [
+        'no_credential' => 'Sisahygo connection details are not available yet.',
+        'authentication' => 'Sisahygo authentication failed.',
+        'authorization' => 'This Client Account cannot view the dashboard.',
+        'connection' => 'Sisahygo could not be reached. Please try again.',
+        'validation' => 'The search data is invalid. Please check it again.',
+        'rate_limited' => 'Too many requests. Please wait and try again.',
+        'server' => 'Sisahygo is not available right now. Please try again later.',
+        'malformed' => 'Sisahygo returned data in an unexpected format.',
+        'unexpected' => 'An unexpected error occurred. Please try again.',
+    ],
+];

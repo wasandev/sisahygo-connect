@@ -1,0 +1,38 @@
+{
+  "data": {
+    "api_batch_no": "APIB202607210001",
+    "batch_reference_no": "BATCH-20260721",
+    "batch_date": "2026-07-21",
+    "summary": {
+      "total": 2,
+      "success": 2,
+      "failed": 0
+    },
+    "results": [
+      {
+        "index": 0,
+        "client_reference_no": "BC-20260721-001",
+        "status": "success",
+        "id": 12345,
+        "tracking_no": "12345",
+        "order_status": "checking",
+        "api_batch_no": "APIB202607210001",
+        "api_batch_reference_no": "BATCH-20260721",
+        "api_batch_date": "2026-07-21",
+        "message": "สร้างรายการตรวจรับสำเร็จ"
+      },
+      {
+        "index": 1,
+        "client_reference_no": "BC-20260721-002",
+        "status": "success",
+        "id": 12346,
+        "tracking_no": "12346",
+        "order_status": "checking",
+        "api_batch_no": "APIB202607210001",
+        "api_batch_reference_no": "BATCH-20260721",
+        "api_batch_date": "2026-07-21",
+        "message": "สร้างรายการตรวจรับสำเร็จ"
+      }
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "data": [
+    {
+      "product_id": 6639,
+      "product_name": "น้ำดื่ม 600 ml",
+      "unit_id": 1,
+      "unit_name": "ขวด"
+    },
+    {
+      "product_id": 7001,
+      "product_name": "กล่องเอกสาร",
+      "unit_id": 3,
+      "unit_name": "กล่อง"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "ข้อมูลไม่ถูกต้อง",
+    "details": {
+      "client_reference_no": [
+        "เลขอ้างอิงนี้เคยถูกส่งเข้าระบบแล้ว"
+      ]
+    },
+    "status": 422
+  }
+}
