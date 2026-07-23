@@ -12,6 +12,7 @@ use App\Domain\ClientAccount\Services\CurrentClientAccountResolver;
 use App\Domain\Sisahygo\Enums\SisahygoApiEnvironment;
 use App\Domain\Sisahygo\Services\SisahygoApiCredentialService;
 use App\Livewire\Notifications\NotificationCenter;
+use App\Livewire\Orders\OrderShow;
 use App\Livewire\Workspace\UniversalSearch;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -71,6 +72,101 @@ class CustomerWorkspaceEnhancementTest extends TestCase
         Http::assertNothingSent();
     }
 
+    public function test_universal_search_uses_selected_client_account_credentials(): void
+    {
+        $user = User::factory()->create();
+        $other = $this->accountFor($user, 'Other Account', 'other-secret');
+        $selected = $this->accountFor($user, 'Selected Account', 'selected-secret');
+        $this->actingAs($user)->withSession([CurrentClientAccountResolver::SESSION_KEY => $selected->id]);
+
+        Http::fake(['https://sandbox-api.sisahygo.online/api/v1/client/shipments*' => function ($request) {
+            if ($request->hasHeader('X-Api-Key', 'selected-secret')) {
+                return Http::response([
+                    'data' => [['tracking_no' => 'SELECTED-1', 'client_reference_no' => 'REF-SAME', 'order_header_no' => 'OH-SELECTED']],
+                    'meta' => ['current_page' => 1, 'per_page' => 2, 'total' => 1, 'last_page' => 1],
+                ]);
+            }
+
+            return Http::response([
+                'data' => [['tracking_no' => 'OTHER-1', 'client_reference_no' => 'REF-SAME', 'order_header_no' => 'OH-OTHER']],
+                'meta' => ['current_page' => 1, 'per_page' => 2, 'total' => 1, 'last_page' => 1],
+            ]);
+        }]);
+
+        Livewire::test(UniversalSearch::class)
+            ->set('query', 'REF-SAME')
+            ->call('submit')
+            ->assertRedirect(route('orders.show', 'SELECTED-1'));
+
+        Http::assertSent(fn ($request) => $request->hasHeader('X-Api-Key', 'selected-secret'));
+        Http::assertNotSent(fn ($request) => $request->hasHeader('X-Api-Key', 'other-secret'));
+        $this->assertTrue($other->exists);
+    }
+
+    public function test_order_detail_identifier_cannot_bypass_selected_account_scope(): void
+    {
+        $user = User::factory()->create();
+        $other = $this->accountFor($user, 'Other Account', 'other-secret');
+        $selected = $this->accountFor($user, 'Selected Account', 'selected-secret');
+        $this->actingAs($user)->withSession([CurrentClientAccountResolver::SESSION_KEY => $selected->id]);
+
+        Http::fake(['https://sandbox-api.sisahygo.online/api/v1/client/shipments/OTHER-1' => function ($request) {
+            if ($request->hasHeader('X-Api-Key', 'selected-secret')) {
+                return Http::response($this->notFoundFixture(), 404);
+            }
+
+            return Http::response(['data' => ['tracking_no' => 'OTHER-1', 'order_header_no' => 'OH-OTHER', 'customer_rec' => 'Other Receiver']]);
+        }]);
+
+        Livewire::test(OrderShow::class, ['trackingIdentifier' => 'OTHER-1'])
+            ->assertSet('notFound', true)
+            ->assertDontSee('Other Receiver')
+            ->assertDontSee('other-secret');
+
+        Http::assertSent(fn ($request) => $request->hasHeader('X-Api-Key', 'selected-secret'));
+        Http::assertNotSent(fn ($request) => $request->hasHeader('X-Api-Key', 'other-secret'));
+        $this->assertTrue($other->exists);
+    }
+
+    public function test_changing_selected_client_account_changes_universal_search_result(): void
+    {
+        $user = User::factory()->create();
+        $first = $this->accountFor($user, 'First Account', 'first-secret');
+        $second = $this->accountFor($user, 'Second Account', 'second-secret');
+
+        Http::fake(['https://sandbox-api.sisahygo.online/api/v1/client/shipments*' => function ($request) {
+            $tracking = $request->hasHeader('X-Api-Key', 'second-secret') ? 'SECOND-1' : 'FIRST-1';
+
+            return Http::response([
+                'data' => [['tracking_no' => $tracking, 'client_reference_no' => 'REF-SWITCH', 'order_header_no' => 'OH-'.$tracking]],
+                'meta' => ['current_page' => 1, 'per_page' => 2, 'total' => 1, 'last_page' => 1],
+            ]);
+        }]);
+
+        $this->actingAs($user)->withSession([CurrentClientAccountResolver::SESSION_KEY => $first->id]);
+        Livewire::test(UniversalSearch::class)->set('query', 'REF-SWITCH')->call('submit')->assertRedirect(route('orders.show', 'FIRST-1'));
+
+        app()->forgetInstance(ClientAccount::class);
+        $this->withSession([CurrentClientAccountResolver::SESSION_KEY => $second->id]);
+        Livewire::test(UniversalSearch::class)->set('query', 'REF-SWITCH')->call('submit')->assertRedirect(route('orders.show', 'SECOND-1'));
+    }
+
+    public function test_api_failure_does_not_show_cross_account_or_stale_search_result(): void
+    {
+        $user = User::factory()->create();
+        $selected = $this->accountFor($user, 'Selected Account', 'selected-secret');
+        $this->actingAs($user)->withSession([CurrentClientAccountResolver::SESSION_KEY => $selected->id]);
+        Http::fake(['*' => Http::response(['error' => ['message' => 'server unavailable']], 500)]);
+
+        Livewire::test(UniversalSearch::class)
+            ->set('query', 'REF-ANY')
+            ->call('submit')
+            ->assertNoRedirect()
+            ->assertSee('ยังไม่สามารถค้นหาได้ในขณะนี้')
+            ->assertDontSee('OH-OTHER')
+            ->assertDontSee('other-secret');
+    }
+
     private function fakeSearchResponses(): void
     {
         Http::fake(['https://sandbox-api.sisahygo.online/api/v1/client/shipments*' => function ($request) {
@@ -94,16 +190,27 @@ class CustomerWorkspaceEnhancementTest extends TestCase
         }]);
     }
 
+    private function accountFor(User $user, string $name, string $apiKey): ClientAccount
+    {
+        $account = ClientAccount::factory()->create(['name' => $name]);
+        ClientAccountUser::factory()->for($account)->for($user)->owner()->create(['role' => ClientAccountRole::Owner]);
+        ClientAccountCapability::factory()->for($account)->capability(ClientCapability::ShipmentView)->create();
+        ClientAccountCustomer::factory()->for($account)->sender()->create(['customer_id' => 10001]);
+        app(SisahygoApiCredentialService::class)->create($account, SisahygoApiEnvironment::Sandbox, 'Sandbox', $apiKey);
+
+        return $account;
+    }
+
+    private function notFoundFixture(): array
+    {
+        return ['error' => ['code' => 'not_found', 'message' => 'Not found']];
+    }
+
     /** @return array{0: User, 1: ClientAccount} */
     private function eligibleAccount(): array
     {
         $user = User::factory()->create();
-        $account = ClientAccount::factory()->create(['name' => 'Selected Account']);
-        ClientAccountUser::factory()->for($account)->for($user)->owner()->create(['role' => ClientAccountRole::Owner]);
-        ClientAccountCapability::factory()->for($account)->capability(ClientCapability::ShipmentView)->create();
-        ClientAccountCustomer::factory()->for($account)->sender()->create(['customer_id' => 10001]);
-        app(SisahygoApiCredentialService::class)->create($account, SisahygoApiEnvironment::Sandbox, 'Sandbox', 'secret-api-key');
 
-        return [$user, $account];
+        return [$user, $this->accountFor($user, 'Selected Account', 'secret-api-key')];
     }
 }

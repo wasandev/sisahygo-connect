@@ -1,7 +1,7 @@
 # Project Status
 
-Last verified: 2026-07-22
-Branch: `chore/project-roadmap-consolidation`
+Last verified: 2026-07-23
+Branch: `feature/staging-readiness`
 Commit audited: `2d2947e`
 Starting worktree: clean
 Route count: 41 routes from `./vendor/bin/sail artisan route:list`
@@ -14,7 +14,7 @@ Sisahygo Connect is a Laravel/Livewire customer portal with authenticated tenant
 ## Completed Modules
 
 - Authentication and profile management from Laravel Breeze/Volt auth routes and tests.
-- Client Account foundation: selection middleware, membership/capability/customer-link models, settings read-only overview, credential storage.
+- Client Account foundation: selection middleware, membership/capability/customer-link models, settings read-only overview, API connectivity status, credential storage.
 - Single Order Checking create/submit/reconcile flow through Core Client API.
 - Shipment Tracking, Shipment list/detail, and History using Core shipment endpoints.
 - Customer Dashboard workspace with shipment metrics, Dashboard Payment Overview, universal search, pending actions, and notification preview.
@@ -24,13 +24,13 @@ Sisahygo Connect is a Laravel/Livewire customer portal with authenticated tenant
 ## Partial Or Placeholder
 
 - Reports route is a placeholder page.
-- Settings is operational for Client Account visibility but not full account/member/access management mutation UI.
+- Settings is operational for Client Account visibility and API connectivity status, but not full account/member/access management mutation UI.
 - Notifications has a Phase 1 production route using mock data only; polling, push notifications, and persisted read state are not implemented.
 - `/ux/*` routes are prototype/internal preview screens, not production modules.
 
 ## Next Milestone
 
-Verified next sprint: `Sprint 6 — Bulk Order Checking implementation`, provided the Bulk API contract is confirmed before implementation begins.
+Next milestone: staging smoke testing and deployment planning after Sprint 8 hardening review. No staging deployment has been performed in this sprint.
 
 ## Current Blockers And Cautions
 
@@ -74,3 +74,7 @@ Bulk Order Checking UX refactor is implemented locally on `feature/bulk-order-ch
 ## Sprint 7 Customer Workspace Update
 
 Customer Workspace Enhancement is implemented locally on the current worktree. The dashboard remains the main customer workspace and now includes universal search, pending actions, and notification preview. Order History opens a dedicated Order Detail route that reuses the existing Shipment Detail Core API and DTO/mapper path. `/notifications` is Phase 1 UI with mock data only. No deploy and no commit have been performed.
+
+## Sprint 8 Staging Readiness Update
+
+Staging Readiness and Integration Hardening is implemented locally on `feature/staging-readiness`. Configuration is centralized in `config/sisahygo.php` with explicit HTTPS base URL validation and no production fallback to sandbox. Settings includes a protected Sisahygo API connectivity card using existing Core Client API `/units`. User-safe Core API error messaging is centralized, logging remains privacy-safe, GET retries stay limited to safe read-only requests, and POST order creation/bulk creation are not automatically retried. New docs live under `docs/deployment` and `docs/operations`. No deploy and no commit have been performed.

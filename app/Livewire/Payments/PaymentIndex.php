@@ -2,18 +2,12 @@
 
 namespace App\Livewire\Payments;
 
+use App\Application\Integration\SisahygoApiErrorMessage;
 use App\Application\Payment\PaymentPresenter;
 use App\Application\Payment\PaymentQueryService;
 use App\Domain\ClientAccount\Models\ClientAccount;
 use App\Domain\ClientAccount\Services\CurrentClientAccountResolver;
 use App\Integrations\Sisahygo\Exceptions\SisahygoApiException;
-use App\Integrations\Sisahygo\Exceptions\SisahygoAuthenticationException;
-use App\Integrations\Sisahygo\Exceptions\SisahygoAuthorizationException;
-use App\Integrations\Sisahygo\Exceptions\SisahygoConnectionException;
-use App\Integrations\Sisahygo\Exceptions\SisahygoNotFoundException;
-use App\Integrations\Sisahygo\Exceptions\SisahygoRateLimitException;
-use App\Integrations\Sisahygo\Exceptions\SisahygoServerException;
-use App\Integrations\Sisahygo\Exceptions\SisahygoValidationException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -243,16 +237,7 @@ class PaymentIndex extends Component
 
     private function safeApiMessage(SisahygoApiException $exception): string
     {
-        return match (true) {
-            $exception instanceof SisahygoAuthenticationException => __('payment.errors.authentication'),
-            $exception instanceof SisahygoAuthorizationException => __('payment.errors.authorization'),
-            $exception instanceof SisahygoConnectionException => __('payment.errors.connection'),
-            $exception instanceof SisahygoNotFoundException => __('payment.errors.not_found'),
-            $exception instanceof SisahygoValidationException => __('payment.errors.validation'),
-            $exception instanceof SisahygoRateLimitException => __('payment.errors.rate_limited'),
-            $exception instanceof SisahygoServerException => __('payment.errors.server'),
-            default => __('payment.errors.unexpected'),
-        };
+        return app(SisahygoApiErrorMessage::class)->message($exception, 'payment');
     }
 
     private function fieldName(string $field): string

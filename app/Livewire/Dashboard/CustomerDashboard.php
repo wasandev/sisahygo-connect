@@ -3,16 +3,10 @@
 namespace App\Livewire\Dashboard;
 
 use App\Application\Dashboard\GetCustomerDashboard;
+use App\Application\Integration\SisahygoApiErrorMessage;
 use App\Domain\ClientAccount\Models\ClientAccount;
 use App\Domain\ClientAccount\Services\CurrentClientAccountResolver;
 use App\Integrations\Sisahygo\Exceptions\SisahygoApiException;
-use App\Integrations\Sisahygo\Exceptions\SisahygoAuthenticationException;
-use App\Integrations\Sisahygo\Exceptions\SisahygoAuthorizationException;
-use App\Integrations\Sisahygo\Exceptions\SisahygoConnectionException;
-use App\Integrations\Sisahygo\Exceptions\SisahygoRateLimitException;
-use App\Integrations\Sisahygo\Exceptions\SisahygoServerException;
-use App\Integrations\Sisahygo\Exceptions\SisahygoUnexpectedResponseException;
-use App\Integrations\Sisahygo\Exceptions\SisahygoValidationException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -88,15 +82,6 @@ class CustomerDashboard extends Component
 
     private function safeApiMessage(SisahygoApiException $exception): string
     {
-        return match (true) {
-            $exception instanceof SisahygoAuthenticationException => __('dashboard.errors.authentication'),
-            $exception instanceof SisahygoAuthorizationException => __('dashboard.errors.authorization'),
-            $exception instanceof SisahygoConnectionException => __('dashboard.errors.connection'),
-            $exception instanceof SisahygoValidationException => __('dashboard.errors.validation'),
-            $exception instanceof SisahygoRateLimitException => __('dashboard.errors.rate_limited'),
-            $exception instanceof SisahygoServerException => __('dashboard.errors.server'),
-            $exception instanceof SisahygoUnexpectedResponseException => __('dashboard.errors.malformed'),
-            default => __('dashboard.errors.unexpected'),
-        };
+        return app(SisahygoApiErrorMessage::class)->message($exception, 'dashboard');
     }
 }

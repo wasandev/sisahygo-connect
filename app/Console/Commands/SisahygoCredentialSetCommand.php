@@ -12,7 +12,7 @@ use App\Domain\Sisahygo\Models\SisahygoApiCredential;
 use App\Domain\Sisahygo\Services\SisahygoApiCredentialService;
 use App\Integrations\Sisahygo\Configuration\SisahygoApiConfiguration;
 use Illuminate\Console\Command;
-use InvalidArgumentException;
+use Throwable;
 
 class SisahygoCredentialSetCommand extends Command
 {
@@ -102,23 +102,12 @@ class SisahygoCredentialSetCommand extends Command
     private function resolveBaseUrl(SisahygoApiEnvironment $environment): ?string
     {
         try {
-            $baseUrl = SisahygoApiConfiguration::baseUrlForEnvironment($environment);
-        } catch (InvalidArgumentException $exception) {
+            return SisahygoApiConfiguration::baseUrlForEnvironment($environment);
+        } catch (Throwable $exception) {
             $this->error($exception->getMessage());
 
             return null;
         }
-
-        if (
-            $environment === SisahygoApiEnvironment::Sandbox
-            && $baseUrl !== 'https://sandbox-api.sisahygo.online/api/v1/client'
-        ) {
-            $this->error('Sandbox base URL must resolve to https://sandbox-api.sisahygo.online/api/v1/client.');
-
-            return null;
-        }
-
-        return $baseUrl;
     }
 
     private function resolveClientAccount(): ?ClientAccount

@@ -2,17 +2,12 @@
 
 namespace App\Livewire\Shipments;
 
+use App\Application\Integration\SisahygoApiErrorMessage;
 use App\Application\Shipment\ShipmentQueryService;
 use App\Domain\ClientAccount\Models\ClientAccount;
 use App\Domain\ClientAccount\Services\CurrentClientAccountResolver;
 use App\Integrations\Sisahygo\Exceptions\SisahygoApiException;
-use App\Integrations\Sisahygo\Exceptions\SisahygoAuthenticationException;
-use App\Integrations\Sisahygo\Exceptions\SisahygoAuthorizationException;
-use App\Integrations\Sisahygo\Exceptions\SisahygoConnectionException;
 use App\Integrations\Sisahygo\Exceptions\SisahygoNotFoundException;
-use App\Integrations\Sisahygo\Exceptions\SisahygoRateLimitException;
-use App\Integrations\Sisahygo\Exceptions\SisahygoServerException;
-use App\Integrations\Sisahygo\Exceptions\SisahygoValidationException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -101,14 +96,6 @@ class ShipmentShow extends Component
 
     private function safeApiMessage(SisahygoApiException $exception): string
     {
-        return match (true) {
-            $exception instanceof SisahygoAuthenticationException => __('shipments.errors.authentication'),
-            $exception instanceof SisahygoAuthorizationException => __('shipments.errors.authorization'),
-            $exception instanceof SisahygoConnectionException => __('shipments.errors.connection'),
-            $exception instanceof SisahygoValidationException => __('shipments.errors.validation'),
-            $exception instanceof SisahygoRateLimitException => __('shipments.errors.rate_limited'),
-            $exception instanceof SisahygoServerException => __('shipments.errors.server'),
-            default => __('shipments.errors.unexpected'),
-        };
+        return app(SisahygoApiErrorMessage::class)->message($exception, 'shipments');
     }
 }
