@@ -15,7 +15,7 @@ class ExampleTest extends TestCase
         $this->get('/')
             ->assertOk()
             ->assertSee('Sisahygo Connect')
-            ->assertSee('Login')
+            ->assertSee('เข้าสู่ระบบ')
             ->assertSee(route('login'));
     }
 

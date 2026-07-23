@@ -41,7 +41,7 @@ class InvitationController extends Controller
             'company_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-        ]);
+        ], [], __('onboarding.validation.attributes'));
 
         $user = User::query()->firstOrCreate(
             ['email' => $validated['email']],

@@ -1,17 +1,17 @@
-<x-app-layout title="Welcome">
+<x-app-layout :title="__('onboarding.welcome.meta_title')">
     <div class="space-y-6">
-        <x-connect.page-header title="Welcome to Sisahygo Connect" description="เริ่มต้นใช้งานพื้นที่ลูกค้าสำหรับจัดการงานขนส่ง ติดตามสถานะ และตรวจสอบข้อมูลสำคัญ" eyebrow="Customer Workspace" />
+        <x-connect.page-header :title="__('onboarding.welcome.title')" :description="__('onboarding.welcome.description')" :eyebrow="__('onboarding.welcome.eyebrow')" />
 
         <x-connect.card>
             <x-connect.onboarding-progress />
         </x-connect.card>
 
-        <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Sisahygo Connect features">
+        <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="{{ __('onboarding.welcome.features_label') }}">
             @foreach ([
-                ['title' => 'Create Shipment', 'description' => 'สร้างรายการรับส่งสินค้าเดี่ยวหรือแบบหลายรายการ'],
-                ['title' => 'Track Shipment', 'description' => 'ติดตามสถานะการขนส่งด้วยเลข Tracking หรือ Reference'],
-                ['title' => 'Payment Center', 'description' => 'ตรวจสอบสถานะการชำระเงินและรายการที่เกี่ยวข้อง'],
-                ['title' => 'History', 'description' => 'ดูประวัติรายการและเปิดดูรายละเอียดคำสั่งซื้อ'],
+                __('onboarding.welcome.features.create_shipment'),
+                __('onboarding.welcome.features.track_shipment'),
+                __('onboarding.welcome.features.payment_center'),
+                __('onboarding.welcome.features.history'),
             ] as $feature)
                 <x-connect.card>
                     <div class="flex min-h-40 flex-col gap-3">
@@ -25,7 +25,7 @@
 
         <form method="POST" action="{{ route('onboarding.start') }}">
             @csrf
-            <x-connect.button type="submit" size="lg">เริ่มใช้งาน</x-connect.button>
+            <x-connect.button type="submit" size="lg">{{ __('onboarding.welcome.start') }}</x-connect.button>
         </form>
     </div>
 </x-app-layout>

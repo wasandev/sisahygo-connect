@@ -18,7 +18,7 @@ class CustomerOnboardingTest extends TestCase
         $this->get('/request-access')
             ->assertOk()
             ->assertSee('ขอเปิดใช้งาน Sisahygo Connect')
-            ->assertSee('Company Name')
+            ->assertSee('ชื่อบริษัท / ชื่อลูกค้า')
             ->assertSee('ส่งคำขอใช้งาน')
             ->assertSee(route('login'), false);
     }
@@ -61,7 +61,7 @@ class CustomerOnboardingTest extends TestCase
 
         $this->get('/invitation/fake-token-123')
             ->assertOk()
-            ->assertSee('Welcome')
+            ->assertSee('ยินดีต้อนรับ')
             ->assertSee('Acme Logistics')
             ->assertSee('เริ่มใช้งาน');
 
@@ -88,11 +88,11 @@ class CustomerOnboardingTest extends TestCase
         $this->actingAs($user)
             ->get('/welcome')
             ->assertOk()
-            ->assertSee('Welcome to Sisahygo Connect')
-            ->assertSee('Create Shipment')
-            ->assertSee('Track Shipment')
-            ->assertSee('Payment Center')
-            ->assertSee('History');
+            ->assertSee('ยินดีต้อนรับสู่ Sisahygo Connect')
+            ->assertSee('สร้างรายการขนส่ง')
+            ->assertSee('ติดตามสถานะขนส่ง')
+            ->assertSee('ศูนย์การชำระเงิน')
+            ->assertSee('ประวัติรายการ');
 
         $this->post('/welcome/start')
             ->assertRedirect(route('client-accounts.select'));

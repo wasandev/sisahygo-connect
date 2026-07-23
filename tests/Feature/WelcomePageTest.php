@@ -39,9 +39,9 @@ class WelcomePageTest extends TestCase
     {
         $this->get('/')
             ->assertOk()
-            ->assertSee('Login')
-            ->assertSee('Request Access')
+            ->assertSee('เข้าสู่ระบบ')
             ->assertSee('ขอใช้งาน')
+            ->assertSee('หน้าหลัก')
             ->assertSee(route('login'), false)
             ->assertSee(route('request-access'), false)
             ->assertDontSee(route('register'), false);

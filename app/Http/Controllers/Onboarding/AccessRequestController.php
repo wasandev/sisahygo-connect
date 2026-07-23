@@ -27,7 +27,7 @@ class AccessRequestController extends Controller
             'website' => ['nullable', 'url', 'max:255'],
             'number_of_branches' => ['nullable', 'integer', 'min:1', 'max:10000'],
             'additional_notes' => ['nullable', 'string', 'max:2000'],
-        ]);
+        ], [], __('onboarding.validation.attributes'));
 
         $accessRequest = AccessRequest::query()->create([
             ...$validated,
