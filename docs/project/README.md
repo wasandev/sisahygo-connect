@@ -35,6 +35,10 @@ Older docs remain useful as historical context, but this directory wins when the
 - [Roadmap V2](roadmap-v2.md)
 - [Pre-Sprint Checklist](pre-sprint-checklist.md)
 - [Staging Readiness](../deployment/staging-readiness.md)
+- [Staging Environment](../deployment/staging-environment.md)
+- [Staging Deployment Draft](../deployment/staging-deployment.md)
+- [Sandbox E2E Checklist](../testing/sandbox-e2e-checklist.md)
+- [Release Candidate Signoff](../testing/release-candidate-signoff.md)
 - [API Connectivity Operations](../operations/api-connectivity.md)
 - [Troubleshooting](../operations/troubleshooting.md)
 
