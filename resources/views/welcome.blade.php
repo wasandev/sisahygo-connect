@@ -8,10 +8,12 @@
 </head>
 <body class="font-sans antialiased">
     <main class="min-h-screen bg-slate-50 text-slate-900">
+        <x-connect.environment-banner :show-host="false" />
+
         <section class="flex min-h-screen flex-col">
-            <header class="mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-5 sm:px-6 lg:px-8">
+            <header class="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-5 py-4 sm:px-6 lg:px-8">
                 <a href="{{ route('welcome') }}" class="connect-focus rounded-md" aria-label="Sisahygo Connect">
-                    <x-connect.logo class="h-12 w-auto" />
+                    <x-connect.logo class="h-10 w-auto sm:h-12" />
                 </a>
 
                 <nav class="flex items-center gap-2" aria-label="Guest navigation">
@@ -24,17 +26,24 @@
                 </nav>
             </header>
 
-            <div class="mx-auto grid w-full max-w-7xl flex-1 items-center gap-10 px-5 py-10 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:py-12">
+            <div class="mx-auto grid w-full max-w-7xl flex-1 items-center gap-8 px-5 py-8 sm:px-6 sm:py-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12 lg:px-8 lg:py-12">
                 <div class="max-w-3xl">
                     <p class="text-sm font-semibold uppercase tracking-wide text-connect-orange-600">Sisahygo Connect</p>
-                    <h1 class="mt-4 text-4xl font-bold leading-tight text-connect-navy-900 sm:text-5xl lg:text-6xl">
+                    <h1 class="mt-4 max-w-4xl text-3xl font-bold leading-tight text-connect-navy-900 sm:text-5xl lg:text-6xl">
                         พื้นที่ลูกค้าสำหรับจัดการงานขนส่งกับ Sisahygo
                     </h1>
                     <p class="mt-6 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
-                        เข้าสู่ระบบเพื่อดูแดชบอร์ด เลือกบัญชีลูกค้า และเตรียมพร้อมสำหรับการเชื่อมต่อข้อมูลคำสั่งซื้อ การขนส่ง การติดตาม และการชำระเงินในขั้นถัดไป
+                        เข้าสู่ระบบเพื่อสร้างรายการรับส่งสินค้า ติดตามสถานะการขนส่ง ตรวจสอบประวัติรายการและสถานะการชำระเงิน พร้อมจัดการข้อมูลผ่านบัญชีลูกค้าอย่างปลอดภัย
                     </p>
 
-                    <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+                    <ul class="mt-6 grid gap-3 text-sm font-medium text-slate-700 sm:grid-cols-2">
+                        <li class="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm">สร้างรายการรับส่งสินค้า</li>
+                        <li class="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm">ติดตามสถานะการขนส่ง</li>
+                        <li class="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm">ตรวจสอบประวัติรายการ</li>
+                        <li class="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm">ตรวจสอบสถานะการชำระเงิน</li>
+                    </ul>
+
+                    <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                         <a href="{{ route('login') }}" class="connect-focus inline-flex items-center justify-center rounded-lg bg-connect-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-connect-blue-700">
                             เข้าสู่ระบบ
                         </a>
@@ -50,25 +59,25 @@
                             <img src="{{ asset('images/brand/symbol.svg') }}" alt="" class="h-10 w-10">
                         </div>
                         <div>
-                            <h2 class="text-lg font-semibold text-connect-navy-900">Client Account Foundation</h2>
+                            <h2 class="text-lg font-semibold text-connect-navy-900">Sisahygo Connect</h2>
                             <p class="mt-2 text-sm leading-6 text-slate-600">
-                                ระบบพร้อมสำหรับการแยกบัญชีลูกค้า การเลือกบัญชีที่ใช้งาน และการควบคุมสิทธิ์ตามบทบาท
+                                ระบบศูนย์กลางสำหรับลูกค้า เพื่อสร้างรายการขนส่ง ติดตามสถานะ และตรวจสอบข้อมูลการให้บริการผ่าน Sisahygo Core API
                             </p>
                         </div>
                     </div>
 
                     <dl class="mt-6 grid gap-3 text-sm">
                         <div class="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-3">
-                            <dt class="font-medium text-slate-600">Authentication</dt>
+                            <dt class="font-medium text-slate-600">บัญชีลูกค้า</dt>
                             <dd class="font-semibold text-emerald-700">พร้อมใช้งาน</dd>
                         </div>
                         <div class="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-3">
-                            <dt class="font-medium text-slate-600">Dashboard</dt>
-                            <dd class="font-semibold text-emerald-700">พร้อมใช้งาน</dd>
+                            <dt class="font-medium text-slate-600">สร้างและติดตามรายการ</dt>
+                            <dd class="font-semibold text-connect-blue-700">พร้อมทดสอบ</dd>
                         </div>
                         <div class="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-3">
-                            <dt class="font-medium text-slate-600">Sisahygo API</dt>
-                            <dd class="font-semibold text-slate-500">รอ Sprint ถัดไป</dd>
+                            <dt class="font-medium text-slate-600">Sisahygo Core API</dt>
+                            <dd class="font-semibold text-connect-orange-700">เชื่อมต่อ Sandbox</dd>
                         </div>
                     </dl>
                 </div>

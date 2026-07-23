@@ -1,3 +1,5 @@
+@props(['showHost' => true])
+
 @php
     $appEnvironment = (string) config('app.env');
     $apiEnvironment = (string) config('sisahygo.api.environment');
@@ -17,7 +19,9 @@
             <span class="rounded bg-amber-200 px-2 py-0.5 uppercase">{{ strtoupper($appEnvironment) }}</span>
             <span>{{ $apiEnvironment === 'sandbox' ? 'Sandbox API' : 'Non-production API' }}</span>
             <span class="text-amber-800">Release Candidate</span>
-            <span class="truncate text-amber-700">{{ $apiHost }}</span>
+            @if ($showHost)
+                <span class="truncate text-amber-700">{{ $apiHost }}</span>
+            @endif
             @if ($release)
                 <span class="text-amber-700">Build {{ $release }}</span>
             @endif
