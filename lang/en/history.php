@@ -43,6 +43,7 @@ return [
         'searching' => 'Searching...',
         'clear' => 'Clear filters',
         'view_detail' => 'Open detail',
+        'create_first' => 'Create first shipment',
     ],
     'pagination' => [
         'page' => 'Page :page',
@@ -51,8 +52,8 @@ return [
         'next' => 'Next',
     ],
     'empty' => [
-        'title' => 'No history found',
-        'description' => 'Adjust the date range or search by tracking number.',
+        'title' => 'No order history yet',
+        'description' => 'After the first shipment request is created, history and latest status will appear here. Create a first shipment or adjust the date filters.',
     ],
     'unavailable' => ['title' => 'Order history is not ready'],
     'recent_receivers' => [

@@ -35,14 +35,16 @@ class WelcomePageTest extends TestCase
             ->assertDontSee('เตรียมพร้อมสำหรับการเชื่อมต่อข้อมูลคำสั่งซื้อ');
     }
 
-    public function test_welcome_page_keeps_login_and_registration_links(): void
+    public function test_welcome_page_keeps_login_and_request_access_links(): void
     {
         $this->get('/')
             ->assertOk()
-            ->assertSee('เข้าสู่ระบบ')
-            ->assertSee('สมัครใช้งาน')
+            ->assertSee('Login')
+            ->assertSee('Request Access')
+            ->assertSee('ขอใช้งาน')
             ->assertSee(route('login'), false)
-            ->assertSee(route('register'), false);
+            ->assertSee(route('request-access'), false)
+            ->assertDontSee(route('register'), false);
     }
 
     public function test_welcome_page_does_not_render_credentials_or_internal_endpoints(): void

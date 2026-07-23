@@ -26,6 +26,8 @@ return [
         'description' => 'Lookup a shipment by the tracking identifier supported by Sisahygo Core.',
         'card_title' => 'Tracking lookup',
         'card_description' => 'Enter the tracking number to open the detail page.',
+        'guide_title' => 'No tracking number yet?',
+        'guide_description' => 'Start by creating the first shipment request, or open history to copy a tracking number for lookup.',
         'identifier_label' => 'Tracking number',
         'identifier_placeholder' => 'Example: 12345',
         'submit' => 'Search',
@@ -67,6 +69,8 @@ return [
         'refreshing' => 'Refreshing...',
         'view_detail' => 'View detail',
         'back_to_list' => 'Back to list',
+        'create_first' => 'Create first shipment',
+        'open_history' => 'Open history',
     ],
     'pagination' => [
         'page' => 'Page :page',
@@ -75,8 +79,8 @@ return [
         'next' => 'Next',
     ],
     'empty' => [
-        'title' => 'No shipments found',
-        'description' => 'Adjust the filters or search with the tracking number you need.',
+        'title' => 'No shipments yet',
+        'description' => 'Start by creating the first shipment request, or adjust filters to find existing records.',
     ],
     'unavailable' => [
         'title' => 'Shipment tracking is not ready',

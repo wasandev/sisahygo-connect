@@ -1,12 +1,15 @@
 <?php
 
 use App\Http\Controllers\ClientAccountSelectionController;
+use App\Http\Controllers\Onboarding\AccessRequestController;
+use App\Http\Controllers\Onboarding\FirstLoginWelcomeController;
+use App\Http\Controllers\Onboarding\InvitationController;
 use App\Livewire\Actions\Logout;
 use App\Livewire\Dashboard\CustomerDashboard;
 use App\Livewire\History\OrderHistory;
+use App\Livewire\Notifications\NotificationCenter;
 use App\Livewire\OrderChecking;
 use App\Livewire\OrderCheckingBulk;
-use App\Livewire\Notifications\NotificationCenter;
 use App\Livewire\Orders\OrderShow;
 use App\Livewire\Payments\PaymentIndex;
 use App\Livewire\Payments\PaymentShow;
@@ -17,11 +20,22 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return auth()->check()
-        ? redirect()->route('dashboard')
+        ? redirect()->to(auth()->user()->onboarding_welcomed_at ? route('dashboard') : '/welcome')
         : view('welcome');
 })->name('welcome');
 
+Route::middleware('guest')->group(function () {
+    Route::get('/request-access', [AccessRequestController::class, 'create'])->name('request-access');
+    Route::post('/request-access', [AccessRequestController::class, 'store'])->name('request-access.store');
+    Route::get('/request-access/success', [AccessRequestController::class, 'success'])->name('request-access.success');
+    Route::get('/invitation/{token}', [InvitationController::class, 'show'])->name('invitation.show');
+    Route::post('/invitation/{token}', [InvitationController::class, 'activate'])->name('invitation.activate');
+});
+
 Route::middleware(['auth'])->group(function () {
+    Route::get('/welcome', [FirstLoginWelcomeController::class, 'show'])->name('onboarding.welcome');
+    Route::post('/welcome/start', [FirstLoginWelcomeController::class, 'start'])->name('onboarding.start');
+
     // Account selection is authenticated but intentionally outside the tenant middleware
     // because users with multiple accounts need a safe place to choose the active tenant.
     Route::get('/client-accounts/select', [ClientAccountSelectionController::class, 'index'])

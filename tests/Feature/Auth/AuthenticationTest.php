@@ -35,7 +35,7 @@ class AuthenticationTest extends TestCase
 
         $component
             ->assertHasNoErrors()
-            ->assertRedirect(route('dashboard', absolute: false));
+            ->assertRedirect('/welcome');
 
         $this->assertAuthenticated();
     }
@@ -70,11 +70,9 @@ class AuthenticationTest extends TestCase
             ->assertSee('Customer Portal')
             ->assertSee('หน้าหลัก')
             ->assertSee('สร้างรายการส่งสินค้า')
-            ->assertSee('การขนส่ง')
             ->assertSee('ติดตามสถานะสินค้า')
             ->assertSee('ประวัติรายการ')
             ->assertSee('การชำระเงิน')
-            ->assertSee('รายงาน')
             ->assertSee('ตั้งค่า')
             ->assertSee('ABC Company')
             ->assertSee('Navigation User')

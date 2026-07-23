@@ -85,7 +85,8 @@ class DashboardPaymentOverviewTest extends TestCase
         $this->fakeDashboardResponses(paymentFixture: 'payments-empty.json');
 
         Livewire::test(CustomerDashboard::class)
-            ->assertSee('ยังไม่มีรายการชำระเงินล่าสุด');
+            ->assertSee('ยังไม่มีรายการชำระเงิน')
+            ->assertSee('เมื่อมีรายการขนส่งและข้อมูลวางบิล');
     }
 
     public function test_dashboard_makes_one_payment_call_per_lifecycle(): void

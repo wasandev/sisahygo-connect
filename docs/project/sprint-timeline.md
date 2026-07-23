@@ -15,5 +15,6 @@ Evidence sources: git history, routes, app code, tests, fixtures, docs.
 | `94149a8` | Sprint 5A Payment Center foundation | Payment | Completed | Payment list/detail foundations committed. |
 | `2d2947e` | Sprint 5B/5C Payment Module baseline | Payment/Dashboard | Completed | Payment Center UX, Dashboard widgets, Dashboard payment cache, tests/docs included in current baseline. |
 | Docs/product roadmap | Bulk Order Checking | Orders | Planned | Capability exists in enum/demo seed only; no route/component/service/endpoint implementation. |
+| Local branch `feature/customer-onboarding-foundation` | Sprint 11A Customer Onboarding Foundation | Onboarding | Implemented locally | Public request access, mock invitation activation, first-login welcome, Client Account selector reuse, onboarding progress UI, and customer empty-state polish. No Core DB/API onboarding calls. |
 
 No missing sprint numbers were fabricated. Sprint names above are reconstructed only where git/doc evidence exists.

@@ -64,7 +64,11 @@
 
             @if ($shipments === [])
                 <div class="p-6">
-                    <x-connect.empty-state :title="__('shipments.empty.title')" :description="__('shipments.empty.description')" />
+                    <x-connect.empty-state :title="__('shipments.empty.title')" :description="__('shipments.empty.description')">
+                        <x-slot:actions>
+                            <x-connect.button size="sm" :href="route('order-checking')" wire:navigate>{{ __('shipments.actions.create_first') }}</x-connect.button>
+                        </x-slot:actions>
+                    </x-connect.empty-state>
                 </div>
             @else
                 <div class="space-y-3 bg-slate-50/70 p-3 sm:p-4">

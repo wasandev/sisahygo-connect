@@ -86,3 +86,7 @@ Sandbox E2E and release-candidate tooling is implemented locally on `feature/san
 ## Sprint 10 Staging Deployment And Go-Live Preparation Update
 
 Permanent-domain staging preparation is implemented locally for `https://connect.sisahygo.online`. During staging, `APP_ENV=staging`, `APP_DEBUG=false`, and `SISAHYGO_API_BASE_URL=https://sandbox-api.sisahygo.online/api/v1/client`. Production go-live keeps the same domain and switches to `APP_ENV=production` with `https://api.sisahygo.online/api/v1/client`. Configuration guards now fail closed for staging/production endpoint mismatches, the authenticated app layout displays a non-production Release Candidate banner, diagnostics include app URL and a sanitized release identifier, and write smoke testing remains sandbox-only with explicit confirmation. No deploy and no commit have been performed.
+
+## Sprint 11A Customer Onboarding Foundation Update
+
+Customer Onboarding Foundation is implemented locally on `feature/customer-onboarding-foundation`. The public `/request-access` flow stores Connect-local access requests, mock invitation activation creates a local user plus Client Account owner membership, and first login routes through `/welcome` before the existing Client Account selector. The onboarding sprint does not call Sisahygo Core API, does not access the Core database, and does not send live invitations. No deploy and no commit have been performed.

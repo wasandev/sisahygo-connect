@@ -70,7 +70,8 @@ class CustomerDashboardPageTest extends TestCase
         Http::fake(['*' => Http::response(['data' => [], 'meta' => ['current_page' => 1, 'per_page' => 5, 'total' => 0, 'last_page' => 1]])]);
 
         Livewire::test(CustomerDashboard::class)
-            ->assertSee('ยังไม่มีรายการล่าสุด')
+            ->assertSee('ยังไม่มีรายการรับส่งสินค้า')
+            ->assertSee('เริ่มต้นด้วยการสร้างรายการแรก')
             ->assertSee('ยังไม่มีรายการที่ต้องติดตามในช่วงนี้')
             ->assertSee('ยังไม่มีข้อมูลผู้รับในรายการล่าสุด')
             ->assertSee('ยังไม่มีข้อมูลสินค้าในรายการล่าสุด');

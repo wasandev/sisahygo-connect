@@ -18,4 +18,11 @@
             </x-connect.button>
         </form>
     </x-connect.card>
+
+    <x-connect.empty-state :title="__('shipments.tracking.guide_title')" :description="__('shipments.tracking.guide_description')">
+        <x-slot:actions>
+            <x-connect.button size="sm" :href="route('order-checking')" wire:navigate>{{ __('shipments.actions.create_first') }}</x-connect.button>
+            <x-connect.button size="sm" variant="secondary" :href="route('history')" wire:navigate>{{ __('shipments.actions.open_history') }}</x-connect.button>
+        </x-slot:actions>
+    </x-connect.empty-state>
 </div>
