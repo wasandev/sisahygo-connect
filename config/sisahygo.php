@@ -3,12 +3,13 @@
 return [
     'api' => [
         'environment' => env('SISAHYGO_API_ENVIRONMENT', 'sandbox'),
+        'base_url' => env('SISAHYGO_API_BASE_URL'),
         'environments' => [
             'sandbox' => [
-                'base_url' => env('SISAHYGO_API_SANDBOX_URL', 'https://sandbox-api.sisahygo.online/api/v1/client'),
+                'base_url' => env('SISAHYGO_API_SANDBOX_URL'),
             ],
             'production' => [
-                'base_url' => env('SISAHYGO_API_PRODUCTION_URL', 'https://api.sisahygo.online/api/v1/client'),
+                'base_url' => env('SISAHYGO_API_PRODUCTION_URL'),
             ],
         ],
         'connect_timeout' => (int) env('SISAHYGO_API_CONNECT_TIMEOUT', 5),

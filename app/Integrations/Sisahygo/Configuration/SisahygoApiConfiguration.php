@@ -4,6 +4,7 @@ namespace App\Integrations\Sisahygo\Configuration;
 
 use App\Domain\Sisahygo\Enums\SisahygoApiEnvironment;
 use InvalidArgumentException;
+use RuntimeException;
 
 final readonly class SisahygoApiConfiguration
 {
@@ -42,8 +43,17 @@ final readonly class SisahygoApiConfiguration
 
     public static function baseUrlForEnvironment(SisahygoApiEnvironment $environment): string
     {
-        $baseUrl = (string) config("sisahygo.api.environments.{$environment->value}.base_url");
+        $baseUrl = trim((string) (config('sisahygo.api.base_url') ?: config("sisahygo.api.environments.{$environment->value}.base_url")));
+
+        if ($baseUrl === '') {
+            throw new RuntimeException("Sisahygo API base URL is not configured for {$environment->value}.");
+        }
+
         self::assertTrustedBaseUrl($baseUrl);
+
+        if ($environment === SisahygoApiEnvironment::Production && str_contains(strtolower((string) parse_url($baseUrl, PHP_URL_HOST)), 'sandbox')) {
+            throw new RuntimeException('Sisahygo production environment cannot use a sandbox API host.');
+        }
 
         return rtrim($baseUrl, '/');
     }

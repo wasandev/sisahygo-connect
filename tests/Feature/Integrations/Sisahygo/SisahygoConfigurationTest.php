@@ -49,4 +49,27 @@ class SisahygoConfigurationTest extends TestCase
 
         SisahygoApiConfiguration::fromConfig();
     }
+
+    public function test_missing_base_url_fails_clearly(): void
+    {
+        config()->set('sisahygo.api.environment', 'sandbox');
+        config()->set('sisahygo.api.base_url', null);
+        config()->set('sisahygo.api.environments.sandbox.base_url', null);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Sisahygo API base URL is not configured');
+
+        SisahygoApiConfiguration::fromConfig();
+    }
+
+    public function test_production_cannot_use_sandbox_host(): void
+    {
+        config()->set('sisahygo.api.environment', 'production');
+        config()->set('sisahygo.api.environments.production.base_url', 'https://sandbox-api.sisahygo.online/api/v1/client');
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('production environment cannot use a sandbox API host');
+
+        SisahygoApiConfiguration::fromConfig();
+    }
 }

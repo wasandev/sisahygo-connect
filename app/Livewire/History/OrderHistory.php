@@ -3,17 +3,11 @@
 namespace App\Livewire\History;
 
 use App\Application\History\ListOrderHistory;
+use App\Application\Integration\SisahygoApiErrorMessage;
 use App\Application\Shipment\ShipmentStatusLabels;
 use App\Domain\ClientAccount\Models\ClientAccount;
 use App\Domain\ClientAccount\Services\CurrentClientAccountResolver;
 use App\Integrations\Sisahygo\Exceptions\SisahygoApiException;
-use App\Integrations\Sisahygo\Exceptions\SisahygoAuthenticationException;
-use App\Integrations\Sisahygo\Exceptions\SisahygoAuthorizationException;
-use App\Integrations\Sisahygo\Exceptions\SisahygoConnectionException;
-use App\Integrations\Sisahygo\Exceptions\SisahygoRateLimitException;
-use App\Integrations\Sisahygo\Exceptions\SisahygoServerException;
-use App\Integrations\Sisahygo\Exceptions\SisahygoUnexpectedResponseException;
-use App\Integrations\Sisahygo\Exceptions\SisahygoValidationException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -193,16 +187,7 @@ class OrderHistory extends Component
 
     private function safeApiMessage(SisahygoApiException $exception): string
     {
-        return match (true) {
-            $exception instanceof SisahygoAuthenticationException => __('history.errors.authentication'),
-            $exception instanceof SisahygoAuthorizationException => __('history.errors.authorization'),
-            $exception instanceof SisahygoConnectionException => __('history.errors.connection'),
-            $exception instanceof SisahygoValidationException => __('history.errors.validation'),
-            $exception instanceof SisahygoRateLimitException => __('history.errors.rate_limited'),
-            $exception instanceof SisahygoServerException => __('history.errors.server'),
-            $exception instanceof SisahygoUnexpectedResponseException => __('history.errors.malformed'),
-            default => __('history.errors.unexpected'),
-        };
+        return app(SisahygoApiErrorMessage::class)->message($exception, 'history');
     }
 
     private function fieldName(string $field): string

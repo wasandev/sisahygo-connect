@@ -8,8 +8,12 @@ use App\Domain\ClientAccount\Models\ClientAccount;
 use App\Domain\ClientAccount\Models\ClientAccountCapability;
 use App\Domain\ClientAccount\Models\ClientAccountCustomer;
 use App\Domain\ClientAccount\Models\ClientAccountUser;
+use App\Domain\ClientAccount\Services\CurrentClientAccountResolver;
+use App\Domain\Sisahygo\Enums\SisahygoApiEnvironment;
+use App\Domain\Sisahygo\Services\SisahygoApiCredentialService;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class ClientAccountSettingsTest extends TestCase
@@ -66,5 +70,46 @@ class ClientAccountSettingsTest extends TestCase
             ->get(route('settings.client-account'))
             ->assertForbidden()
             ->assertSee('ยังไม่มีบัญชีลูกค้าที่พร้อมใช้งาน');
+    }
+
+    public function test_api_status_card_reports_connected_without_exposing_secret(): void
+    {
+        $user = User::factory()->create();
+        $account = ClientAccount::factory()->create(['name' => 'ABC Company', 'code' => 'ABC']);
+        ClientAccountUser::factory()->for($account)->for($user)->owner()->create(['role' => ClientAccountRole::Owner]);
+        ClientAccountCapability::factory()->for($account)->capability(ClientCapability::SettingsManage)->create();
+        app(SisahygoApiCredentialService::class)->create($account, SisahygoApiEnvironment::Sandbox, 'Sandbox', 'secret-api-key');
+        Http::fake(['https://sandbox-api.sisahygo.online/api/v1/client/units' => Http::response(['data' => [['unit_id' => 1, 'unit_name' => 'box']]])]);
+
+        $this->actingAs($user)
+            ->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id])
+            ->get(route('settings.client-account'))
+            ->assertOk()
+            ->assertSee('สถานะการเชื่อมต่อ Sisahygo API')
+            ->assertSee('เชื่อมต่อได้')
+            ->assertDontSee('secret-api-key')
+            ->assertDontSee('X-Api-Key');
+
+        Http::assertSent(fn ($request) => $request->url() === 'https://sandbox-api.sisahygo.online/api/v1/client/units'
+            && $request->hasHeader('X-Api-Key', 'secret-api-key'));
+    }
+
+    public function test_api_status_card_handles_missing_credential_safely(): void
+    {
+        $user = User::factory()->create();
+        $account = ClientAccount::factory()->create(['name' => 'ABC Company', 'code' => 'ABC']);
+        ClientAccountUser::factory()->for($account)->for($user)->owner()->create(['role' => ClientAccountRole::Owner]);
+        ClientAccountCapability::factory()->for($account)->capability(ClientCapability::SettingsManage)->create();
+        Http::fake();
+
+        $this->actingAs($user)
+            ->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id])
+            ->get(route('settings.client-account'))
+            ->assertOk()
+            ->assertSee('ไม่มี Credential')
+            ->assertSee('ยังไม่มี Sisahygo API Credential')
+            ->assertDontSee('secret-api-key');
+
+        Http::assertNothingSent();
     }
 }

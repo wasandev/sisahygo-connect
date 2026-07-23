@@ -1,6 +1,6 @@
 # Sisahygo Connect Project Source Of Truth
 
-Last verified: 2026-07-21
+Last verified: 2026-07-23
 Audited branch: `chore/project-roadmap-consolidation`
 Audited commit: `2d2947e` (`feat(connect): complete payment center module`)
 Framework baseline: Laravel `v13.19.0`, Livewire `v3.8.2`
@@ -34,6 +34,9 @@ Older docs remain useful as historical context, but this directory wins when the
 - [Backlog](backlog.md)
 - [Roadmap V2](roadmap-v2.md)
 - [Pre-Sprint Checklist](pre-sprint-checklist.md)
+- [Staging Readiness](../deployment/staging-readiness.md)
+- [API Connectivity Operations](../operations/api-connectivity.md)
+- [Troubleshooting](../operations/troubleshooting.md)
 
 ## Update Policy
 

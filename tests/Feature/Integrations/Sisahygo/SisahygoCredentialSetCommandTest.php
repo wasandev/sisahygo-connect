@@ -181,13 +181,14 @@ class SisahygoCredentialSetCommandTest extends TestCase
             ->assertFailed();
     }
 
-    public function test_sandbox_base_url_composition_is_exact_and_rejects_duplicate_path(): void
+    public function test_production_environment_rejects_sandbox_host(): void
     {
         $account = $this->readyAccount();
-        config()->set('sisahygo.api.environments.sandbox.base_url', 'https://sandbox-api.sisahygo.online/api/v1/client/api/v1/client');
+        config()->set('sisahygo.api.environment', 'production');
+        config()->set('sisahygo.api.environments.production.base_url', 'https://sandbox-api.example.test/api/v1/client');
 
-        $this->artisan('sisahygo:credential:set', ['--account' => $account->id])
-            ->expectsOutputToContain('Sandbox base URL must resolve to https://sandbox-api.sisahygo.online/api/v1/client.')
+        $this->artisan('sisahygo:credential:set', ['--account' => $account->id, '--environment' => 'production'])
+            ->expectsOutputToContain('production environment cannot use a sandbox API host')
             ->assertFailed();
     }
 

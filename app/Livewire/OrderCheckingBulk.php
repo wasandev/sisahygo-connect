@@ -2,15 +2,12 @@
 
 namespace App\Livewire;
 
+use App\Application\Integration\SisahygoApiErrorMessage;
 use App\Application\OrderChecking\SubmitBulkOrderChecking;
 use App\Domain\ClientAccount\Models\ClientAccount;
 use App\Domain\ClientAccount\Services\CurrentClientAccountResolver;
 use App\Integrations\Sisahygo\Exceptions\SisahygoApiException;
-use App\Integrations\Sisahygo\Exceptions\SisahygoAuthenticationException;
-use App\Integrations\Sisahygo\Exceptions\SisahygoAuthorizationException;
 use App\Integrations\Sisahygo\Exceptions\SisahygoConnectionException;
-use App\Integrations\Sisahygo\Exceptions\SisahygoRateLimitException;
-use App\Integrations\Sisahygo\Exceptions\SisahygoServerException;
 use App\Integrations\Sisahygo\Exceptions\SisahygoValidationException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -872,12 +869,6 @@ class OrderCheckingBulk extends Component
 
     private function safeApiMessage(SisahygoApiException $exception): string
     {
-        return match (true) {
-            $exception instanceof SisahygoAuthenticationException => __('bulk_order_checking.errors.authentication'),
-            $exception instanceof SisahygoAuthorizationException => __('bulk_order_checking.errors.authorization'),
-            $exception instanceof SisahygoRateLimitException => __('bulk_order_checking.errors.rate_limited'),
-            $exception instanceof SisahygoServerException => __('bulk_order_checking.errors.server', ['correlation' => $exception->safeContext()['correlation_id'] ?? '-']),
-            default => __('bulk_order_checking.errors.recoverable'),
-        };
+        return app(SisahygoApiErrorMessage::class)->message($exception, 'bulk_order_checking');
     }
 }
