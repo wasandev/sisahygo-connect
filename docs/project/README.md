@@ -36,7 +36,7 @@ Older docs remain useful as historical context, but this directory wins when the
 - [Pre-Sprint Checklist](pre-sprint-checklist.md)
 - [Staging Readiness](../deployment/staging-readiness.md)
 - [Staging Environment](../deployment/staging-environment.md)
-- [Staging Deployment Draft](../deployment/staging-deployment.md)
+- [Forge Staging Deployment Runbook](../deployment/staging-deployment.md)
 - [Sandbox E2E Checklist](../testing/sandbox-e2e-checklist.md)
 - [Release Candidate Signoff](../testing/release-candidate-signoff.md)
 - [API Connectivity Operations](../operations/api-connectivity.md)
@@ -44,4 +44,4 @@ Older docs remain useful as historical context, but this directory wins when the
 
 ## Update Policy
 
-Update this directory after each completed business module, before starting any new major module, after route/API-contract changes, before Sandbox deployment, and before Production deployment. A new sprint must not start if material checklist items in `pre-sprint-checklist.md` are Unverified.
+Update this directory after each completed business module, before starting any new major module, after route/API-contract changes, before Sandbox deployment, before permanent-domain staging deployment, and before Production deployment. A new sprint must not start if material checklist items in `pre-sprint-checklist.md` are Unverified.

@@ -84,3 +84,7 @@ Staging Readiness and Integration Hardening is implemented locally on `feature/s
 ## Sprint 9 Feature Matrix Addendum
 
 Sandbox End-to-End Integration and Release Candidate tooling is implemented locally on `feature/sandbox-e2e-release-candidate`. New safe Artisan commands: `sisahygo:integration-status`, `sisahygo:smoke-test`, and `sisahygo:diagnostics`. The smoke test is read-only by default, reports PASS/FAIL/SKIP, uses existing Core Client API endpoints and application services, and refuses controlled write checks unless explicitly enabled and confirmed in sandbox. Diagnostics output is sanitized. Normal PHPUnit tests use HTTP fakes and do not require live sandbox access. Notification Center remains mock-only. No deploy or commit has been performed.
+
+## Sprint 10 Feature Matrix Addendum
+
+Staging Deployment and Go-Live Preparation is implemented locally for the permanent domain `https://connect.sisahygo.online`. Staging runs with `APP_ENV=staging` against the Sisahygo Core sandbox Client API; production later keeps the same domain but switches to `APP_ENV=production` and the production Core Client API. New safeguards enforce staging/sandbox and production/production endpoint alignment, the app layout shows a non-production release-candidate banner outside production, and controlled write smoke testing is additionally blocked for production app/env or production Core host. Notification Center remains mock-only. No deploy or commit has been performed.

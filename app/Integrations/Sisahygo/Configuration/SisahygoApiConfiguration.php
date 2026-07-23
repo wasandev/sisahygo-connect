@@ -50,6 +50,7 @@ final readonly class SisahygoApiConfiguration
         }
 
         self::assertTrustedBaseUrl($baseUrl);
+        self::assertApplicationEnvironmentMatches($environment, $baseUrl);
 
         if ($environment === SisahygoApiEnvironment::Production && str_contains(strtolower((string) parse_url($baseUrl, PHP_URL_HOST)), 'sandbox')) {
             throw new RuntimeException('Sisahygo production environment cannot use a sandbox API host.');
@@ -65,5 +66,43 @@ final readonly class SisahygoApiConfiguration
         if (($parts['scheme'] ?? null) !== 'https' || blank($parts['host'] ?? null)) {
             throw new InvalidArgumentException('Sisahygo API base URL must be an HTTPS URL from trusted configuration.');
         }
+    }
+
+    public static function host(string $baseUrl): string
+    {
+        return strtolower((string) parse_url($baseUrl, PHP_URL_HOST));
+    }
+
+    private static function assertApplicationEnvironmentMatches(SisahygoApiEnvironment $environment, string $baseUrl): void
+    {
+        $appEnvironment = (string) config('app.env');
+        $host = self::host($baseUrl);
+        $sandboxHost = self::configuredHost('sandbox');
+        $productionHost = self::configuredHost('production');
+
+        if ($appEnvironment === 'staging') {
+            if ($environment !== SisahygoApiEnvironment::Sandbox || ($sandboxHost !== '' && $host !== $sandboxHost)) {
+                throw new RuntimeException('Staging must use the Sisahygo sandbox API endpoint.');
+            }
+
+            return;
+        }
+
+        if ($appEnvironment === 'production') {
+            if ($environment !== SisahygoApiEnvironment::Production) {
+                throw new RuntimeException('Production must use the Sisahygo production API environment.');
+            }
+
+            if ($productionHost !== '' && $host !== $productionHost) {
+                throw new RuntimeException('Production must use the Sisahygo production API endpoint.');
+            }
+        }
+    }
+
+    private static function configuredHost(string $environment): string
+    {
+        $baseUrl = trim((string) config("sisahygo.api.environments.{$environment}.base_url"));
+
+        return $baseUrl === '' ? '' : self::host($baseUrl);
     }
 }

@@ -16,7 +16,8 @@ class BuildReleaseDiagnostics
             'application' => config('app.name', 'Sisahygo Connect'),
             'app_environment' => app()->environment(),
             'app_debug' => (bool) config('app.debug'),
-            'git_commit' => $this->gitCommit(),
+            'app_url' => config('app.url'),
+            'release_identifier' => $this->releaseIdentifier(),
             'php_version' => PHP_VERSION,
             'laravel_version' => app()->version(),
             'api_environment' => (string) config('sisahygo.api.environment'),
@@ -28,6 +29,30 @@ class BuildReleaseDiagnostics
             'database_connection' => config('database.default'),
             'database_status' => $this->databaseStatus(),
         ];
+    }
+
+    private function releaseIdentifier(): string
+    {
+        foreach (['version', 'build', 'commit'] as $key) {
+            $value = $this->safeReleaseValue(config("sisahygo.release.{$key}"));
+
+            if ($value !== '') {
+                return $value;
+            }
+        }
+
+        return $this->gitCommit();
+    }
+
+    private function safeReleaseValue(mixed $value): string
+    {
+        $value = trim((string) $value);
+
+        if ($value === '') {
+            return '';
+        }
+
+        return substr((string) preg_replace('/[^A-Za-z0-9._-]/', '', $value), 0, 40);
     }
 
     private function gitCommit(): string

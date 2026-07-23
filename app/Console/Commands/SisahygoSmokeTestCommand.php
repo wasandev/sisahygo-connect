@@ -13,6 +13,7 @@ use App\Domain\ClientAccount\Enums\ClientCapability;
 use App\Domain\ClientAccount\Models\ClientAccount;
 use App\Domain\ClientAccount\Models\ClientAccountUser;
 use App\Domain\ClientAccount\Services\ClientAccountAuthorizationService;
+use App\Domain\Sisahygo\Enums\SisahygoApiEnvironment;
 use App\Integrations\Sisahygo\Configuration\SisahygoApiConfiguration;
 use App\Integrations\Sisahygo\Exceptions\SisahygoApiException;
 use App\Integrations\Sisahygo\Support\SisahygoIntegrationContextBuilder;
@@ -195,8 +196,20 @@ class SisahygoSmokeTestCommand extends Command
             return;
         }
 
-        if (! $configuration || $configuration->environment->value !== 'sandbox') {
+        if (! $configuration || $configuration->environment !== SisahygoApiEnvironment::Sandbox) {
             $this->failCheck('write_order_checking', 'write smoke test is allowed only in sandbox');
+
+            return;
+        }
+
+        if (! in_array((string) config('app.env'), ['local', 'testing', 'staging'], true)) {
+            $this->failCheck('write_order_checking', 'write smoke test is refused for this application environment');
+
+            return;
+        }
+
+        if (SisahygoApiConfiguration::host($configuration->baseUrl) === SisahygoApiConfiguration::host((string) config('sisahygo.api.environments.production.base_url'))) {
+            $this->failCheck('write_order_checking', 'write smoke test refuses the production API endpoint');
 
             return;
         }
@@ -217,7 +230,7 @@ class SisahygoSmokeTestCommand extends Command
             return;
         }
 
-        $reference = 'SMOKE-'.now()->format('YmdHis').'-'.strtoupper(str()->random(6));
+        $reference = $this->smokeReferencePrefix().now()->format('YmdHis').'-'.strtoupper(str()->random(6));
 
         try {
             $singleOrder->submit($user, $account, null, $receiverId, $reference, 'Sandbox smoke test', [[
@@ -280,6 +293,11 @@ class SisahygoSmokeTestCommand extends Command
         }
 
         return class_basename($exception);
+    }
+
+    private function smokeReferencePrefix(): string
+    {
+        return ((string) config('app.env')) === 'staging' ? 'STG-SMOKE-' : 'SBX-SMOKE-';
     }
 
     private function pass(string $check, string $message): void
