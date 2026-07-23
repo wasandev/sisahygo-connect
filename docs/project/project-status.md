@@ -1,7 +1,7 @@
 # Project Status
 
 Last verified: 2026-07-23
-Branch: `feature/staging-readiness`
+Branch: `feature/sandbox-e2e-release-candidate`
 Commit audited: `2d2947e`
 Starting worktree: clean
 Route count: 41 routes from `./vendor/bin/sail artisan route:list`
@@ -30,7 +30,7 @@ Sisahygo Connect is a Laravel/Livewire customer portal with authenticated tenant
 
 ## Next Milestone
 
-Next milestone: staging smoke testing and deployment planning after Sprint 8 hardening review. No staging deployment has been performed in this sprint.
+Next milestone: review Sandbox E2E release-candidate command output with approved live sandbox credentials, then plan a separate staging deployment. No staging deployment has been performed in this sprint.
 
 ## Current Blockers And Cautions
 
@@ -78,3 +78,7 @@ Customer Workspace Enhancement is implemented locally on the current worktree. T
 ## Sprint 8 Staging Readiness Update
 
 Staging Readiness and Integration Hardening is implemented locally on `feature/staging-readiness`. Configuration is centralized in `config/sisahygo.php` with explicit HTTPS base URL validation and no production fallback to sandbox. Settings includes a protected Sisahygo API connectivity card using existing Core Client API `/units`. User-safe Core API error messaging is centralized, logging remains privacy-safe, GET retries stay limited to safe read-only requests, and POST order creation/bulk creation are not automatically retried. New docs live under `docs/deployment` and `docs/operations`. No deploy and no commit have been performed.
+
+## Sprint 9 Sandbox E2E Release Candidate Update
+
+Sandbox E2E and release-candidate tooling is implemented locally on `feature/sandbox-e2e-release-candidate`. The branch adds sanitized `sisahygo:integration-status`, read-only-by-default `sisahygo:smoke-test`, and `sisahygo:diagnostics` commands. Controlled write smoke checks require sandbox, `--include-write`, `--confirm-write`, and fixture IDs, and order-creation POST requests are still not automatically retried. New deployment/testing docs live under `docs/deployment` and `docs/testing`. No deploy and no commit have been performed.

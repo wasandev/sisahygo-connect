@@ -80,3 +80,7 @@ Customer Workspace Enhancement is implemented locally. Dashboard now includes un
 ## Sprint 8 Feature Matrix Addendum
 
 Staging Readiness and Integration Hardening is implemented locally on `feature/staging-readiness`. API configuration now requires explicit HTTPS base URLs, supports `SISAHYGO_API_BASE_URL`, and rejects production pointing at a sandbox host. Settings includes a protected Sisahygo API connectivity card that uses the existing `/units` Client API endpoint. Core API user-safe error messaging is centralized with `SisahygoApiErrorMessage`. GET retry behavior remains limited to safe read-only requests; POST order creation and bulk creation are not automatically retried. Notification Center remains mock-only. No deploy or commit has been performed.
+
+## Sprint 9 Feature Matrix Addendum
+
+Sandbox End-to-End Integration and Release Candidate tooling is implemented locally on `feature/sandbox-e2e-release-candidate`. New safe Artisan commands: `sisahygo:integration-status`, `sisahygo:smoke-test`, and `sisahygo:diagnostics`. The smoke test is read-only by default, reports PASS/FAIL/SKIP, uses existing Core Client API endpoints and application services, and refuses controlled write checks unless explicitly enabled and confirmed in sandbox. Diagnostics output is sanitized. Normal PHPUnit tests use HTTP fakes and do not require live sandbox access. Notification Center remains mock-only. No deploy or commit has been performed.

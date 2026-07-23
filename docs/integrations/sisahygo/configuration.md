@@ -7,7 +7,7 @@ Environment variables:
 ```env
 SISAHYGO_API_ENVIRONMENT=sandbox
 SISAHYGO_API_BASE_URL=
-SISAHYGO_API_SANDBOX_URL=https://sandbox-api.example.test/api/v1/client
+SISAHYGO_API_SANDBOX_URL=https://sandbox-api.sisahygo.online/api/v1/client
 SISAHYGO_API_PRODUCTION_URL=https://api.example.test/api/v1/client
 SISAHYGO_API_CONNECT_TIMEOUT=5
 SISAHYGO_API_TIMEOUT=15
