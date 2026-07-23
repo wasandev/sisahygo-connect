@@ -19,6 +19,11 @@ return [
         'user_agent' => env('SISAHYGO_API_USER_AGENT', 'Sisahygo Connect'),
         'live_smoke_tests' => (bool) env('SISAHYGO_API_LIVE_SMOKE_TESTS', false),
     ],
+    'release' => [
+        'version' => env('SISAHYGO_RELEASE_VERSION'),
+        'build' => env('SISAHYGO_RELEASE_BUILD'),
+        'commit' => env('SISAHYGO_RELEASE_COMMIT'),
+    ],
     'dashboard' => [
         'payment_cache_enabled' => filter_var(env('SISAHYGO_DASHBOARD_PAYMENT_CACHE_ENABLED', true), FILTER_VALIDATE_BOOL),
         'payment_cache_ttl' => (int) env('SISAHYGO_DASHBOARD_PAYMENT_CACHE_TTL', 60),

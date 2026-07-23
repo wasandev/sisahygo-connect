@@ -31,6 +31,55 @@ class SisahygoConfigurationTest extends TestCase
         $this->assertSame('https://api.sisahygo.online/api/v1/client', $configuration->baseUrl);
     }
 
+    public function test_staging_accepts_only_sandbox_endpoint(): void
+    {
+        config()->set('app.env', 'staging');
+        config()->set('sisahygo.api.environment', 'sandbox');
+        config()->set('sisahygo.api.environments.sandbox.base_url', 'https://sandbox-api.sisahygo.online/api/v1/client');
+
+        $configuration = SisahygoApiConfiguration::fromConfig();
+
+        $this->assertSame(SisahygoApiEnvironment::Sandbox, $configuration->environment);
+        $this->assertSame('https://sandbox-api.sisahygo.online/api/v1/client', $configuration->baseUrl);
+    }
+
+    public function test_staging_rejects_production_endpoint(): void
+    {
+        config()->set('app.env', 'staging');
+        config()->set('sisahygo.api.environment', 'sandbox');
+        config()->set('sisahygo.api.base_url', 'https://api.sisahygo.online/api/v1/client');
+        config()->set('sisahygo.api.environments.sandbox.base_url', 'https://sandbox-api.sisahygo.online/api/v1/client');
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Staging must use the Sisahygo sandbox API endpoint.');
+
+        SisahygoApiConfiguration::fromConfig();
+    }
+
+    public function test_staging_rejects_production_api_environment(): void
+    {
+        config()->set('app.env', 'staging');
+        config()->set('sisahygo.api.environment', 'production');
+        config()->set('sisahygo.api.environments.production.base_url', 'https://api.sisahygo.online/api/v1/client');
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Staging must use the Sisahygo sandbox API endpoint.');
+
+        SisahygoApiConfiguration::fromConfig();
+    }
+
+    public function test_production_rejects_sandbox_api_environment(): void
+    {
+        config()->set('app.env', 'production');
+        config()->set('sisahygo.api.environment', 'sandbox');
+        config()->set('sisahygo.api.environments.sandbox.base_url', 'https://sandbox-api.sisahygo.online/api/v1/client');
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Production must use the Sisahygo production API environment.');
+
+        SisahygoApiConfiguration::fromConfig();
+    }
+
     public function test_unsupported_environment_is_rejected(): void
     {
         config()->set('sisahygo.api.environment', 'preview');

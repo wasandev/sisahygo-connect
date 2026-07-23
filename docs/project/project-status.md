@@ -1,7 +1,7 @@
 # Project Status
 
 Last verified: 2026-07-23
-Branch: `feature/sandbox-e2e-release-candidate`
+Branch: `feature/staging-deployment` target; current patch prepared from local checkout
 Commit audited: `2d2947e`
 Starting worktree: clean
 Route count: 41 routes from `./vendor/bin/sail artisan route:list`
@@ -30,7 +30,7 @@ Sisahygo Connect is a Laravel/Livewire customer portal with authenticated tenant
 
 ## Next Milestone
 
-Next milestone: review Sandbox E2E release-candidate command output with approved live sandbox credentials, then plan a separate staging deployment. No staging deployment has been performed in this sprint.
+Next milestone: human review of the permanent-domain staging patch, then manual Forge deployment planning for `https://connect.sisahygo.online`. No deployment has been performed in this sprint.
 
 ## Current Blockers And Cautions
 
@@ -82,3 +82,7 @@ Staging Readiness and Integration Hardening is implemented locally on `feature/s
 ## Sprint 9 Sandbox E2E Release Candidate Update
 
 Sandbox E2E and release-candidate tooling is implemented locally on `feature/sandbox-e2e-release-candidate`. The branch adds sanitized `sisahygo:integration-status`, read-only-by-default `sisahygo:smoke-test`, and `sisahygo:diagnostics` commands. Controlled write smoke checks require sandbox, `--include-write`, `--confirm-write`, and fixture IDs, and order-creation POST requests are still not automatically retried. New deployment/testing docs live under `docs/deployment` and `docs/testing`. No deploy and no commit have been performed.
+
+## Sprint 10 Staging Deployment And Go-Live Preparation Update
+
+Permanent-domain staging preparation is implemented locally for `https://connect.sisahygo.online`. During staging, `APP_ENV=staging`, `APP_DEBUG=false`, and `SISAHYGO_API_BASE_URL=https://sandbox-api.sisahygo.online/api/v1/client`. Production go-live keeps the same domain and switches to `APP_ENV=production` with `https://api.sisahygo.online/api/v1/client`. Configuration guards now fail closed for staging/production endpoint mismatches, the authenticated app layout displays a non-production Release Candidate banner, diagnostics include app URL and a sanitized release identifier, and write smoke testing remains sandbox-only with explicit confirmation. No deploy and no commit have been performed.

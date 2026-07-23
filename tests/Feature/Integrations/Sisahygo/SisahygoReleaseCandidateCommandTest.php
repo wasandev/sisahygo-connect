@@ -14,6 +14,7 @@ use App\Domain\Sisahygo\Services\SisahygoApiCredentialService;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
@@ -144,6 +145,96 @@ class SisahygoReleaseCandidateCommandTest extends TestCase
 
         $postCount = collect(Http::recorded())->filter(fn ($record) => $record[0]->method() === 'POST')->count();
         $this->assertSame(1, $postCount);
+    }
+
+    public function test_staging_write_smoke_test_requires_confirmation(): void
+    {
+        config()->set('app.env', 'staging');
+        [$user, $account] = $this->readyAccount(apiKey: 'secret-api-key');
+        $this->fakeReadOnlyEndpoints();
+
+        $this->artisan('sisahygo:smoke-test', ['--account' => $account->id, '--user' => $user->id, '--include-write' => true])
+            ->expectsOutputToContain('FAIL write_order_checking: write checks require --confirm-write')
+            ->doesntExpectOutputToContain('secret-api-key')
+            ->assertFailed();
+
+        Http::assertNotSent(fn ($request) => $request->method() === 'POST');
+    }
+
+    public function test_write_smoke_test_refuses_production_endpoint_even_when_configured_as_sandbox(): void
+    {
+        config()->set('sisahygo.api.environment', 'sandbox');
+        config()->set('sisahygo.api.base_url', 'https://api.sisahygo.online/api/v1/client');
+        config()->set('sisahygo.api.environments.production.base_url', 'https://api.sisahygo.online/api/v1/client');
+        [$user, $account] = $this->readyAccount(apiKey: 'secret-api-key');
+        $this->fakeReadOnlyEndpoints('https://api.sisahygo.online/api/v1/client');
+
+        $this->artisan('sisahygo:smoke-test', [
+            '--account' => $account->id,
+            '--user' => $user->id,
+            '--include-write' => true,
+            '--confirm-write' => true,
+            '--receiver-id' => 20001,
+            '--product-id' => 6639,
+            '--unit-id' => 1,
+        ])->expectsOutputToContain('FAIL write_order_checking: write smoke test refuses the production API endpoint')
+            ->doesntExpectOutputToContain('secret-api-key')
+            ->assertFailed();
+
+        Http::assertNotSent(fn ($request) => $request->method() === 'POST');
+    }
+
+    public function test_staging_write_smoke_reference_is_recognizable(): void
+    {
+        config()->set('app.env', 'staging');
+        [$user, $account] = $this->readyAccount(apiKey: 'secret-api-key');
+        Http::fake(function ($request) {
+            if ($request->method() === 'POST' && str_ends_with($request->url(), '/order-checkings')) {
+                return Http::response($this->fixture('order-checking-success.json'), 201);
+            }
+
+            return $this->readOnlyResponse($request->url());
+        });
+
+        $this->artisan('sisahygo:smoke-test', [
+            '--account' => $account->id,
+            '--user' => $user->id,
+            '--include-write' => true,
+            '--confirm-write' => true,
+            '--receiver-id' => 20001,
+            '--product-id' => 6639,
+            '--unit-id' => 1,
+        ])->expectsOutputToContain('PASS write_order_checking: created client_reference_no STG-SMOKE-')
+            ->assertSuccessful();
+    }
+
+    public function test_non_production_banner_is_visible_for_staging(): void
+    {
+        config()->set('app.env', 'staging');
+        config()->set('sisahygo.api.environment', 'sandbox');
+        config()->set('sisahygo.release.build', 'rc-1 / unsafe text');
+
+        $html = Blade::render('<x-connect.environment-banner />');
+
+        $this->assertStringContainsString('STAGING', $html);
+        $this->assertStringContainsString('Sandbox API', $html);
+        $this->assertStringContainsString('Release Candidate', $html);
+        $this->assertStringContainsString('sandbox-api.sisahygo.online', $html);
+        $this->assertStringContainsString('rc-1unsafetext', $html);
+        $this->assertStringNotContainsString('secret-api-key', $html);
+        $this->assertStringNotContainsString('X-Api-Key', $html);
+    }
+
+    public function test_non_production_banner_is_hidden_for_production(): void
+    {
+        config()->set('app.env', 'production');
+        config()->set('sisahygo.api.environment', 'production');
+        config()->set('sisahygo.api.environments.production.base_url', 'https://api.sisahygo.online/api/v1/client');
+
+        $html = Blade::render('<x-connect.environment-banner />');
+
+        $this->assertStringNotContainsString('Release Candidate', $html);
+        $this->assertStringNotContainsString('Sandbox API', $html);
     }
 
     #[DataProvider('smokeFailureProvider')]

@@ -22,6 +22,8 @@
             <livewire:layout.navigation :title="$title" />
 
             <main class="min-h-screen pt-14 lg:pl-64">
+                <x-connect.environment-banner />
+
                 <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
                     {{ $slot }}
                 </div>
