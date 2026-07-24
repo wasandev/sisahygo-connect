@@ -5,6 +5,10 @@ namespace Tests\Feature;
 use App\Domain\ClientAccount\Models\ClientAccount;
 use App\Domain\ClientAccount\Models\ClientAccountUser;
 use App\Domain\Onboarding\Models\AccessRequest;
+use App\Integrations\Sisahygo\Configuration\SisahygoApiConfiguration;
+use App\Livewire\Onboarding\RequestAccess;
+use Illuminate\Support\Facades\Http;
+use Livewire\Livewire;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -23,27 +27,39 @@ class CustomerOnboardingTest extends TestCase
             ->assertSee(route('login'), false);
     }
 
-    public function test_request_access_stores_pending_access_request_locally(): void
+    public function test_request_access_submits_to_core_without_local_access_request(): void
     {
-        $this->post('/request-access', [
-            'company_name' => 'Acme Logistics',
-            'contact_name' => 'Anong Contact',
-            'email' => 'contact@example.com',
-            'phone' => '0812345678',
-            'province' => 'Bangkok',
-            'website' => 'https://example.com',
-            'number_of_branches' => 3,
-            'additional_notes' => 'Need sandbox onboarding.',
-        ])->assertRedirect(route('request-access.success'));
+        config()->set('sisahygo.api.base_url', 'https://sandbox-api.sisahygo.online/api/v1/client');
+        app()->forgetInstance(SisahygoApiConfiguration::class);
 
-        $this->assertDatabaseHas('access_requests', [
-            'company_name' => 'Acme Logistics',
-            'contact_name' => 'Anong Contact',
-            'email' => 'contact@example.com',
-            'status' => AccessRequest::STATUS_PENDING,
-        ]);
+        Http::fake(['*' => Http::response([
+            'data' => [
+                'request_no' => 'CAR-20260724-ABCDEFGH',
+                'public_id' => 'CAR-20260724-ABCDEFGH',
+                'connect_reference' => 'CONNECT-REQ-20260724-ABC123',
+                'status' => 'pending',
+                'status_label' => 'รออนุมัติ',
+                'submitted_at' => '2026-07-24T10:00:00+07:00',
+            ],
+            'meta' => ['duplicate' => false],
+        ], 201)]);
 
-        $this->assertNotSame('', (string) AccessRequest::query()->first()->invitation_token);
+        Livewire::test(RequestAccess::class)
+            ->set('company_name', 'Acme Logistics')
+            ->set('contact_name', 'Anong Contact')
+            ->set('email', 'contact@example.com')
+            ->set('phone', '0812345678')
+            ->set('province', 'Bangkok')
+            ->set('website', 'https://example.com')
+            ->set('number_of_branches', 3)
+            ->set('additional_notes', 'Need sandbox onboarding.')
+            ->call('submit')
+            ->assertSet('state', 'success')
+            ->assertSee('CAR-20260724-ABCDEFGH');
+
+        $this->assertDatabaseCount('access_requests', 0);
+        Http::assertSent(fn ($request) => $request->url() === 'https://sandbox-api.sisahygo.online/api/v1/client/access-requests'
+            && ! $request->hasHeader('X-Api-Key'));
     }
 
     public function test_mock_invitation_activation_creates_user_client_account_and_logs_in(): void

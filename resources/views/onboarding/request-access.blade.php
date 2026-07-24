@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <x-connect.meta :title="__('onboarding.request_access.meta_title')" />
+    @livewireStyles
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="font-sans antialiased">
@@ -20,65 +21,8 @@
             </nav>
         </header>
 
-        <section class="mx-auto grid w-full max-w-6xl gap-8 px-5 py-8 sm:px-6 lg:grid-cols-[0.85fr_1.15fr] lg:px-8 lg:py-12">
-            <div>
-                <p class="text-sm font-semibold uppercase tracking-wide text-connect-orange-600">{{ __('onboarding.request_access.eyebrow') }}</p>
-                <h1 class="mt-3 text-3xl font-bold leading-tight text-connect-navy-900 sm:text-4xl">{{ __('onboarding.request_access.title') }}</h1>
-                <p class="mt-4 text-base leading-7 text-slate-600">{{ __('onboarding.request_access.description') }}</p>
-                <div class="mt-6 rounded-lg border border-connect-blue-100 bg-connect-blue-50 p-4 text-sm leading-6 text-connect-blue-900">
-                    {{ __('onboarding.request_access.notice') }}
-                </div>
-            </div>
-
-            <x-connect.card :title="__('onboarding.request_access.card_title')" :description="__('onboarding.request_access.card_description')">
-                <form method="POST" action="{{ route('request-access.store') }}" class="grid gap-4 sm:grid-cols-2">
-                    @csrf
-                    <div class="sm:col-span-2">
-                        <label for="company_name" class="text-sm font-semibold text-slate-700">{{ __('onboarding.fields.company_name') }} *</label>
-                        <input id="company_name" name="company_name" value="{{ old('company_name') }}" required class="connect-focus mt-1 block min-h-11 w-full rounded-lg border-slate-300 text-sm shadow-sm">
-                        @error('company_name') <p class="mt-1 text-sm font-medium text-red-600">{{ $message }}</p> @enderror
-                    </div>
-                    <div>
-                        <label for="contact_name" class="text-sm font-semibold text-slate-700">{{ __('onboarding.fields.contact_name') }} *</label>
-                        <input id="contact_name" name="contact_name" value="{{ old('contact_name') }}" required class="connect-focus mt-1 block min-h-11 w-full rounded-lg border-slate-300 text-sm shadow-sm">
-                        @error('contact_name') <p class="mt-1 text-sm font-medium text-red-600">{{ $message }}</p> @enderror
-                    </div>
-                    <div>
-                        <label for="email" class="text-sm font-semibold text-slate-700">{{ __('onboarding.fields.email') }} *</label>
-                        <input id="email" type="email" name="email" value="{{ old('email') }}" required autocomplete="email" class="connect-focus mt-1 block min-h-11 w-full rounded-lg border-slate-300 text-sm shadow-sm">
-                        @error('email') <p class="mt-1 text-sm font-medium text-red-600">{{ $message }}</p> @enderror
-                    </div>
-                    <div>
-                        <label for="phone" class="text-sm font-semibold text-slate-700">{{ __('onboarding.fields.phone') }} *</label>
-                        <input id="phone" name="phone" value="{{ old('phone') }}" required class="connect-focus mt-1 block min-h-11 w-full rounded-lg border-slate-300 text-sm shadow-sm">
-                        @error('phone') <p class="mt-1 text-sm font-medium text-red-600">{{ $message }}</p> @enderror
-                    </div>
-                    <div>
-                        <label for="province" class="text-sm font-semibold text-slate-700">{{ __('onboarding.fields.province') }} *</label>
-                        <input id="province" name="province" value="{{ old('province') }}" required class="connect-focus mt-1 block min-h-11 w-full rounded-lg border-slate-300 text-sm shadow-sm">
-                        @error('province') <p class="mt-1 text-sm font-medium text-red-600">{{ $message }}</p> @enderror
-                    </div>
-                    <div>
-                        <label for="website" class="text-sm font-semibold text-slate-700">{{ __('onboarding.fields.website') }}</label>
-                        <input id="website" type="url" name="website" value="{{ old('website') }}" placeholder="https://example.com" class="connect-focus mt-1 block min-h-11 w-full rounded-lg border-slate-300 text-sm shadow-sm">
-                        @error('website') <p class="mt-1 text-sm font-medium text-red-600">{{ $message }}</p> @enderror
-                    </div>
-                    <div>
-                        <label for="number_of_branches" class="text-sm font-semibold text-slate-700">{{ __('onboarding.fields.number_of_branches') }}</label>
-                        <input id="number_of_branches" type="number" min="1" name="number_of_branches" value="{{ old('number_of_branches') }}" class="connect-focus mt-1 block min-h-11 w-full rounded-lg border-slate-300 text-sm shadow-sm">
-                        @error('number_of_branches') <p class="mt-1 text-sm font-medium text-red-600">{{ $message }}</p> @enderror
-                    </div>
-                    <div class="sm:col-span-2">
-                        <label for="additional_notes" class="text-sm font-semibold text-slate-700">{{ __('onboarding.fields.additional_notes') }}</label>
-                        <textarea id="additional_notes" name="additional_notes" rows="4" class="connect-focus mt-1 block w-full rounded-lg border-slate-300 text-sm shadow-sm">{{ old('additional_notes') }}</textarea>
-                        @error('additional_notes') <p class="mt-1 text-sm font-medium text-red-600">{{ $message }}</p> @enderror
-                    </div>
-                    <div class="sm:col-span-2">
-                        <x-connect.button type="submit" size="lg" class="w-full sm:w-auto">{{ __('onboarding.request_access.submit') }}</x-connect.button>
-                    </div>
-                </form>
-            </x-connect.card>
-        </section>
+        <livewire:onboarding.request-access />
     </main>
+    @livewireScripts
 </body>
 </html>
