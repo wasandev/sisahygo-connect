@@ -128,7 +128,11 @@
                 <div class="p-6 text-sm text-slate-500">{{ __('payment.errors.unexpected') }}</div>
             @elseif ($payments === [])
                 <div class="p-6">
-                    <x-connect.empty-state :title="__('payment.empty.title')" :description="__('payment.empty.description')" />
+                    <x-connect.empty-state :title="__('payment.empty.title')" :description="__('payment.empty.description')">
+                        <x-slot:actions>
+                            <x-connect.button size="sm" :href="route('order-checking')" wire:navigate>{{ __('payment.actions.create_first') }}</x-connect.button>
+                        </x-slot:actions>
+                    </x-connect.empty-state>
                 </div>
             @else
                 <div class="hidden overflow-x-auto lg:block">

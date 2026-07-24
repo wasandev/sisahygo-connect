@@ -13,7 +13,16 @@ class SisahygoApiLogger
      */
     public function record(SisahygoIntegrationContext $context, string $endpoint, string $method, ?int $status, int $durationMs, int $retryCount, bool $success, ?Throwable $exception = null, array $extra = []): void
     {
-        Log::channel(config('logging.default'))->info('sisahygo.api.request', array_merge($context->safeLogContext(), [
+        $this->recordSafe($context->safeLogContext(), $endpoint, $method, $status, $durationMs, $retryCount, $success, $exception, $extra);
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     * @param array<string, mixed> $extra
+     */
+    public function recordSafe(array $context, string $endpoint, string $method, ?int $status, int $durationMs, int $retryCount, bool $success, ?Throwable $exception = null, array $extra = []): void
+    {
+        Log::channel(config('logging.default'))->info('sisahygo.api.request', array_merge($context, [
             'endpoint' => $endpoint,
             'method' => $method,
             'http_status' => $status,

@@ -78,7 +78,11 @@
 
                     @if ($historyItems === [])
                         <div class="p-6">
-                            <x-connect.empty-state :title="__('history.empty.title')" :description="__('history.empty.description')" />
+                            <x-connect.empty-state :title="__('history.empty.title')" :description="__('history.empty.description')">
+                                <x-slot:actions>
+                                    <x-connect.button size="sm" :href="route('order-checking')" wire:navigate>{{ __('history.actions.create_first') }}</x-connect.button>
+                                </x-slot:actions>
+                            </x-connect.empty-state>
                         </div>
                     @else
                         <div class="hidden bg-white lg:block">

@@ -41,8 +41,8 @@ return [
     'latest' => [
         'title' => 'Latest records',
         'description' => 'Loads only a bounded recent list from Core API, not full history.',
-        'empty_title' => 'No recent records yet',
-        'empty_description' => 'Recent Core-visible records will appear here.',
+        'empty_title' => 'No shipment requests yet',
+        'empty_description' => 'Start by creating the first shipment request. Recent records will appear here after Core accepts them.',
     ],
     'attention' => [
         'title' => 'Records needing attention',
@@ -65,6 +65,8 @@ return [
         'retry' => 'Retry',
         'view_detail' => 'Open detail',
         'review' => 'Review',
+        'create_first' => 'Create first shipment',
+        'open_payments' => 'Open Payment Center',
     ],
     'recent_receivers' => [
         'title' => 'Recently used receivers',
@@ -85,8 +87,8 @@ return [
         'summary_label' => 'Dashboard payment summary',
         'recent_title' => 'Recent payments',
         'view_all' => 'View all payments',
-        'empty_title' => 'No recent payments yet',
-        'empty_description' => 'Recent Core-visible payments will appear here.',
+        'empty_title' => 'No payment records yet',
+        'empty_description' => 'Payment records will appear here after shipments and billing data are available.',
         'cache' => [
             'cached_at' => 'Cached data: :time',
             'stale_warning' => 'Showing last saved data: :time',

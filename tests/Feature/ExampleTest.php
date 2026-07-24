@@ -19,9 +19,18 @@ class ExampleTest extends TestCase
             ->assertSee(route('login'));
     }
 
-    public function test_authenticated_users_are_sent_to_dashboard_from_home(): void
+    public function test_new_authenticated_users_are_sent_to_first_login_welcome_from_home(): void
     {
         $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get('/')
+            ->assertRedirect('/welcome');
+    }
+
+    public function test_welcomed_authenticated_users_are_sent_to_dashboard_from_home(): void
+    {
+        $user = User::factory()->create(['onboarding_welcomed_at' => now()]);
 
         $this->actingAs($user)
             ->get('/')

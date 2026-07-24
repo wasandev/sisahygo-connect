@@ -9,7 +9,7 @@ return [
                 'base_url' => env('SISAHYGO_API_SANDBOX_URL'),
             ],
             'production' => [
-                'base_url' => env('SISAHYGO_API_PRODUCTION_URL'),
+                'base_url' => env('SISAHYGO_API_LIVE_URL'),
             ],
         ],
         'connect_timeout' => (int) env('SISAHYGO_API_CONNECT_TIMEOUT', 5),

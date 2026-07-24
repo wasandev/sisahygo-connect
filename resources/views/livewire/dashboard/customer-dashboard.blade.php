@@ -195,7 +195,11 @@
 
                     @if ($recentPayments === [])
                         <div class="p-6">
-                            <x-connect.empty-state :title="__('dashboard.payments.empty_title')" :description="__('dashboard.payments.empty_description')" />
+                            <x-connect.empty-state :title="__('dashboard.payments.empty_title')" :description="__('dashboard.payments.empty_description')">
+                                <x-slot:actions>
+                                    <x-connect.button size="sm" :href="route('payments')" wire:navigate>{{ __('dashboard.actions.open_payments') }}</x-connect.button>
+                                </x-slot:actions>
+                            </x-connect.empty-state>
                         </div>
                     @else
                         <div class="hidden overflow-x-auto lg:block">
@@ -253,7 +257,13 @@
                     <x-connect.card :title="__('dashboard.latest.title')" :description="__('dashboard.latest.description')" padding="none">
                         @if ($latestShipments === [])
                             <div class="p-6">
-                                <x-connect.empty-state :title="__('dashboard.latest.empty_title')" :description="__('dashboard.latest.empty_description')" />
+                                <x-connect.empty-state :title="__('dashboard.latest.empty_title')" :description="__('dashboard.latest.empty_description')">
+                                    <x-slot:actions>
+                                        @if ($canCreateOrder)
+                                            <x-connect.button size="sm" :href="route('order-checking')" wire:navigate>{{ __('dashboard.actions.create_first') }}</x-connect.button>
+                                        @endif
+                                    </x-slot:actions>
+                                </x-connect.empty-state>
                             </div>
                         @else
                             <div class="hidden overflow-x-auto lg:block">

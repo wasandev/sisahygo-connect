@@ -124,7 +124,8 @@ class HistoryPageTest extends TestCase
         Http::fake(['*' => Http::response(['data' => [], 'meta' => ['current_page' => 1, 'per_page' => 15, 'total' => 0, 'last_page' => 1]])]);
 
         Livewire::test(OrderHistory::class)
-            ->assertSee('ไม่พบประวัติรายการ');
+            ->assertSee('ยังไม่มีประวัติรายการ')
+            ->assertSee('สร้างรายการแรก');
     }
 
     public function test_filter_changes_reset_pagination_and_pagination_preserves_filters(): void

@@ -20,12 +20,9 @@ new class extends Component
     $menuItems = [
         ['label' => __('navigation.dashboard'), 'route' => 'dashboard'],
         ['label' => __('navigation.order_checking'), 'route' => 'order-checking', 'active' => 'order-checking*'],
-        ['label' => __('navigation.shipments'), 'route' => 'shipments'],
         ['label' => __('navigation.tracking'), 'route' => 'tracking'],
         ['label' => __('navigation.history'), 'route' => 'history'],
         ['label' => __('navigation.payments'), 'route' => 'payments', 'active' => 'payments*'],
-        ['label' => __('navigation.notifications'), 'route' => 'notifications'],
-        ['label' => __('navigation.reports'), 'route' => 'reports'],
         ['label' => __('navigation.settings'), 'route' => 'settings'],
     ];
 

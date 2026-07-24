@@ -17,7 +17,11 @@ new #[Layout('layouts.guest')] class extends Component
 
         Session::regenerate();
 
-        $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
+        $destination = auth()->user()->onboarding_welcomed_at
+            ? route('dashboard', absolute: false)
+            : '/welcome';
+
+        $this->redirectIntended(default: $destination, navigate: true);
     }
 }; ?>
 
