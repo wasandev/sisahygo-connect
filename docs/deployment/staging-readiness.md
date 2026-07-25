@@ -9,7 +9,7 @@ Sprint 8 prepares Sisahygo Connect for a future staging deployment. This documen
 | `SISAHYGO_API_ENVIRONMENT` | Yes | `sandbox` or `production`. Staging should normally use `sandbox` until production credentials are approved. |
 | `SISAHYGO_API_BASE_URL` | Optional | Explicit override for the selected environment base URL. Leave blank unless the deployment platform manages one canonical URL. |
 | `SISAHYGO_API_SANDBOX_URL` | Required for sandbox | Sisahygo Core Client API sandbox base URL. |
-| `SISAHYGO_API_PRODUCTION_URL` | Required for production | Sisahygo Core Client API production base URL. Production cannot use a host containing `sandbox`. |
+| `SISAHYGO_API_LIVE_URL` | Required for production | Sisahygo Core Client API production base URL. Production cannot use a host containing `sandbox`. |
 | `SISAHYGO_API_CONNECT_TIMEOUT` | Yes | Connection timeout in seconds. |
 | `SISAHYGO_API_TIMEOUT` | Yes | Total request timeout in seconds. |
 | `SISAHYGO_API_RETRY_TIMES` | Yes | Retry count for safe read-only GET requests. |

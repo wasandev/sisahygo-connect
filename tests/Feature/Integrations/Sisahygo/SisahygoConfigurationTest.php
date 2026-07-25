@@ -20,7 +20,7 @@ class SisahygoConfigurationTest extends TestCase
         $this->assertSame('https://sandbox-api.sisahygo.online/api/v1/client', $configuration->baseUrl);
     }
 
-    public function test_production_url_resolution(): void
+    public function test_live_url_resolution_for_production_environment(): void
     {
         config()->set('sisahygo.api.environment', 'production');
         config()->set('sisahygo.api.environments.production.base_url', 'https://api.sisahygo.online/api/v1/client');
@@ -29,6 +29,12 @@ class SisahygoConfigurationTest extends TestCase
 
         $this->assertSame(SisahygoApiEnvironment::Production, $configuration->environment);
         $this->assertSame('https://api.sisahygo.online/api/v1/client', $configuration->baseUrl);
+    }
+
+
+    public function test_api_configuration_has_no_global_api_key(): void
+    {
+        $this->assertArrayNotHasKey('key', config('sisahygo.api'));
     }
 
     public function test_staging_accepts_only_sandbox_endpoint(): void
