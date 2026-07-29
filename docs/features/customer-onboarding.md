@@ -145,6 +145,28 @@ php artisan config:clear
 6. In Core/Nova, confirm a `pending` Connect access request exists with the same `connect_reference`.
 7. Reloading or retrying the same Livewire component before success should reuse the same `connect_reference`; Core should return the existing request rather than creating a duplicate.
 
+
+## Invitation Activation Contract Needed From Core
+
+Sprint 12B Phase 2 implements the Connect-side integration contract, UI, local activation transaction, and tests with Http::fake. Core is the source of truth for invitation state, access-request activation, API client creation, and customer mappings; Connect provisions only its local user and client-account projection after a successful Core activation response.
+
+Required endpoints:
+
+- GET /api/v1/connect-onboarding/invitations/{token}
+- POST /api/v1/connect-onboarding/invitations/{token}/activate
+
+The token is opaque and appears only in the server-side request path. Connect logs these calls with a redacted endpoint, /connect-onboarding/invitations/{token}, and never persists the raw token.
+
+Preview response expected by Connect includes `data.status`, `data.email`, `data.company_name`, `data.contact_name`, `data.role`, `data.email_verified_by_invitation`, `data.expires_at`, and `data.client_account.code/name`.
+
+Activation request sent by Connect contains only the invited email. Connect does not send the password to Core. Password storage is local to Connect and uses Laravel hashing after Core confirms activation for a new user. If the invitation email already belongs to an existing Connect user, activation never resets or re-hashes that user's password; the existing credentials remain valid and Connect only provisions the additional client-account membership, customer mappings, and capabilities.
+
+Current UX still shows the password form before Connect knows whether the local user exists. For existing users, the submitted password is intentionally ignored. A follow-up UX improvement should let existing users authenticate with their existing password instead of presenting the flow as a password reset.
+
+Activation response expected by Connect follows the Core provisioning contract: `data.invitation_reference`, `data.activation_status`, `data.user.email`, `data.user.role`, `data.user.email_verified_by_invitation`, `data.client_account.code/name`, `data.customer_mappings`, `data.capabilities`, and `data.credential`. `data.capabilities` may be an empty array and `data.credential` may be null; both are valid present values, not incomplete responses. `api_client_id` is internal Core diagnostic metadata and is not part of the public activation response contract.
+
+Core should return explicit statuses or standard error envelopes for invalid, expired, revoked, already-used, rate-limited, and server-error states. Connect creates or reuses the local user, client account projection, membership, customer mappings, and capabilities only after the activation response is successful. A repeated Core activation with `activation_status: already_activated` is a replayable recovery path after a local provisioning failure and must not create duplicate local records.
+
 ## Verification
 
 Focused coverage lives in `tests/Feature/Onboarding/AccessRequestCoreSubmissionTest.php` and the updated `tests/Feature/CustomerOnboardingTest.php`. Tests use `Http::fake()` and assert that Connect does not create a duplicate local `access_requests` row during Core submission.

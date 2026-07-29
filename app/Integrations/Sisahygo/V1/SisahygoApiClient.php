@@ -50,12 +50,21 @@ class SisahygoApiClient
     }
 
     /**
+     * @param  array<string, mixed>  $query
+     * @return array<string, mixed>
+     */
+    public function getPublic(string $endpoint, array $query = [], ?string $correlationId = null, ?string $logEndpoint = null): array
+    {
+        return $this->sendPublic('GET', $endpoint, $query, $correlationId ?? (string) Str::uuid(), allowRetry: true, logEndpoint: $logEndpoint);
+    }
+
+    /**
      * @param  array<string, mixed>  $payload
      * @return array<string, mixed>
      */
-    public function postPublic(string $endpoint, array $payload = [], ?string $correlationId = null): array
+    public function postPublic(string $endpoint, array $payload = [], ?string $correlationId = null, ?string $logEndpoint = null): array
     {
-        return $this->sendPublic('POST', $endpoint, $payload, $correlationId ?? (string) Str::uuid(), allowRetry: false);
+        return $this->sendPublic('POST', $endpoint, $payload, $correlationId ?? (string) Str::uuid(), allowRetry: false, logEndpoint: $logEndpoint);
     }
 
     /**
@@ -121,8 +130,9 @@ class SisahygoApiClient
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>
      */
-    private function sendPublic(string $method, string $endpoint, array $data, string $correlationId, bool $allowRetry): array
+    private function sendPublic(string $method, string $endpoint, array $data, string $correlationId, bool $allowRetry, ?string $logEndpoint = null): array
     {
+        $logEndpoint ??= $endpoint;
         $safeContext = $this->publicLogContext($correlationId);
         $attempts = $allowRetry ? $this->configuration->retryTimes + 1 : 1;
         $retryCount = 0;
@@ -132,7 +142,7 @@ class SisahygoApiClient
         for ($attempt = 1; $attempt <= $attempts; $attempt++) {
             try {
                 $response = $this->publicRequest($correlationId)
-                    ->send($method, ltrim($endpoint, '/'), $method === 'GET' ? ['query' => $data] : ['json' => $data]);
+                    ->send($method, $this->publicEndpoint($endpoint), $method === 'GET' ? ['query' => $data] : ['json' => $data]);
 
                 if ($this->shouldRetryResponse($method, $response) && $attempt < $attempts) {
                     $retryCount++;
@@ -141,9 +151,9 @@ class SisahygoApiClient
                     continue;
                 }
 
-                $payload = $this->decode($response, $safeContext, $endpoint);
-                $this->throwForStatus($response, $payload, $safeContext, $endpoint, $correlationId);
-                $this->logSafe($safeContext, $endpoint, $method, $response->status(), $startedAt, $retryCount, true);
+                $payload = $this->decode($response, $safeContext, $logEndpoint);
+                $this->throwForStatus($response, $payload, $safeContext, $logEndpoint, $correlationId);
+                $this->logSafe($safeContext, $logEndpoint, $method, $response->status(), $startedAt, $retryCount, true);
 
                 return $payload;
             } catch (ConnectionException $exception) {
@@ -166,9 +176,19 @@ class SisahygoApiClient
 
         $failureStatus = $lastException instanceof SisahygoApiException ? $lastException->status : null;
 
-        $this->logSafe($safeContext, $endpoint, $method, $failureStatus, $startedAt, $retryCount, false, $lastException);
+        $this->logSafe($safeContext, $logEndpoint, $method, $failureStatus, $startedAt, $retryCount, false, $lastException);
 
         throw $lastException;
+    }
+
+
+    private function publicEndpoint(string $endpoint): string
+    {
+        if (str_starts_with($endpoint, '/connect-onboarding')) {
+            return preg_replace('#/client$#', '', $this->configuration->baseUrl).'/'.ltrim($endpoint, '/');
+        }
+
+        return ltrim($endpoint, '/');
     }
 
     private function request(SisahygoApiCredential $credential, SisahygoIntegrationContext $context): PendingRequest

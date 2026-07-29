@@ -33,6 +33,6 @@
         <env name="NIGHTWATCH_ENABLED" value="false"/>
         <env name="SISAHYGO_API_ENVIRONMENT" value="sandbox"/>
         <env name="SISAHYGO_API_SANDBOX_URL" value="https://sandbox-api.sisahygo.online/api/v1/client"/>
-        <env name="SISAHYGO_API_PRODUCTION_URL" value="https://api.sisahygo.online/api/v1/client"/>
+        <env name="SISAHYGO_API_LIVE_URL" value="https://api.sisahygo.online/api/v1/client"/>
     </php>
 </phpunit>

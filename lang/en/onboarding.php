@@ -57,9 +57,20 @@ return [
         'unexpected' => 'The request could not be submitted right now. Please try again.',
     ],
     'invitation' => [
-        'eyebrow' => 'Mock invitation',
-        'title' => 'Welcome',
-        'submit' => 'Get started',
+        'eyebrow' => 'Invitation',
+        'title' => 'Start using Sisahygo Connect',
+        'summary_title' => 'Invitation details',
+        'submit' => 'Set password and continue',
+        'unavailable_title' => 'This invitation cannot be used',
+        'request_again' => 'Request access again',
+        'errors' => [
+            'invalid' => 'This invitation is invalid or could not be found.',
+            'expired' => 'This invitation has expired. Please contact the Sisahygo team for a new invitation.',
+            'revoked' => 'This invitation has been revoked. Please contact the Sisahygo team.',
+            'used' => 'This invitation has already been accepted. If you already set a password, please sign in.',
+            'connection' => 'Sisahygo Core could not verify this invitation right now. Please try again.',
+            'email_locked' => 'The invitation email cannot be changed.',
+        ],
     ],
     'welcome' => [
         'meta_title' => 'Welcome',
