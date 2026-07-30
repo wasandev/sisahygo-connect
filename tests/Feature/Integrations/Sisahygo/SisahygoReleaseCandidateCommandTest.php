@@ -217,7 +217,7 @@ class SisahygoReleaseCandidateCommandTest extends TestCase
         $html = Blade::render('<x-connect.environment-banner />');
 
         $this->assertStringContainsString('STAGING', $html);
-        $this->assertStringContainsString('Sandbox API', $html);
+        $this->assertStringContainsString('Sandbox workspace', $html);
         $this->assertStringContainsString('Release Candidate', $html);
         $this->assertStringContainsString('sandbox-api.sisahygo.online', $html);
         $this->assertStringContainsString('rc-1unsafetext', $html);

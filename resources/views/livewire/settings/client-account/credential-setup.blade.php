@@ -20,6 +20,7 @@
         </div>
     @endif
 
+    @if ($canManage)
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div>
             <p class="text-sm text-slate-500">{{ __('client_account.credential_setup.fields.environment') }}</p>
@@ -63,7 +64,6 @@
         <div class="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-900" role="alert">{{ $errorMessage }}</div>
     @endif
 
-    @if ($canManage)
         <form wire:submit="save" class="mt-5 space-y-4 rounded-lg border border-slate-200 bg-white p-4">
             <div>
                 <h3 class="text-base font-semibold text-connect-navy-900">{{ $credential ? __('client_account.credential_setup.replacement_title') : __('client_account.credential_setup.connect_title') }}</h3>
@@ -88,8 +88,16 @@
             </x-connect.button>
         </form>
     @else
-        <div class="mt-5 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900" role="status">
-            {{ __('client_account.credential_setup.admin_required') }}
+        <div class="rounded-lg border border-slate-200 bg-slate-50 p-4" role="status">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm font-semibold text-connect-navy-900">{{ __('client_account.credential_setup.member_status_title') }}</p>
+                    <p class="mt-1 text-sm leading-6 text-slate-600">{{ __('client_account.credential_setup.admin_required') }}</p>
+                </div>
+                <x-connect.badge :variant="$credential && $credential->isActive() ? 'success' : 'warning'">
+                    {{ $credential && $credential->isActive() ? __('client_account.credential_setup.statuses.active') : __('client_account.credential_setup.statuses.missing') }}
+                </x-connect.badge>
+            </div>
         </div>
     @endif
 </x-connect.card>

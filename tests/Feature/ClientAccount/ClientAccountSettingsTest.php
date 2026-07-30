@@ -70,7 +70,7 @@ class ClientAccountSettingsTest extends TestCase
             ->get(route('settings.client-account'))
             ->assertForbidden()
             ->assertSee('ยังไม่มีบัญชีลูกค้าที่พร้อมใช้งาน')
-            ->assertDontSee('Sisahygo API Key')
+            ->assertDontSee('คีย์เชื่อมต่อที่ปลอดภัย')
             ->assertDontSee('wire:model.defer="apiKey"', false);
     }
 
@@ -87,7 +87,7 @@ class ClientAccountSettingsTest extends TestCase
             ->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id])
             ->get(route('settings.client-account'))
             ->assertOk()
-            ->assertSee('สถานะการเชื่อมต่อ Sisahygo API')
+            ->assertSee('สถานะการเชื่อมต่อ Sisahygo')
             ->assertSee('เชื่อมต่อได้')
             ->assertDontSee('secret-api-key')
             ->assertDontSee('X-Api-Key');
@@ -108,8 +108,8 @@ class ClientAccountSettingsTest extends TestCase
             ->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id])
             ->get(route('settings.client-account'))
             ->assertOk()
-            ->assertSee('ไม่มี Credential')
-            ->assertSee('ยังไม่มี Sisahygo API Credential')
+            ->assertSee('ยังไม่ได้เชื่อมต่อ')
+            ->assertSee('บัญชีนี้ยังไม่มีการเชื่อมต่อ Sisahygo ที่เปิดใช้งาน')
             ->assertDontSee('secret-api-key');
 
         Http::assertNothingSent();

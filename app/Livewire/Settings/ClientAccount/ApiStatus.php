@@ -14,6 +14,8 @@ class ApiStatus extends Component
 {
     public ?array $status = null;
 
+    public bool $canManage = false;
+
     public function mount(CheckSisahygoApiConnectivity $connectivity): void
     {
         $this->check($connectivity);
@@ -37,7 +39,10 @@ class ApiStatus extends Component
 
     private function check(CheckSisahygoApiConnectivity $connectivity): void
     {
-        $this->status = $connectivity(auth()->user(), $this->currentClientAccount());
+        $account = $this->currentClientAccount();
+
+        $this->canManage = auth()->user()?->can('manageSettings', $account) ?? false;
+        $this->status = $connectivity(auth()->user(), $account);
     }
 
     private function currentClientAccount(): ClientAccount

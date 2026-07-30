@@ -284,7 +284,7 @@ class InvitationActivationTest extends TestCase
         $this->get(route('settings.client-account'))
             ->assertOk()
             ->assertSee('Beta Logistics')
-            ->assertSee('Sisahygo API Key')
+            ->assertSee('คีย์เชื่อมต่อที่ปลอดภัย')
             ->assertSee('wire:model.defer="apiKey"', false)
             ->assertDontSee('Alpha Logistics');
     }

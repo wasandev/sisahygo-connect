@@ -43,8 +43,8 @@ class SisahygoCredentialSetupTest extends TestCase
             ->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id])
             ->get(route('settings.client-account'))
             ->assertOk()
-            ->assertSee('Sisahygo API')
-            ->assertSee('Sisahygo API key')
+            ->assertSee('Sisahygo connection')
+            ->assertSee('Secure connection key')
             ->assertDontSee('secret-api-key');
     }
 
@@ -59,7 +59,7 @@ class SisahygoCredentialSetupTest extends TestCase
             ->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id])
             ->get(route('settings.client-account'))
             ->assertOk()
-            ->assertSee('Sisahygo API Key')
+            ->assertSee('คีย์เชื่อมต่อที่ปลอดภัย')
             ->assertSee('ตรวจสอบและเชื่อมต่อ')
             ->assertSee('type="password"', false)
             ->assertSee('wire:model.defer="apiKey"', false);
@@ -73,7 +73,7 @@ class SisahygoCredentialSetupTest extends TestCase
             ->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id])
             ->get(route('settings.client-account'))
             ->assertOk()
-            ->assertSee('Sisahygo API key')
+            ->assertSee('Secure connection key')
             ->assertSee('Verify and connect')
             ->assertSee('wire:model.defer="apiKey"', false);
     }
@@ -85,7 +85,7 @@ class SisahygoCredentialSetupTest extends TestCase
         $this->actingAs($user)
             ->get(route('settings.client-account'))
             ->assertForbidden()
-            ->assertDontSee('Sisahygo API key')
+            ->assertDontSee('Secure connection key')
             ->assertDontSee('wire:model.defer="apiKey"', false);
     }
 
@@ -98,7 +98,12 @@ class SisahygoCredentialSetupTest extends TestCase
             ->get(route('settings.client-account'))
             ->assertOk()
             ->assertSee('Only an account owner or administrator')
-            ->assertDontSee('Sisahygo API key');
+            ->assertDontSee('Secure connection key')
+            ->assertDontSee('wire:model.defer="apiKey"', false)
+            ->assertDontSee('Core')
+            ->assertDontSee('Nova')
+            ->assertDontSee('API Client')
+            ->assertDontSee('API Key');
 
         $this->actingAs($user);
         $this->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id]);
@@ -124,8 +129,8 @@ class SisahygoCredentialSetupTest extends TestCase
             ->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id])
             ->get(route('settings.client-account'))
             ->assertOk()
-            ->assertSee('Change API Credential')
-            ->assertSee('Verify and replace')
+            ->assertSee('Update Sisahygo connection')
+            ->assertSee('Verify and update')
             ->assertSee('wire:model.defer="apiKey"', false)
             ->assertDontSee($plain);
     }
@@ -141,9 +146,9 @@ class SisahygoCredentialSetupTest extends TestCase
             ->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id])
             ->get(route('settings.client-account'))
             ->assertOk()
-            ->assertSee('Invalid credential')
-            ->assertSee('Change API Credential')
-            ->assertSee('Verify and replace')
+            ->assertSee('Invalid connection')
+            ->assertSee('Update Sisahygo connection')
+            ->assertSee('Verify and update')
             ->assertSee('wire:model.defer="apiKey"', false)
             ->assertDontSee($plain);
     }
@@ -217,7 +222,7 @@ class SisahygoCredentialSetupTest extends TestCase
         Livewire::test(CredentialSetup::class)
             ->set('apiKey', $this->apiKey('invalid'))
             ->call('save')
-            ->assertSee('Core rejected this API key');
+            ->assertSee('Sisahygo rejected this key');
 
         $this->assertDatabaseCount('sisahygo_api_credentials', 0);
     }
@@ -335,8 +340,8 @@ class SisahygoCredentialSetupTest extends TestCase
         $this->actingAs($owner)
             ->get(route('onboarding.welcome'))
             ->assertOk()
-            ->assertSee('Set up Sisahygo API Credential')
-            ->assertSee('Set up credential');
+            ->assertSee('Set up Sisahygo connection')
+            ->assertSee('Set up connection');
 
         [$member, $memberAccount] = $this->accountWithUser(ClientAccountRole::Viewer, settingsManage: true);
 
@@ -344,7 +349,7 @@ class SisahygoCredentialSetupTest extends TestCase
             ->get(route('onboarding.welcome'))
             ->assertOk()
             ->assertSee('account administrator must complete')
-            ->assertDontSee('Set up credential');
+            ->assertDontSee('Set up connection');
     }
 
     private function accountWithUser(ClientAccountRole $role, bool $settingsManage): array

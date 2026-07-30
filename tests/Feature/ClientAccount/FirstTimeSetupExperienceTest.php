@@ -105,8 +105,8 @@ class FirstTimeSetupExperienceTest extends TestCase
             ->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id])
             ->get(route('dashboard'))
             ->assertOk()
-            ->assertSee('Set up Sisahygo API Credential')
-            ->assertSee('Set up credential');
+            ->assertSee('Set up Sisahygo connection')
+            ->assertSee('Set up connection');
     }
 
     public static function failedPingProvider(): array
@@ -129,7 +129,7 @@ class FirstTimeSetupExperienceTest extends TestCase
             ->get(route('onboarding.welcome'))
             ->assertOk()
             ->assertSee('Welcome to Sisahygo Connect')
-            ->assertSee('Set up credential');
+            ->assertSee('Set up connection');
 
         [$member] = $this->accountWithFoundation(ClientAccountRole::Viewer, settingsManage: true);
 
@@ -137,7 +137,7 @@ class FirstTimeSetupExperienceTest extends TestCase
             ->get(route('onboarding.welcome'))
             ->assertOk()
             ->assertSee('account administrator must complete')
-            ->assertDontSee('Set up credential');
+            ->assertDontSee('Set up connection');
     }
 
     public function test_dashboard_shows_incomplete_setup_banner_for_selected_account(): void
@@ -148,8 +148,8 @@ class FirstTimeSetupExperienceTest extends TestCase
             ->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id])
             ->get(route('dashboard'))
             ->assertOk()
-            ->assertSee('Set up Sisahygo API Credential')
-            ->assertSee('Set up credential');
+            ->assertSee('Set up Sisahygo connection')
+            ->assertSee('Set up connection');
     }
 
     private function fakePingFailure(string $mode): void
