@@ -23,6 +23,10 @@
         </x-slot:actions>
     </x-connect.page-header>
 
+    @if (isset($setupState) && ! ($setupState['is_ready'] ?? false))
+        <x-connect.credential-next-step :setup-state="$setupState" />
+    @endif
+
     <x-connect.card :title="__('dashboard.workspace_search.title')" :description="__('dashboard.workspace_search.description')">
         <livewire:workspace.universal-search />
     </x-connect.card>

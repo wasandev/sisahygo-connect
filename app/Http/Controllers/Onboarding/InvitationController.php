@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Onboarding;
 
 use App\Application\Integration\SisahygoApiErrorMessage;
 use App\Application\Onboarding\ActivateInvitation;
+use App\Domain\ClientAccount\Services\CurrentClientAccountResolver;
 use App\Http\Controllers\Controller;
 use App\Integrations\Sisahygo\Exceptions\SisahygoApiException;
 use App\Integrations\Sisahygo\Exceptions\SisahygoConnectionException;
@@ -39,10 +40,11 @@ class InvitationController extends Controller
     public function activate(Request $request, string $token, ActivateInvitation $activation): RedirectResponse|View
     {
         try {
-            $user = $activation->activate($token, $request->only(['email', 'password', 'password_confirmation']));
+            $result = $activation->activate($token, $request->only(['email', 'password', 'password_confirmation']));
 
-            Auth::login($user);
+            Auth::login($result->user);
             $request->session()->regenerate();
+            $request->session()->put(CurrentClientAccountResolver::SESSION_KEY, $result->clientAccount->id);
 
             return redirect()->route('onboarding.welcome');
         } catch (ValidationException $exception) {

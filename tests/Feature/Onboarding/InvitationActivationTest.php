@@ -6,6 +6,7 @@ use App\Domain\ClientAccount\Models\ClientAccount;
 use App\Domain\ClientAccount\Models\ClientAccountCapability;
 use App\Domain\ClientAccount\Models\ClientAccountCustomer;
 use App\Domain\ClientAccount\Models\ClientAccountUser;
+use App\Domain\ClientAccount\Services\CurrentClientAccountResolver;
 use App\Integrations\Sisahygo\Configuration\SisahygoApiConfiguration;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -237,6 +238,48 @@ class InvitationActivationTest extends TestCase
         $this->fakePreview();
 
         $this->get(route('invitation.show', $this->token))->assertOk();
+    }
+
+    public function test_existing_multi_account_user_activation_selects_new_client_account_for_setup(): void
+    {
+        $existing = User::factory()->create([
+            'email' => 'contact@example.com',
+            'onboarding_welcomed_at' => null,
+        ]);
+        $accountA = ClientAccount::factory()->active()->create(['code' => 'ALPHA', 'name' => 'Alpha Logistics']);
+        ClientAccountUser::factory()->for($accountA)->for($existing)->owner()->create();
+
+        $this->fakePreviewAndActivation(activationOverrides: [
+            'client_account' => [
+                'external_id' => 'BETA',
+                'code' => 'BETA',
+                'name' => 'Beta Logistics',
+                'status' => 'active',
+            ],
+            'customer_mappings' => [[
+                'customer_id' => 20002,
+                'core_customer_id' => 20002,
+                'customer_external_id' => '20002',
+                'role' => 'both',
+            ]],
+        ]);
+
+        $this->post(route('invitation.activate', $this->token), $this->passwordPayload())
+            ->assertRedirect(route('onboarding.welcome'))
+            ->assertSessionHas(CurrentClientAccountResolver::SESSION_KEY, fn ($id) => ClientAccount::query()->whereKey($id)->where('code', 'BETA')->exists());
+
+        $accountB = ClientAccount::query()->where('code', 'BETA')->firstOrFail();
+        $this->assertSame($accountB->id, session(CurrentClientAccountResolver::SESSION_KEY));
+
+        $this->get(route('onboarding.welcome'))
+            ->assertOk()
+            ->assertSee('Beta Logistics')
+            ->assertDontSee('Alpha Logistics');
+
+        $this->get(route('settings.client-account'))
+            ->assertOk()
+            ->assertSee('Beta Logistics')
+            ->assertDontSee('Alpha Logistics');
     }
 
     public function test_successful_activation_authenticates_user(): void

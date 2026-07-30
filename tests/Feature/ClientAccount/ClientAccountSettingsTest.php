@@ -79,7 +79,7 @@ class ClientAccountSettingsTest extends TestCase
         ClientAccountUser::factory()->for($account)->for($user)->owner()->create(['role' => ClientAccountRole::Owner]);
         ClientAccountCapability::factory()->for($account)->capability(ClientCapability::SettingsManage)->create();
         app(SisahygoApiCredentialService::class)->create($account, SisahygoApiEnvironment::Sandbox, 'Sandbox', 'secret-api-key');
-        Http::fake(['https://sandbox-api.sisahygo.online/api/v1/client/units' => Http::response(['data' => [['unit_id' => 1, 'unit_name' => 'box']]])]);
+        Http::fake(['https://sandbox-api.sisahygo.online/api/v1/client/ping' => Http::response(['data' => ['status' => 'ok']])]);
 
         $this->actingAs($user)
             ->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id])
@@ -90,7 +90,7 @@ class ClientAccountSettingsTest extends TestCase
             ->assertDontSee('secret-api-key')
             ->assertDontSee('X-Api-Key');
 
-        Http::assertSent(fn ($request) => $request->url() === 'https://sandbox-api.sisahygo.online/api/v1/client/units'
+        Http::assertSent(fn ($request) => $request->url() === 'https://sandbox-api.sisahygo.online/api/v1/client/ping'
             && $request->hasHeader('X-Api-Key', 'secret-api-key'));
     }
 

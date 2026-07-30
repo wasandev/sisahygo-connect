@@ -1,22 +1,22 @@
 @php
-    $statusValue = $status['status'] ?? 'unavailable';
+    $statusValue = $status['status'] ?? 'unknown_error';
     $variant = match ($statusValue) {
         'connected' => 'success',
-        'configuration_missing', 'credential_missing' => 'warning',
+        'configuration_missing', 'credential_missing', 'rate_limited' => 'warning',
         default => 'danger',
     };
 @endphp
 
 <x-connect.card :title="__('client_account.api_status.title')" :description="__('client_account.api_status.description')">
     @if ($status)
-        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <div>
-                <p class="text-sm text-slate-500">{{ __('client_account.api_status.fields.configuration') }}</p>
-                <p class="mt-1 font-semibold text-connect-navy-900">{{ $status['configuration_exists'] ? __('client_account.yes') : __('client_account.no') }}</p>
+                <p class="text-sm text-slate-500">{{ __('client_account.api_status.fields.environment') }}</p>
+                <p class="mt-1 font-semibold text-connect-navy-900">{{ $status['environment'] ?? __('client_account.not_available') }}</p>
             </div>
             <div>
                 <p class="text-sm text-slate-500">{{ __('client_account.api_status.fields.credential') }}</p>
-                <p class="mt-1 font-semibold text-connect-navy-900">{{ $status['credential_exists'] ? __('client_account.yes') : __('client_account.no') }}</p>
+                <p class="mt-1 font-semibold text-connect-navy-900">{{ $status['credential_exists'] ? __('client_account.api_status.credential_status.active') : __('client_account.api_status.credential_status.missing') }}</p>
             </div>
             <div>
                 <p class="text-sm text-slate-500">{{ __('client_account.api_status.fields.status') }}</p>
@@ -25,6 +25,14 @@
             <div>
                 <p class="text-sm text-slate-500">{{ __('client_account.api_status.fields.duration') }}</p>
                 <p class="mt-1 font-semibold text-connect-navy-900">{{ $status['duration_ms'] }} ms</p>
+            </div>
+            <div>
+                <p class="text-sm text-slate-500">{{ __('client_account.api_status.fields.fingerprint') }}</p>
+                <p class="mt-1 break-all font-semibold text-connect-navy-900">{{ $status['fingerprint'] ?? __('client_account.not_available') }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-slate-500">{{ __('client_account.api_status.fields.last_used') }}</p>
+                <p class="mt-1 font-semibold text-connect-navy-900">{{ $status['last_used_at'] ?? __('client_account.not_available') }}</p>
             </div>
             <div>
                 <p class="text-sm text-slate-500">{{ __('client_account.api_status.fields.checked_at') }}</p>

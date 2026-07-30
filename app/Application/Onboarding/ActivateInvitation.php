@@ -36,7 +36,7 @@ class ActivateInvitation
     }
 
     /** @param array<string, mixed> $input */
-    public function activate(string $token, array $input): User
+    public function activate(string $token, array $input): InvitationActivationResult
     {
         $preview = $this->preview($token);
 
@@ -55,7 +55,7 @@ class ActivateInvitation
             'email' => $preview->email,
         ]);
 
-        return DB::transaction(function () use ($activation, $input): User {
+        return DB::transaction(function () use ($activation, $input): InvitationActivationResult {
             $account = $this->upsertClientAccount($activation);
             $user = $this->upsertUser($activation, (string) $input['password']);
 
@@ -71,7 +71,7 @@ class ActivateInvitation
             $this->upsertCustomerMappings($account, $activation);
             $this->upsertCapabilities($account, $activation);
 
-            return $user;
+            return new InvitationActivationResult($user, $account);
         });
     }
 

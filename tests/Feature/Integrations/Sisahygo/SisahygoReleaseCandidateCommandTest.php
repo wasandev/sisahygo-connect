@@ -301,6 +301,10 @@ class SisahygoReleaseCandidateCommandTest extends TestCase
 
     private function readOnlyResponse(string $url, string $baseUrl = 'https://sandbox-api.sisahygo.online/api/v1/client'): mixed
     {
+        if (str_starts_with($url, $baseUrl.'/ping')) {
+            return Http::response(['data' => ['status' => 'ok']]);
+        }
+
         if (str_starts_with($url, $baseUrl.'/units')) {
             return Http::response($this->fixture('units-success.json'));
         }

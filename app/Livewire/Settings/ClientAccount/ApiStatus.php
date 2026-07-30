@@ -7,6 +7,7 @@ use App\Domain\ClientAccount\Models\ClientAccount;
 use App\Domain\ClientAccount\Services\CurrentClientAccountResolver;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class ApiStatus extends Component
@@ -19,6 +20,12 @@ class ApiStatus extends Component
     }
 
     public function refresh(CheckSisahygoApiConnectivity $connectivity): void
+    {
+        $this->check($connectivity);
+    }
+
+    #[On('sisahygo-credential-updated')]
+    public function refreshAfterCredentialUpdate(CheckSisahygoApiConnectivity $connectivity): void
     {
         $this->check($connectivity);
     }
