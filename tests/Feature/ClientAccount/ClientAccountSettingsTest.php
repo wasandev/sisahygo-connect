@@ -69,7 +69,9 @@ class ClientAccountSettingsTest extends TestCase
         $this->actingAs($user)
             ->get(route('settings.client-account'))
             ->assertForbidden()
-            ->assertSee('ยังไม่มีบัญชีลูกค้าที่พร้อมใช้งาน');
+            ->assertSee('ยังไม่มีบัญชีลูกค้าที่พร้อมใช้งาน')
+            ->assertDontSee('Sisahygo API Key')
+            ->assertDontSee('wire:model.defer="apiKey"', false);
     }
 
     public function test_api_status_card_reports_connected_without_exposing_secret(): void

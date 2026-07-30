@@ -23,7 +23,7 @@ return [
     'empty_customer_links' => 'No active customer links are configured yet.',
     'empty_capabilities' => 'No capabilities are enabled yet.',
     'credential_setup' => [
-        'title' => 'Sisahygo API',
+        'title' => 'Connect Sisahygo API',
         'description' => 'Add or replace the Core API credential used by this Client Account.',
         'instructions_title' => 'How to connect Core API',
         'instruction_steps' => [
@@ -36,9 +36,11 @@ return [
         ],
         'security_note' => 'Core stores only the API key hash. Connect stores the submitted key with Laravel encryption after verification. The saved key will not be displayed again.',
         'instructions' => 'Generate the API key from the approved API Client in Sisahygo Core Nova. The plaintext key is shown only once in Core, then must be pasted here for verification and encrypted storage.',
-        'admin_required' => 'An account owner or administrator with settings permission must complete Sisahygo API credential setup.',
+        'admin_required' => 'Only an account owner or administrator with permission can set up the Sisahygo API Credential. Contact the Client Account owner or administrator to complete the Sisahygo API connection.',
         'replacement_hint' => 'The existing credential remains active until the replacement is verified.',
-        'hint' => 'The key is verified with Core before it is saved. It will not be shown again after submission.',
+        'connect_title' => 'Connect Sisahygo API',
+        'replacement_title' => 'Change API Credential',
+        'hint' => 'Paste the API key copied from Sisahygo Core. Connect verifies it before saving and will not show this key again.',
         'success' => 'Sisahygo API credential verified and saved. Fingerprint: :fingerprint',
         'ready' => [
             'title' => 'Sisahygo Connect is ready to use',
@@ -64,7 +66,7 @@ return [
             'missing' => 'Missing',
         ],
         'actions' => [
-            'save' => 'Verify and save',
+            'save' => 'Verify and connect',
             'replace' => 'Verify and replace',
             'verifying' => 'Verifying...',
         ],

@@ -48,6 +48,47 @@ class SisahygoCredentialSetupTest extends TestCase
             ->assertDontSee('secret-api-key');
     }
 
+
+    public function test_authorised_owner_without_credential_sees_password_input_and_connect_action_in_thai(): void
+    {
+        app()->setLocale('th');
+        config()->set('app.locale', 'th');
+        [$user, $account] = $this->accountWithUser(ClientAccountRole::Owner, settingsManage: true);
+
+        $this->actingAs($user)
+            ->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id])
+            ->get(route('settings.client-account'))
+            ->assertOk()
+            ->assertSee('Sisahygo API Key')
+            ->assertSee('ตรวจสอบและเชื่อมต่อ')
+            ->assertSee('type="password"', false)
+            ->assertSee('wire:model.defer="apiKey"', false);
+    }
+
+    public function test_authorised_administrator_with_settings_manage_sees_credential_form(): void
+    {
+        [$user, $account] = $this->accountWithUser(ClientAccountRole::Administrator, settingsManage: true);
+
+        $this->actingAs($user)
+            ->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id])
+            ->get(route('settings.client-account'))
+            ->assertOk()
+            ->assertSee('Sisahygo API key')
+            ->assertSee('Verify and connect')
+            ->assertSee('wire:model.defer="apiKey"', false);
+    }
+
+    public function test_no_selected_account_does_not_show_credential_form(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('settings.client-account'))
+            ->assertForbidden()
+            ->assertDontSee('Sisahygo API key')
+            ->assertDontSee('wire:model.defer="apiKey"', false);
+    }
+
     public function test_unauthorised_member_cannot_view_or_submit_the_form(): void
     {
         [$user, $account] = $this->accountWithUser(ClientAccountRole::Viewer, settingsManage: true);
@@ -56,7 +97,7 @@ class SisahygoCredentialSetupTest extends TestCase
             ->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id])
             ->get(route('settings.client-account'))
             ->assertOk()
-            ->assertSee('An account owner or administrator')
+            ->assertSee('Only an account owner or administrator')
             ->assertDontSee('Sisahygo API key');
 
         $this->actingAs($user);
@@ -69,6 +110,42 @@ class SisahygoCredentialSetupTest extends TestCase
             ->assertForbidden();
 
         $this->assertDatabaseCount('sisahygo_api_credentials', 0);
+    }
+
+
+    public function test_active_credential_shows_replacement_action_without_plaintext(): void
+    {
+        [$user, $account] = $this->accountWithUser(ClientAccountRole::Owner, settingsManage: true);
+        $plain = 'active-secret-api-key-for-replacement';
+        app(SisahygoApiCredentialService::class)->create($account, SisahygoApiEnvironment::Sandbox, 'Existing', $plain);
+        Http::fake(['https://sandbox-api.sisahygo.online/api/v1/client/ping' => Http::response(['data' => ['status' => 'ok']])]);
+
+        $this->actingAs($user)
+            ->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id])
+            ->get(route('settings.client-account'))
+            ->assertOk()
+            ->assertSee('Change API Credential')
+            ->assertSee('Verify and replace')
+            ->assertSee('wire:model.defer="apiKey"', false)
+            ->assertDontSee($plain);
+    }
+
+    public function test_failed_ping_still_allows_authorised_replacement(): void
+    {
+        [$user, $account] = $this->accountWithUser(ClientAccountRole::Owner, settingsManage: true);
+        $plain = 'active-secret-api-key-with-failed-ping';
+        app(SisahygoApiCredentialService::class)->create($account, SisahygoApiEnvironment::Sandbox, 'Existing', $plain);
+        Http::fake(['https://sandbox-api.sisahygo.online/api/v1/client/ping' => Http::response(['error' => ['code' => 'API_KEY_INVALID']], 401)]);
+
+        $this->actingAs($user)
+            ->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id])
+            ->get(route('settings.client-account'))
+            ->assertOk()
+            ->assertSee('Invalid credential')
+            ->assertSee('Change API Credential')
+            ->assertSee('Verify and replace')
+            ->assertSee('wire:model.defer="apiKey"', false)
+            ->assertDontSee($plain);
     }
 
     public function test_valid_key_is_verified_and_saved_encrypted_for_selected_account(): void
@@ -104,6 +181,26 @@ class SisahygoCredentialSetupTest extends TestCase
 
         Http::assertSent(fn ($request) => $request->url() === 'https://sandbox-api.sisahygo.online/api/v1/client/ping'
             && $request->hasHeader('X-Api-Key', $apiKey));
+    }
+
+
+    public function test_validation_failure_clears_api_key_and_does_not_render_raw_value(): void
+    {
+        [$user, $account] = $this->accountWithUser(ClientAccountRole::Owner, settingsManage: true);
+        $raw = 'RAWKEY-LEAK';
+
+        $this->actingAs($user);
+        $this->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id]);
+        app()->instance(ClientAccount::class, $account);
+
+        Livewire::test(CredentialSetup::class)
+            ->set('apiKey', $raw)
+            ->call('save')
+            ->assertHasErrors(['apiKey'])
+            ->assertSet('apiKey', '')
+            ->assertDontSee($raw);
+
+        $this->assertDatabaseCount('sisahygo_api_credentials', 0);
     }
 
     public function test_invalid_key_is_rejected_and_not_stored(): void

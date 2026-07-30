@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Onboarding;
 
+use App\Domain\ClientAccount\Enums\ClientCapability;
 use App\Domain\ClientAccount\Models\ClientAccount;
 use App\Domain\ClientAccount\Models\ClientAccountCapability;
 use App\Domain\ClientAccount\Models\ClientAccountCustomer;
@@ -163,7 +164,11 @@ class InvitationActivationTest extends TestCase
         $this->post(route('invitation.activate', $this->token), $this->passwordPayload())
             ->assertRedirect(route('onboarding.welcome'));
 
-        $this->assertSame(0, ClientAccountCapability::query()->count());
+        $this->assertSame(1, ClientAccountCapability::query()->count());
+        $this->assertSame(1, ClientAccountCapability::query()
+            ->where('capability', ClientCapability::SettingsManage->value)
+            ->where('is_enabled', true)
+            ->count());
         $this->assertSame(1, ClientAccountCustomer::query()->where('customer_id', 1649051)->count());
     }
 
@@ -279,6 +284,8 @@ class InvitationActivationTest extends TestCase
         $this->get(route('settings.client-account'))
             ->assertOk()
             ->assertSee('Beta Logistics')
+            ->assertSee('Sisahygo API Key')
+            ->assertSee('wire:model.defer="apiKey"', false)
             ->assertDontSee('Alpha Logistics');
     }
 

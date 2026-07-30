@@ -9,6 +9,7 @@ use App\Domain\ClientAccount\Services\CurrentClientAccountResolver;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Validator;
 use Livewire\Component;
 
 class CredentialSetup extends Component
@@ -26,14 +27,16 @@ class CredentialSetup extends Component
         $account = $this->currentClientAccount();
         $this->authorize('manageSettings', $account);
 
-        $validated = $this->validate([
+        $apiKey = trim($this->apiKey);
+        $this->reset('apiKey', 'successMessage', 'errorMessage');
+
+        Validator::make([
+            'apiKey' => $apiKey,
+        ], [
             'apiKey' => ['required', 'string', 'min:16', 'max:255'],
         ], [], [
             'apiKey' => __('client_account.credential_setup.fields.api_key'),
-        ]);
-
-        $apiKey = trim($validated['apiKey']);
-        $this->reset('apiKey', 'successMessage', 'errorMessage');
+        ])->validate();
 
         $result = $setup->verify($apiKey);
 

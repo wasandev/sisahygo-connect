@@ -70,6 +70,7 @@ class ActivateInvitation
 
             $this->upsertCustomerMappings($account, $activation);
             $this->upsertCapabilities($account, $activation);
+            $this->ensureSettingsCapabilityForAccountManager($account, $activation);
 
             return new InvitationActivationResult($user, $account);
         });
@@ -152,6 +153,21 @@ class ActivateInvitation
                 'is_enabled' => true,
             ]);
         }
+    }
+
+
+    private function ensureSettingsCapabilityForAccountManager(ClientAccount $account, InvitationActivationData $activation): void
+    {
+        if (! $this->role($activation->userRole)->canManageAccount()) {
+            return;
+        }
+
+        ClientAccountCapability::query()->updateOrCreate([
+            'client_account_id' => $account->id,
+            'capability' => ClientCapability::SettingsManage->value,
+        ], [
+            'is_enabled' => true,
+        ]);
     }
 
     /** @param array<string, mixed> $mapping */

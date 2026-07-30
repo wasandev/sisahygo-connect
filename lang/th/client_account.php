@@ -23,7 +23,7 @@ return [
     'empty_customer_links' => 'ยังไม่มีการตั้งค่าการเชื่อมโยงลูกค้าที่เปิดใช้งาน',
     'empty_capabilities' => 'ยังไม่มีสิทธิ์การใช้งานที่เปิดใช้งาน',
     'credential_setup' => [
-        'title' => 'การเชื่อมต่อ Sisahygo API',
+        'title' => 'เชื่อมต่อ Sisahygo API',
         'description' => 'เพิ่มหรือเปลี่ยน Core API Credential สำหรับ Client Account นี้',
         'instructions_title' => 'วิธีเชื่อมต่อ Core API',
         'instruction_steps' => [
@@ -36,9 +36,11 @@ return [
         ],
         'security_note' => 'Core จัดเก็บเฉพาะ hash ของ API Key ส่วน Connect จะจัดเก็บ key ที่ส่งมาด้วย Laravel encryption หลังตรวจสอบสำเร็จ และจะไม่แสดง key ที่บันทึกไว้อีก',
         'instructions' => 'สร้าง API Key จาก API Client ที่อนุมัติแล้วใน Sisahygo Core Nova โดย plaintext key จะแสดงเพียงครั้งเดียวใน Core จากนั้นนำมากรอกที่นี่เพื่อตรวจสอบและจัดเก็บแบบเข้ารหัส',
-        'admin_required' => 'เจ้าของบัญชีหรือผู้ดูแลบัญชีที่มีสิทธิ์จัดการการตั้งค่าต้องเป็นผู้ตั้งค่า Sisahygo API Credential',
+        'admin_required' => 'เฉพาะเจ้าของบัญชีหรือผู้ดูแลที่ได้รับสิทธิ์เท่านั้น ที่สามารถตั้งค่า Sisahygo API Credential ได้ กรุณาติดต่อเจ้าของบัญชีหรือผู้ดูแล Client Account เพื่อดำเนินการเชื่อมต่อ Sisahygo API',
         'replacement_hint' => 'Credential เดิมจะยังใช้งานอยู่จนกว่า key ใหม่จะตรวจสอบสำเร็จ',
-        'hint' => 'ระบบจะตรวจสอบ key กับ Core ก่อนบันทึก และจะไม่แสดง key นี้อีกหลังส่งข้อมูล',
+        'connect_title' => 'เชื่อมต่อ Sisahygo API',
+        'replacement_title' => 'เปลี่ยน API Credential',
+        'hint' => 'วาง API Key ที่คัดลอกจาก Sisahygo Core ระบบจะตรวจสอบก่อนบันทึก และจะไม่แสดง Key นี้อีกครั้ง',
         'success' => 'ตรวจสอบและบันทึก Sisahygo API Credential แล้ว Fingerprint: :fingerprint',
         'ready' => [
             'title' => 'Sisahygo Connect พร้อมใช้งานแล้ว',
@@ -64,7 +66,7 @@ return [
             'missing' => 'ยังไม่มี',
         ],
         'actions' => [
-            'save' => 'ตรวจสอบและบันทึก',
+            'save' => 'ตรวจสอบและเชื่อมต่อ',
             'replace' => 'ตรวจสอบและเปลี่ยน Credential',
             'verifying' => 'กำลังตรวจสอบ...',
         ],

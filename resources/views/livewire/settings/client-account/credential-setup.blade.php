@@ -64,14 +64,19 @@
     @endif
 
     @if ($canManage)
-        <form wire:submit="save" class="mt-5 space-y-4">
+        <form wire:submit="save" class="mt-5 space-y-4 rounded-lg border border-slate-200 bg-white p-4">
+            <div>
+                <h3 class="text-base font-semibold text-connect-navy-900">{{ $credential ? __('client_account.credential_setup.replacement_title') : __('client_account.credential_setup.connect_title') }}</h3>
+                <p class="mt-1 text-sm leading-6 text-slate-600">{{ $credential ? __('client_account.credential_setup.replacement_hint') : __('client_account.credential_setup.hint') }}</p>
+            </div>
+
             <x-connect.input
+                id="sisahygo-api-key"
                 type="password"
                 name="apiKey"
                 wire:model.defer="apiKey"
                 autocomplete="new-password"
                 :label="__('client_account.credential_setup.fields.api_key')"
-                :hint="$credential ? __('client_account.credential_setup.replacement_hint') : __('client_account.credential_setup.hint')"
             />
             @error('apiKey')
                 <p class="text-sm text-red-600">{{ $message }}</p>
