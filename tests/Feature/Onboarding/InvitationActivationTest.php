@@ -8,6 +8,8 @@ use App\Domain\ClientAccount\Models\ClientAccountCapability;
 use App\Domain\ClientAccount\Models\ClientAccountCustomer;
 use App\Domain\ClientAccount\Models\ClientAccountUser;
 use App\Domain\ClientAccount\Services\CurrentClientAccountResolver;
+use App\Domain\Sisahygo\Enums\SisahygoApiEnvironment;
+use App\Domain\Sisahygo\Services\SisahygoApiCredentialService;
 use App\Integrations\Sisahygo\Configuration\SisahygoApiConfiguration;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -164,11 +166,17 @@ class InvitationActivationTest extends TestCase
         $this->post(route('invitation.activate', $this->token), $this->passwordPayload())
             ->assertRedirect(route('onboarding.welcome'));
 
-        $this->assertSame(1, ClientAccountCapability::query()->count());
+        $this->assertSame(6, ClientAccountCapability::query()->count());
         $this->assertSame(1, ClientAccountCapability::query()
             ->where('capability', ClientCapability::SettingsManage->value)
             ->where('is_enabled', true)
             ->count());
+        foreach ([ClientCapability::OrderCreate, ClientCapability::OrderBulk, ClientCapability::ShipmentView, ClientCapability::ShipmentHistory, ClientCapability::PaymentView] as $capability) {
+            $this->assertSame(1, ClientAccountCapability::query()
+                ->where('capability', $capability->value)
+                ->where('is_enabled', true)
+                ->count());
+        }
         $this->assertSame(1, ClientAccountCustomer::query()->where('customer_id', 1649051)->count());
     }
 
@@ -275,6 +283,13 @@ class InvitationActivationTest extends TestCase
 
         $accountB = ClientAccount::query()->where('code', 'BETA')->firstOrFail();
         $this->assertSame($accountB->id, session(CurrentClientAccountResolver::SESSION_KEY));
+        foreach ([ClientCapability::OrderCreate, ClientCapability::OrderBulk, ClientCapability::ShipmentView, ClientCapability::ShipmentHistory, ClientCapability::PaymentView] as $capability) {
+            $this->assertDatabaseHas('client_account_capabilities', [
+                'client_account_id' => $accountB->id,
+                'capability' => $capability->value,
+                'is_enabled' => true,
+            ]);
+        }
 
         $this->get(route('onboarding.welcome'))
             ->assertOk()
@@ -287,6 +302,59 @@ class InvitationActivationTest extends TestCase
             ->assertSee('คีย์เชื่อมต่อที่ปลอดภัย')
             ->assertSee('wire:model.defer="apiKey"', false)
             ->assertDontSee('Alpha Logistics');
+    }
+
+    public function test_existing_user_activated_account_can_use_business_pages_after_connection(): void
+    {
+        $existing = User::factory()->create([
+            'email' => 'contact@example.com',
+            'onboarding_welcomed_at' => null,
+        ]);
+        $accountA = ClientAccount::factory()->active()->create(['code' => 'ALPHA', 'name' => 'Alpha Logistics']);
+        ClientAccountUser::factory()->for($accountA)->for($existing)->owner()->create();
+
+        $this->fakePreviewAndActivation(activationOverrides: [
+            'client_account' => [
+                'external_id' => 'BETA',
+                'code' => 'BETA',
+                'name' => 'Beta Logistics',
+                'status' => 'active',
+            ],
+            'customer_mappings' => [[
+                'customer_id' => 20002,
+                'core_customer_id' => 20002,
+                'customer_external_id' => '20002',
+                'role' => 'both',
+            ]],
+        ]);
+
+        $this->post(route('invitation.activate', $this->token), $this->passwordPayload())
+            ->assertRedirect(route('onboarding.welcome'));
+
+        $accountB = ClientAccount::query()->where('code', 'BETA')->firstOrFail();
+        $this->assertSame($accountB->id, session(CurrentClientAccountResolver::SESSION_KEY));
+        app(SisahygoApiCredentialService::class)->create($accountB, SisahygoApiEnvironment::Sandbox, 'Sandbox', 'beta-secret-key');
+
+        Http::fake([
+            'https://sandbox-api.sisahygo.online/api/v1/client/ping' => Http::response(['data' => ['status' => 'ok']]),
+            'https://sandbox-api.sisahygo.online/api/v1/client/payments*' => Http::response($this->fixture('payments-index-success.json')),
+            'https://sandbox-api.sisahygo.online/api/v1/client/shipments*' => Http::response(['data' => [], 'meta' => ['current_page' => 1, 'per_page' => 5, 'total' => 0, 'last_page' => 1]]),
+        ]);
+
+        $this->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('Beta Logistics')
+            ->assertDontSee('Client Account นี้ยังไม่มีสิทธิ์ดูข้อมูลหน้าหลัก')
+            ->assertDontSee('ยังไม่สามารถเตรียมข้อมูลเชื่อมต่อ Sisahygo ได้ในขณะนี้');
+
+        Http::fake(['https://sandbox-api.sisahygo.online/api/v1/client/units*' => Http::response($this->fixture('units-success.json'))]);
+
+        $this->get(route('order-checking'))
+            ->assertOk()
+            ->assertSee('สร้างรายการส่งสินค้า')
+            ->assertSee('1. ผู้รับสินค้า')
+            ->assertDontSee('ยังไม่พร้อมสร้างรายการส่งสินค้า')
+            ->assertDontSee('ยังไม่สามารถเตรียมข้อมูลเชื่อมต่อ Sisahygo ได้ในขณะนี้');
     }
 
     public function test_successful_activation_authenticates_user(): void
@@ -419,5 +487,10 @@ class InvitationActivationTest extends TestCase
     private function coreUrl(string $token): string
     {
         return 'https://sandbox-api.sisahygo.online/api/v1/connect-onboarding/invitations/'.$token;
+    }
+
+    private function fixture(string $name): string
+    {
+        return file_get_contents(base_path("tests/Fixtures/Sisahygo/V1/{$name}"));
     }
 }

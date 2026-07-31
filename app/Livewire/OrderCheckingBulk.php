@@ -10,6 +10,7 @@ use App\Integrations\Sisahygo\Exceptions\SisahygoApiException;
 use App\Integrations\Sisahygo\Exceptions\SisahygoConnectionException;
 use App\Integrations\Sisahygo\Exceptions\SisahygoValidationException;
 use Illuminate\Contracts\View\View;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -96,6 +97,9 @@ class OrderCheckingBulk extends Component
         } catch (ModelNotFoundException) {
             $this->unavailable = true;
             $this->unavailableMessage = __('bulk_order_checking.unavailable.no_credential');
+        } catch (AuthorizationException) {
+            $this->unavailable = true;
+            $this->unavailableMessage = __('bulk_order_checking.errors.authorization');
         } catch (\Throwable) {
             $this->unavailable = true;
             $this->unavailableMessage = __('bulk_order_checking.unavailable.integration');

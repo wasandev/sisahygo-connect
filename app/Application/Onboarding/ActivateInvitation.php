@@ -2,6 +2,7 @@
 
 namespace App\Application\Onboarding;
 
+use App\Application\ClientAccounts\ProvisionBaselineClientAccountCapabilities;
 use App\Domain\ClientAccount\Enums\ClientAccountRole;
 use App\Domain\ClientAccount\Enums\ClientCapability;
 use App\Domain\ClientAccount\Enums\ClientAccountStatus;
@@ -20,7 +21,10 @@ use Illuminate\Validation\ValidationException;
 
 class ActivateInvitation
 {
-    public function __construct(private readonly InvitationsEndpoint $invitations) {}
+    public function __construct(
+        private readonly InvitationsEndpoint $invitations,
+        private readonly ProvisionBaselineClientAccountCapabilities $baselineCapabilities,
+    ) {}
 
     public function preview(string $token): InvitationPreviewData
     {
@@ -70,6 +74,7 @@ class ActivateInvitation
 
             $this->upsertCustomerMappings($account, $activation);
             $this->upsertCapabilities($account, $activation);
+            $this->baselineCapabilities->provision($account);
             $this->ensureSettingsCapabilityForAccountManager($account, $activation);
 
             return new InvitationActivationResult($user, $account);

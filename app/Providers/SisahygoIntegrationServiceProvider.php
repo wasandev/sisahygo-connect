@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Console\Commands\ProvisionClientAccountBaselineCapabilitiesCommand;
 use App\Console\Commands\SisahygoCredentialSetCommand;
 use App\Console\Commands\SisahygoDiagnosticsCommand;
 use App\Console\Commands\SisahygoIntegrationStatusCommand;
@@ -22,6 +23,7 @@ class SisahygoIntegrationServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->commands([
+                ProvisionClientAccountBaselineCapabilitiesCommand::class,
                 SisahygoCredentialSetCommand::class,
                 SisahygoDiagnosticsCommand::class,
                 SisahygoIntegrationStatusCommand::class,

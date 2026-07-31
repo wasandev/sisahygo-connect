@@ -12,7 +12,7 @@ Status values: Completed, Partial, Placeholder, Planned, Deprecated, Unverified.
 | Dashboard | Payment widgets/cache | `/dashboard` | `DashboardPaymentOverviewService`, `PaymentQueryService` | `GET /payments` | Working | Strong | Strong | Completed | Payment overview/cache tests. |
 | Single Order Checking | Single create/submit/reconcile | `/order-checking` | `SubmitSingleOrderChecking` | `/receivers`, `/products`, `/units`, POST `/order-checkings`, GET `/order-checkings/{client_reference_no}` | Working | Strong | Conflicted but source-of-truth updated | Completed | Route, Livewire page, endpoint, mapper, service, tests. |
 | Single Order Checking | List/detail/edit/draft/rejection management | None | None | Unverified/not implemented | None | Missing | Mentioned as not in current scope | Planned | No routes/components/services. |
-| Bulk Order Checking | Bulk upload/create | None | Capability enum only | Documented likely `POST /order-checkings/bulk` but not implemented | None | Missing | Planned/docs-only | Planned | `ClientCapability::OrderBulk`, docs references only. |
+| Bulk Order Checking | Bulk create/review/submit | `/order-checking/bulk` | `OrderCheckingBulk`, `SubmitBulkOrderChecking`, bulk DTOs/mapper/endpoint | `POST /order-checkings/bulk`, `/receivers`, `/products`, `/units` | Working | Strong | Strong | Completed | Route, Livewire page, service, endpoint, fixtures, focused tests, `ClientCapability::OrderBulk`. |
 | Shipment Tracking | Tracking lookup | `/tracking` | `TrackingLookup` redirect | `GET /shipments/{trackingIdentifier}` via detail page | Working | Adequate | Adequate | Completed | `ShipmentPagesTest`. |
 | Shipments | List/detail | `/shipments`, `/shipments/{trackingIdentifier}` | `ShipmentQueryService`, `ShipmentsEndpoint` | `GET /shipments`, `GET /shipments/{tracking_no}` | Working | Strong | Adequate | Completed | Shipment page/service tests. |
 | Shipment History | History list/filter | `/history` | `ListOrderHistory` | `GET /shipments` | Working | Strong | Adequate | Completed | History tests. |
@@ -46,11 +46,11 @@ Conclusion: Sprint 2A delivered Single Order Checking create/submit/reconcile. I
 
 | Readiness Item | Status | Evidence | Notes |
 | --- | --- | --- | --- |
-| Production route | Planned | No route found | Needs new route or UI entry. |
-| Livewire component/view | Planned | No Bulk component/view found | Should reuse Single row validation patterns where suitable. |
-| Endpoint support | Documented only | Docs mention `/order-checkings/bulk`; no endpoint method | Must verify authoritative Core contract. |
+| Production route | Completed | `/order-checking/bulk` | Route is behind auth and selected Client Account middleware. |
+| Livewire component/view | Completed | `OrderCheckingBulk`, `resources/views/livewire/order-checking-bulk.blade.php` | Reuses selected account, sender options, reference data, review, and result states. |
+| Endpoint support | Completed | `OrderCheckingsEndpoint::createBulk` | Uses existing Core Client API bulk endpoint. |
 | Authentication/selected account | Ready | Existing auth + `client.account` middleware | Reuse current architecture. |
-| `order.bulk` capability | Partial | Enum and demo seeder only | Need authorization policy/service usage. |
+| `order.bulk` capability | Completed | `SubmitBulkOrderChecking::context` requires `ClientCapability::OrderBulk` | Included in the standard business baseline. |
 | `batch_reference_no` | Unverified | Prompt/docs concept only | Confirm with Core. |
 | `batch_date` | Unverified | Prompt/docs concept only | Confirm with Core. |
 | `orders` array | Unverified | Prompt/docs concept only | Confirm shape and limits. |
