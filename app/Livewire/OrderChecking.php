@@ -8,6 +8,7 @@ use App\Domain\ClientAccount\Models\ClientAccount;
 use App\Domain\ClientAccount\Services\CurrentClientAccountResolver;
 use App\Integrations\Sisahygo\Exceptions\SisahygoApiException;
 use App\Integrations\Sisahygo\Exceptions\SisahygoConnectionException;
+use App\Integrations\Sisahygo\Exceptions\SisahygoServerException;
 use App\Integrations\Sisahygo\Exceptions\SisahygoNotFoundException;
 use App\Integrations\Sisahygo\Exceptions\SisahygoValidationException;
 use Illuminate\Contracts\View\View;
@@ -51,6 +52,9 @@ class OrderChecking extends Component
 
     public ?string $unknownMessage = null;
 
+    /** @var array<int, string> */
+    public array $apiValidationMessages = [];
+
     public ?array $successResult = null;
 
     public ?array $submittedSummary = null;
@@ -79,6 +83,12 @@ class OrderChecking extends Component
         } catch (ModelNotFoundException) {
             $this->unavailable = true;
             $this->unavailableMessage = __('order_checking.unavailable.no_credential');
+        } catch (SisahygoConnectionException|SisahygoServerException $exception) {
+            $this->unavailable = true;
+            $this->unavailableMessage = $this->safeApiMessage($exception);
+        } catch (SisahygoApiException $exception) {
+            $this->unavailable = true;
+            $this->unavailableMessage = $this->safeApiMessage($exception);
         } catch (\Throwable) {
             $this->unavailable = true;
             $this->unavailableMessage = __('order_checking.unavailable.integration');
@@ -97,8 +107,8 @@ class OrderChecking extends Component
         try {
             $this->receiverResults = $orders->searchReceivers(auth()->user(), $this->currentClientAccount(), $this->receiverSearch);
             $this->clearPageError();
-        } catch (SisahygoApiException) {
-            $this->pageError = __('order_checking.errors.receiver_search_failed');
+        } catch (SisahygoApiException $exception) {
+            $this->pageError = $this->safeApiMessage($exception);
         }
     }
 
@@ -128,8 +138,8 @@ class OrderChecking extends Component
         try {
             $this->productResults = $orders->searchProducts(auth()->user(), $this->currentClientAccount(), $this->productSearch);
             $this->clearPageError();
-        } catch (SisahygoApiException) {
-            $this->pageError = __('order_checking.errors.product_search_failed');
+        } catch (SisahygoApiException $exception) {
+            $this->pageError = $this->safeApiMessage($exception);
         }
     }
 
@@ -183,6 +193,7 @@ class OrderChecking extends Component
         $this->isSubmitting = true;
         $this->pageError = null;
         $this->unknownMessage = null;
+        $this->apiValidationMessages = [];
         $this->successResult = null;
         $this->resetErrorBag();
 
@@ -213,7 +224,7 @@ class OrderChecking extends Component
         } catch (SisahygoValidationException $exception) {
             $this->state = 'api_validation_failed';
             $this->mapApiValidationErrors($exception->safeContext()['validation_errors'] ?? []);
-            $this->pageError ??= $this->safeApiMessage($exception);
+            $this->pageError ??= __('order_checking.errors.validation_failed');
         } catch (SisahygoConnectionException) {
             $this->state = 'unknown_result';
             $this->unknownMessage = __('order_checking.unknown.body');
@@ -228,6 +239,7 @@ class OrderChecking extends Component
     public function reconcile(SubmitSingleOrderChecking $orders): void
     {
         $this->pageError = null;
+        $this->apiValidationMessages = [];
 
         try {
             $result = $orders->reconcile(auth()->user(), $this->currentClientAccount(), $this->clientReferenceNo);
@@ -255,6 +267,7 @@ class OrderChecking extends Component
         $this->items = [$this->blankItem()];
         $this->pageError = null;
         $this->unknownMessage = null;
+        $this->apiValidationMessages = [];
         $this->successResult = null;
         $this->submittedSummary = null;
         $this->resetErrorBag();
@@ -356,7 +369,39 @@ class OrderChecking extends Component
             return;
         }
 
-        $this->mapValidationErrors($errors);
+        foreach ($errors as $field => $messages) {
+            foreach ($this->normalizeValidationMessages($messages) as $message) {
+                $this->apiValidationMessages[] = $message;
+            }
+
+            if (is_string($field)) {
+                $this->addError(
+                    $this->mapErrorField($field),
+                    $this->normalizeValidationMessages($messages)[0] ?? __('order_checking.errors.validation_failed')
+                );
+            }
+        }
+
+        if ($this->apiValidationMessages !== []) {
+            $this->pageError = __('order_checking.errors.validation_failed');
+        }
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function normalizeValidationMessages(mixed $messages): array
+    {
+        if (is_array($messages)) {
+            return array_values(array_filter(
+                array_map(fn (mixed $message): string => is_scalar($message) ? (string) $message : '', $messages),
+                fn (string $message): bool => $message !== ''
+            ));
+        }
+
+        return is_scalar($messages) && (string) $messages !== ''
+            ? [(string) $messages]
+            : [__('order_checking.errors.validation_failed')];
     }
 
     private function mapErrorField(string $field): string

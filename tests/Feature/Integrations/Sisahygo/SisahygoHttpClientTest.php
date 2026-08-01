@@ -22,7 +22,9 @@ use App\Integrations\Sisahygo\Logging\SisahygoApiLogger;
 use App\Integrations\Sisahygo\Support\SisahygoIntegrationContext;
 use App\Integrations\Sisahygo\Support\SisahygoIntegrationContextBuilder;
 use App\Integrations\Sisahygo\V1\Endpoints\ReceiversEndpoint;
+use App\Integrations\Sisahygo\V1\DTO\ReceiverSummary;
 use App\Integrations\Sisahygo\V1\Endpoints\ShipmentsEndpoint;
+use App\Integrations\Sisahygo\V1\Mappers\ReceiverMapper;
 use App\Integrations\Sisahygo\V1\SisahygoApiClient;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -106,6 +108,49 @@ class SisahygoHttpClientTest extends TestCase
         $this->assertTrue($logs->records[0]['success']);
     }
 
+
+    public function test_receiver_mapping_failure_on_200_logs_safe_diagnostic_context(): void
+    {
+        $logs = $this->captureApiLogs();
+        $context = $this->context();
+        Http::fake(['*' => Http::response([
+            'data' => [[
+                'customer_rec_id' => 652243,
+                'to_customer_phone' => '020000001',
+                'api_key' => 'response-secret',
+                'authorization' => 'Bearer response-token',
+            ]],
+        ], 200)]);
+
+        try {
+            app(ReceiversEndpoint::class)->list($context, '652243');
+            $this->fail('Expected SisahygoUnexpectedResponseException was not thrown.');
+        } catch (SisahygoUnexpectedResponseException $exception) {
+            $safe = $exception->safeContext();
+
+            $this->assertSame('/receivers', $safe['endpoint']);
+            $this->assertSame($context->correlationId, $safe['correlation_id']);
+            $this->assertSame(ReceiverMapper::class, $safe['mapper_class']);
+            $this->assertSame(ReceiverSummary::class, $safe['dto_class']);
+            $this->assertSame(['to_customer_name|name|customer_name'], $safe['missing_fields']);
+            $this->assertStringContainsString('"customer_rec_id":652243', $safe['response_json']);
+            $this->assertStringContainsString('"api_key":"[REDACTED]"', $safe['response_json']);
+            $this->assertStringContainsString('"authorization":"[REDACTED]"', $safe['response_json']);
+            $this->assertStringNotContainsString('response-secret', $safe['response_json']);
+            $this->assertStringNotContainsString('response-token', $safe['response_json']);
+        }
+
+        $this->assertFalse($logs->records[0]['success']);
+        $this->assertSame(200, $logs->records[0]['status']);
+        $this->assertTrue($logs->records[0]['extra']['transport_success']);
+        $this->assertFalse($logs->records[0]['extra']['mapping_success']);
+        $this->assertFalse($logs->records[0]['extra']['operation_success']);
+        $this->assertStringContainsString('"api_key":"[REDACTED]"', $logs->records[0]['extra']['response_json']);
+        $this->assertStringNotContainsString('secret-api-key', json_encode($logs->records[0], JSON_THROW_ON_ERROR));
+        $this->assertStringNotContainsString('response-secret', json_encode($logs->records[0], JSON_THROW_ON_ERROR));
+        $this->assertStringNotContainsString('response-token', json_encode($logs->records[0], JSON_THROW_ON_ERROR));
+    }
+
     public function test_forbidden_response_logs_actual_http_status(): void
     {
         $logs = $this->captureApiLogs();
@@ -140,6 +185,40 @@ class SisahygoHttpClientTest extends TestCase
         $this->assertSame(401, $logs->records[0]['status']);
         $this->assertFalse($logs->records[0]['success']);
         $this->assertSame(SisahygoAuthenticationException::class, $logs->records[0]['exception']::class);
+    }
+
+
+    public function test_validation_failure_logs_sanitized_request_and_response_json(): void
+    {
+        $logs = $this->captureApiLogs();
+        $context = $this->context();
+        Http::fake(['*' => Http::response($this->fixture('order-checking-validation-error.json'), 422)]);
+
+        try {
+            app(SisahygoApiClient::class)->post($context, '/order-checkings', [
+                'client_reference_no' => 'SC-20260716-ABC123',
+                'customer_rec_id' => 20001,
+                'api_key' => 'payload-secret-that-must-not-log',
+                'items' => [[
+                    'product_id' => 6639,
+                    'unit_id' => 1,
+                    'amount' => 2,
+                ]],
+            ]);
+            $this->fail('Expected SisahygoValidationException was not thrown.');
+        } catch (SisahygoValidationException $exception) {
+            $this->assertStringContainsString('"client_reference_no":"SC-20260716-ABC123"', $exception->safeContext()['request_json']);
+            $this->assertStringContainsString('"api_key":"[REDACTED]"', $exception->safeContext()['request_json']);
+            $this->assertStringNotContainsString('payload-secret-that-must-not-log', $exception->safeContext()['request_json']);
+            $this->assertStringContainsString('"items.0.product_id":["สินค้าไม่ถูกต้อง"]', $exception->safeContext()['response_json']);
+        }
+
+        $this->assertFalse($logs->records[0]['success']);
+        $this->assertSame(422, $logs->records[0]['status']);
+        $this->assertStringContainsString('"customer_rec_id":20001', $logs->records[0]['extra']['request_json']);
+        $this->assertStringContainsString('"api_key":"[REDACTED]"', $logs->records[0]['extra']['request_json']);
+        $this->assertStringNotContainsString('secret-api-key', $logs->records[0]['extra']['request_json']);
+        $this->assertStringContainsString('"VALIDATION_ERROR"', $logs->records[0]['extra']['response_json']);
     }
 
     public function test_connection_failure_logs_null_http_status(): void

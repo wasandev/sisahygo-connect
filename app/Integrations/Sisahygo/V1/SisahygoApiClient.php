@@ -21,6 +21,7 @@ use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use JsonException;
 use Throwable;
 
 class SisahygoApiClient
@@ -38,6 +39,16 @@ class SisahygoApiClient
     public function get(SisahygoIntegrationContext $context, string $endpoint, array $query = []): array
     {
         return $this->send('GET', $context, $endpoint, $query, allowRetry: true);
+    }
+
+    /**
+     * @param  array<string, mixed>  $query
+     * @param  callable(array<string, mixed>): mixed  $mapper
+     * @param  array<string, mixed>  $mappingContext
+     */
+    public function getMapped(SisahygoIntegrationContext $context, string $endpoint, array $query, callable $mapper, array $mappingContext = []): mixed
+    {
+        return $this->send('GET', $context, $endpoint, $query, allowRetry: true, mapper: $mapper, mappingContext: $mappingContext);
     }
 
     /**
@@ -71,7 +82,7 @@ class SisahygoApiClient
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>
      */
-    private function send(string $method, SisahygoIntegrationContext $context, string $endpoint, array $data, bool $allowRetry): array
+    private function send(string $method, SisahygoIntegrationContext $context, string $endpoint, array $data, bool $allowRetry, ?callable $mapper = null, array $mappingContext = []): mixed
     {
         $credential = SisahygoApiCredential::query()
             ->whereKey($context->credentialId)
@@ -96,11 +107,25 @@ class SisahygoApiClient
                 }
 
                 $payload = $this->decode($response, $context->safeLogContext(), $endpoint);
-                $this->throwForStatus($response, $payload, $context->safeLogContext(), $endpoint, $context->correlationId);
-                $this->credentials->markLastUsed($credential);
-                $this->log($context, $endpoint, $method, $response->status(), $startedAt, $retryCount, true);
+                $this->throwForStatus($response, $payload, $context->safeLogContext(), $endpoint, $context->correlationId, $data);
 
-                return $payload;
+                $result = $payload;
+
+                if ($mapper !== null) {
+                    try {
+                        $result = $mapper($payload);
+                    } catch (SisahygoUnexpectedResponseException $exception) {
+                        throw $this->mappingException($exception, $response, $payload, $context->safeLogContext(), $endpoint, $context->correlationId, $data, $mappingContext);
+                    }
+                }
+
+                $this->credentials->markLastUsed($credential);
+                $this->log($context, $endpoint, $method, $response->status(), $startedAt, $retryCount, true, extra: array_merge(
+                    $this->requestJsonContext($data),
+                    $this->operationLogContext(true, $mapper !== null ? true : null, true),
+                ));
+
+                return $result;
             } catch (ConnectionException $exception) {
                 $lastException = new SisahygoConnectionException('Unable to connect to Sisahygo API.', null, $context->safeLogContext(), $exception);
 
@@ -121,7 +146,11 @@ class SisahygoApiClient
 
         $failureStatus = $lastException instanceof SisahygoApiException ? $lastException->status : null;
 
-        $this->log($context, $endpoint, $method, $failureStatus, $startedAt, $retryCount, false, $lastException);
+        $this->log($context, $endpoint, $method, $failureStatus, $startedAt, $retryCount, false, $lastException, $this->operationLogContext(
+            $failureStatus !== null,
+            $lastException instanceof SisahygoUnexpectedResponseException ? ($lastException->safeContext()['mapping_success'] ?? null) : null,
+            false,
+        ));
 
         throw $lastException;
     }
@@ -152,8 +181,11 @@ class SisahygoApiClient
                 }
 
                 $payload = $this->decode($response, $safeContext, $logEndpoint);
-                $this->throwForStatus($response, $payload, $safeContext, $logEndpoint, $correlationId);
-                $this->logSafe($safeContext, $logEndpoint, $method, $response->status(), $startedAt, $retryCount, true);
+                $this->throwForStatus($response, $payload, $safeContext, $logEndpoint, $correlationId, $data);
+                $this->logSafe($safeContext, $logEndpoint, $method, $response->status(), $startedAt, $retryCount, true, extra: array_merge(
+                    $this->requestJsonContext($data),
+                    $this->operationLogContext(true, null, true),
+                ));
 
                 return $payload;
             } catch (ConnectionException $exception) {
@@ -176,7 +208,11 @@ class SisahygoApiClient
 
         $failureStatus = $lastException instanceof SisahygoApiException ? $lastException->status : null;
 
-        $this->logSafe($safeContext, $logEndpoint, $method, $failureStatus, $startedAt, $retryCount, false, $lastException);
+        $this->logSafe($safeContext, $logEndpoint, $method, $failureStatus, $startedAt, $retryCount, false, $lastException, $this->operationLogContext(
+            $failureStatus !== null,
+            null,
+            false,
+        ));
 
         throw $lastException;
     }
@@ -233,7 +269,7 @@ class SisahygoApiClient
     }
 
     /** @param array<string, mixed> $payload */
-    private function throwForStatus(Response $response, array $payload, array $safeContext, string $endpoint, string $correlationId): void
+    private function throwForStatus(Response $response, array $payload, array $safeContext, string $endpoint, string $correlationId, array $requestData): void
     {
         if ($response->successful()) {
             return;
@@ -247,7 +283,7 @@ class SisahygoApiClient
             'api_error_message' => $error['message'] ?? null,
             'validation_errors' => $error['details'] ?? $payload['errors'] ?? null,
             'correlation_id' => $error['correlation_id'] ?? $correlationId,
-        ]);
+        ], $this->requestJsonContext($requestData), $this->responseJsonContext($payload));
 
         throw match ($response->status()) {
             401 => new SisahygoAuthenticationException('Sisahygo API authentication failed.', 401, $safe),
@@ -259,6 +295,36 @@ class SisahygoApiClient
                 ? new SisahygoServerException('Sisahygo API server error.', $response->status(), $safe)
                 : new SisahygoUnexpectedResponseException('Sisahygo API returned an unexpected status.', $response->status(), $safe),
         };
+    }
+
+
+    /** @param array<string, mixed> $payload */
+    private function mappingException(SisahygoUnexpectedResponseException $exception, Response $response, array $payload, array $safeContext, string $endpoint, string $correlationId, array $requestData, array $mappingContext): SisahygoUnexpectedResponseException
+    {
+        return new SisahygoUnexpectedResponseException($exception->getMessage(), $response->status(), array_merge(
+            $safeContext,
+            $mappingContext,
+            $exception->safeContext(),
+            [
+                'endpoint' => $endpoint,
+                'correlation_id' => $correlationId,
+                'transport_success' => true,
+                'mapping_success' => false,
+                'operation_success' => false,
+            ],
+            $this->requestJsonContext($requestData),
+            $this->responseJsonContext($payload),
+        ), $exception);
+    }
+
+    /** @return array<string, bool|null> */
+    private function operationLogContext(bool $transportSuccess, ?bool $mappingSuccess, bool $operationSuccess): array
+    {
+        return [
+            'transport_success' => $transportSuccess,
+            'mapping_success' => $mappingSuccess,
+            'operation_success' => $operationSuccess,
+        ];
     }
 
     private function shouldRetryResponse(string $method, Response $response): bool
@@ -282,7 +348,7 @@ class SisahygoApiClient
     }
 
     /** @param array<string, mixed> $safeContext */
-    private function logSafe(array $safeContext, string $endpoint, string $method, ?int $status, float $startedAt, int $retryCount, bool $success, ?Throwable $exception = null): void
+    private function logSafe(array $safeContext, string $endpoint, string $method, ?int $status, float $startedAt, int $retryCount, bool $success, ?Throwable $exception = null, array $extra = []): void
     {
         $this->logger->recordSafe(
             context: $safeContext,
@@ -293,10 +359,11 @@ class SisahygoApiClient
             retryCount: $retryCount,
             success: $success,
             exception: $exception,
+            extra: array_merge($extra, $this->exceptionJsonContext($exception)),
         );
     }
 
-    private function log(SisahygoIntegrationContext $context, string $endpoint, string $method, ?int $status, float $startedAt, int $retryCount, bool $success, ?Throwable $exception = null): void
+    private function log(SisahygoIntegrationContext $context, string $endpoint, string $method, ?int $status, float $startedAt, int $retryCount, bool $success, ?Throwable $exception = null, array $extra = []): void
     {
         $this->logger->record(
             context: $context,
@@ -307,6 +374,81 @@ class SisahygoApiClient
             retryCount: $retryCount,
             success: $success,
             exception: $exception,
+            extra: array_merge($extra, $this->exceptionJsonContext($exception)),
         );
+    }
+
+    /** @param array<string, mixed> $payload */
+    private function requestJsonContext(array $payload): array
+    {
+        return ['request_json' => $this->toSanitizedJson($payload)];
+    }
+
+    /** @param array<string, mixed> $payload */
+    private function responseJsonContext(array $payload): array
+    {
+        return ['response_json' => $this->toSanitizedJson($payload)];
+    }
+
+    /** @return array<string, string> */
+    private function exceptionJsonContext(?Throwable $exception): array
+    {
+        if (! $exception instanceof SisahygoApiException) {
+            return [];
+        }
+
+        return array_filter([
+            'request_json' => $exception->safeContext()['request_json'] ?? null,
+            'response_json' => $exception->safeContext()['response_json'] ?? null,
+        ], is_string(...));
+    }
+
+    /** @param array<string, mixed> $payload */
+    private function toSanitizedJson(array $payload): string
+    {
+        try {
+            return json_encode($this->sanitizePayload($payload), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+        } catch (JsonException) {
+            return '{}';
+        }
+    }
+
+    private function sanitizePayload(mixed $value): mixed
+    {
+        if (! is_array($value)) {
+            return $value;
+        }
+
+        $sanitized = [];
+
+        foreach ($value as $key => $item) {
+            if (is_string($key) && $this->isSensitiveKey($key)) {
+                $sanitized[$key] = '[REDACTED]';
+
+                continue;
+            }
+
+            $sanitized[$key] = $this->sanitizePayload($item);
+        }
+
+        return $sanitized;
+    }
+
+    private function isSensitiveKey(string $key): bool
+    {
+        return in_array(strtolower($key), [
+            'api_key',
+            'apikey',
+            'x-api-key',
+            'authorization',
+            'password',
+            'secret',
+            'token',
+            'access_token',
+            'refresh_token',
+            'encrypted_api_key',
+            'credential',
+            'credentials',
+        ], true);
     }
 }

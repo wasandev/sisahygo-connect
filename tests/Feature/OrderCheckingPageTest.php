@@ -114,6 +114,80 @@ class OrderCheckingPageTest extends TestCase
             ->assertSet('items.0.row_key', $secondRowKey);
     }
 
+
+    public function test_malformed_receiver_response_shows_receiver_data_error(): void
+    {
+        [$user, $account] = $this->eligibleAccount();
+        app()->instance(ClientAccount::class, $account);
+        $this->actingAs($user);
+        Http::fake([
+            'https://sandbox-api.sisahygo.online/api/v1/client/units*' => Http::response($this->fixture('units-success.json')),
+            'https://sandbox-api.sisahygo.online/api/v1/client/receivers*' => Http::response(['data' => [['customer_rec_id' => 652243]]]),
+        ]);
+
+        Livewire::test(OrderChecking::class)
+            ->set('receiverSearch', '652243')
+            ->assertSet('pageError', __('order_checking.errors.receiver_malformed'))
+            ->assertSet('receiverResults', []);
+    }
+
+    public function test_subsequent_products_failure_is_classified_as_core_unavailable(): void
+    {
+        [$user, $account] = $this->eligibleAccount();
+        app()->instance(ClientAccount::class, $account);
+        $this->actingAs($user);
+        Http::fake([
+            'https://sandbox-api.sisahygo.online/api/v1/client/units*' => Http::response($this->fixture('units-success.json')),
+            'https://sandbox-api.sisahygo.online/api/v1/client/receivers*' => Http::response($this->fixture('receivers-success.json')),
+            'https://sandbox-api.sisahygo.online/api/v1/client/products*' => Http::response($this->fixture('server-error.json'), 500),
+        ]);
+
+        Livewire::test(OrderChecking::class)
+            ->set('selectedReceiver', ['customer_id' => 20001, 'name' => 'บริษัท รับสินค้าไทย จำกัด', 'phone' => '020000001'])
+            ->set('items.0.product_id', 6639)
+            ->set('items.0.product_name', 'น้ำดื่ม 600 ml')
+            ->set('items.0.unit_id', 1)
+            ->set('items.0.unit_name', 'ขวด')
+            ->set('clientReferenceNo', 'SC-20260716-ABC123')
+            ->call('submit')
+            ->assertSet('state', 'recoverable_failure')
+            ->assertSet('pageError', __('order_checking.errors.core_unavailable'));
+    }
+
+    public function test_subsequent_units_mapping_failure_is_classified_as_reference_data_unavailable(): void
+    {
+        [$user, $account] = $this->eligibleAccount();
+        app()->instance(ClientAccount::class, $account);
+        $this->actingAs($user);
+        Http::fake(function ($request) {
+            if (str_contains($request->url(), '/units')) {
+                static $calls = 0;
+                $calls++;
+
+                return $calls === 1
+                    ? Http::response($this->fixture('units-success.json'))
+                    : Http::response(['data' => [['unit_id' => 1]]]);
+            }
+
+            if (str_contains($request->url(), '/receivers')) {
+                return Http::response($this->fixture('receivers-success.json'));
+            }
+
+            return Http::response($this->fixture('products-success.json'));
+        });
+
+        Livewire::test(OrderChecking::class)
+            ->set('selectedReceiver', ['customer_id' => 20001, 'name' => 'บริษัท รับสินค้าไทย จำกัด', 'phone' => '020000001'])
+            ->set('items.0.product_id', 6639)
+            ->set('items.0.product_name', 'น้ำดื่ม 600 ml')
+            ->set('items.0.unit_id', 1)
+            ->set('items.0.unit_name', 'ขวด')
+            ->set('clientReferenceNo', 'SC-20260716-ABC123')
+            ->call('submit')
+            ->assertSet('state', 'recoverable_failure')
+            ->assertSet('pageError', __('order_checking.errors.reference_data_unavailable'));
+    }
+
     public function test_valid_submission_posts_once_and_shows_checking_success(): void
     {
         [$user, $account] = $this->eligibleAccount();
@@ -160,6 +234,9 @@ class OrderCheckingPageTest extends TestCase
 
         $component->call('submit')
             ->assertSet('state', 'api_validation_failed')
+            ->assertSet('apiValidationMessages.0', 'สินค้าไม่ถูกต้อง')
+            ->assertSee('สินค้าไม่ถูกต้อง')
+            ->assertDontSee('order_checking.errors.unexpected')
             ->assertHasErrors(["items.{$rowKey}.product_id"]);
     }
 
