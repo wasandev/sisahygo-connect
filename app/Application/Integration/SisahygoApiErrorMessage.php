@@ -20,11 +20,11 @@ class SisahygoApiErrorMessage
             $exception instanceof SisahygoAuthenticationException => 'authentication',
             $exception instanceof SisahygoAuthorizationException => 'authorization',
             $exception instanceof SisahygoNotFoundException => 'not_found',
-            $exception instanceof SisahygoConnectionException => 'connection',
+            $exception instanceof SisahygoConnectionException => $translationPrefix === 'order_checking' ? 'core_unavailable' : 'connection',
             $exception instanceof SisahygoValidationException => 'validation',
             $exception instanceof SisahygoRateLimitException => 'rate_limited',
-            $exception instanceof SisahygoServerException => 'server',
-            $exception instanceof SisahygoUnexpectedResponseException => 'malformed',
+            $exception instanceof SisahygoServerException => $translationPrefix === 'order_checking' ? 'core_unavailable' : 'server',
+            $exception instanceof SisahygoUnexpectedResponseException => $this->malformedKey($exception),
             default => 'unexpected',
         };
 
@@ -33,5 +33,14 @@ class SisahygoApiErrorMessage
         return __($translationKey) === $translationKey
             ? __("{$translationPrefix}.errors.unexpected")
             : __($translationKey);
+    }
+
+    private function malformedKey(SisahygoUnexpectedResponseException $exception): string
+    {
+        return match ($exception->safeContext()['response_domain'] ?? null) {
+            'receiver' => 'receiver_malformed',
+            'reference_data' => 'reference_data_unavailable',
+            default => 'malformed',
+        };
     }
 }

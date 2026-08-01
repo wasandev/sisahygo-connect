@@ -16,9 +16,27 @@ class ReceiverMapper
         $name = $data['to_customer_name'] ?? $data['name'] ?? $data['customer_name'] ?? null;
         $phone = $data['to_customer_phone'] ?? $data['phone'] ?? null;
         $branchRecId = $data['branch_rec_id'] ?? null;
+        $missingFields = [];
+        $invalidFields = [];
 
-        if (! is_numeric($id) || ! is_string($name) || $name === '') {
-            throw new SisahygoUnexpectedResponseException('Receiver response is missing required fields.');
+        if (! is_numeric($id)) {
+            $missingFields[] = 'customer_rec_id|customer_id|id';
+        }
+
+        if (! is_string($name) || $name === '') {
+            $missingFields[] = 'to_customer_name|name|customer_name';
+        }
+
+        if (array_key_exists('branch_rec_id', $data) && $branchRecId !== null && ! is_numeric($branchRecId)) {
+            $invalidFields[] = 'branch_rec_id';
+        }
+
+        if ($missingFields !== [] || $invalidFields !== []) {
+            throw new SisahygoUnexpectedResponseException('Receiver response is missing required fields.', context: array_filter([
+                'response_domain' => 'receiver',
+                'missing_fields' => $missingFields,
+                'invalid_fields' => $invalidFields,
+            ]));
         }
 
         return new ReceiverSummary(

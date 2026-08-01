@@ -19,14 +19,28 @@ class ProductsEndpoint
             'product_id' => $productId,
         ], fn ($value): bool => $value !== null && $value !== '');
 
-        $response = $this->client->get($context, '/products', $query);
-        $items = $response['data'] ?? null;
+        return $this->client->getMapped(
+            $context,
+            '/products',
+            $query,
+            function (array $response): array {
+                $items = $response['data'] ?? null;
 
-        if (! is_array($items)) {
-            throw new SisahygoUnexpectedResponseException('Products response is missing data list.');
-        }
+                if (! is_array($items)) {
+                    throw new SisahygoUnexpectedResponseException('Products response is missing data list.', context: [
+                        'response_domain' => 'reference_data',
+                        'missing_fields' => ['data'],
+                    ]);
+                }
 
-        return $this->mapper->mapList($items);
+                return $this->mapper->mapList($items);
+            },
+            [
+                'response_domain' => 'reference_data',
+                'mapper_class' => ProductMapper::class,
+                'dto_class' => ProductSummary::class,
+            ],
+        );
     }
 
     public function findAllowedPair(SisahygoIntegrationContext $context, int $productId, int $unitId): ?ProductSummary

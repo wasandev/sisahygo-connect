@@ -10,8 +10,21 @@ class UnitMapper
     /** @param array<string, mixed> $data */
     public function map(array $data): UnitSummary
     {
-        if (! is_numeric($data['unit_id'] ?? null) || ! is_string($data['unit_name'] ?? null) || $data['unit_name'] === '') {
-            throw new SisahygoUnexpectedResponseException('Units response is missing required fields.');
+        $missingFields = [];
+
+        if (! is_numeric($data['unit_id'] ?? null)) {
+            $missingFields[] = 'unit_id';
+        }
+
+        if (! is_string($data['unit_name'] ?? null) || $data['unit_name'] === '') {
+            $missingFields[] = 'unit_name';
+        }
+
+        if ($missingFields !== []) {
+            throw new SisahygoUnexpectedResponseException('Units response is missing required fields.', context: [
+                'response_domain' => 'reference_data',
+                'missing_fields' => $missingFields,
+            ]);
         }
 
         return new UnitSummary((int) $data['unit_id'], $data['unit_name']);
