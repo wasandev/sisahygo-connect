@@ -44,7 +44,7 @@ class CustomerDashboardPageTest extends TestCase
             ->assertSee('การแจ้งเตือนล่าสุด')
             ->assertDontSee('secret-api-key');
 
-        Http::assertSentCount(5);
+        Http::assertSentCount(6);
     }
 
     public function test_guest_is_redirected(): void
@@ -89,7 +89,7 @@ class CustomerDashboardPageTest extends TestCase
             ->assertSet('pageError', null)
             ->assertSee('OH10001');
 
-        Http::assertSentCount(10);
+        Http::assertSentCount(12);
     }
 
     public function test_render_refresh_does_not_call_remote_api_again(): void
@@ -102,7 +102,7 @@ class CustomerDashboardPageTest extends TestCase
             ->call('$refresh')
             ->assertSee('OH10001');
 
-        Http::assertSentCount(5);
+        Http::assertSentCount(6);
     }
 
     public function test_selected_account_stays_stable_during_hydrated_refresh(): void
@@ -158,6 +158,7 @@ class CustomerDashboardPageTest extends TestCase
     private function fakeDashboardResponses(): void
     {
         Http::fake([
+            'https://sandbox-api.sisahygo.online/api/v1/client/ping' => Http::response(['data' => ['status' => 'ok']]),
             'https://sandbox-api.sisahygo.online/api/v1/client/payments*' => Http::response($this->fixture('payments-index-success.json')),
             'https://sandbox-api.sisahygo.online/api/v1/client/shipments*' => function ($request) {
                 parse_str((string) parse_url($request->url(), PHP_URL_QUERY), $query);

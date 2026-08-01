@@ -69,7 +69,9 @@ class ClientAccountSettingsTest extends TestCase
         $this->actingAs($user)
             ->get(route('settings.client-account'))
             ->assertForbidden()
-            ->assertSee('ยังไม่มีบัญชีลูกค้าที่พร้อมใช้งาน');
+            ->assertSee('ยังไม่มีบัญชีลูกค้าที่พร้อมใช้งาน')
+            ->assertDontSee('คีย์เชื่อมต่อที่ปลอดภัย')
+            ->assertDontSee('wire:model.defer="apiKey"', false);
     }
 
     public function test_api_status_card_reports_connected_without_exposing_secret(): void
@@ -79,18 +81,18 @@ class ClientAccountSettingsTest extends TestCase
         ClientAccountUser::factory()->for($account)->for($user)->owner()->create(['role' => ClientAccountRole::Owner]);
         ClientAccountCapability::factory()->for($account)->capability(ClientCapability::SettingsManage)->create();
         app(SisahygoApiCredentialService::class)->create($account, SisahygoApiEnvironment::Sandbox, 'Sandbox', 'secret-api-key');
-        Http::fake(['https://sandbox-api.sisahygo.online/api/v1/client/units' => Http::response(['data' => [['unit_id' => 1, 'unit_name' => 'box']]])]);
+        Http::fake(['https://sandbox-api.sisahygo.online/api/v1/client/ping' => Http::response(['data' => ['status' => 'ok']])]);
 
         $this->actingAs($user)
             ->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id])
             ->get(route('settings.client-account'))
             ->assertOk()
-            ->assertSee('สถานะการเชื่อมต่อ Sisahygo API')
+            ->assertSee('สถานะการเชื่อมต่อ Sisahygo')
             ->assertSee('เชื่อมต่อได้')
             ->assertDontSee('secret-api-key')
             ->assertDontSee('X-Api-Key');
 
-        Http::assertSent(fn ($request) => $request->url() === 'https://sandbox-api.sisahygo.online/api/v1/client/units'
+        Http::assertSent(fn ($request) => $request->url() === 'https://sandbox-api.sisahygo.online/api/v1/client/ping'
             && $request->hasHeader('X-Api-Key', 'secret-api-key'));
     }
 
@@ -106,8 +108,8 @@ class ClientAccountSettingsTest extends TestCase
             ->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id])
             ->get(route('settings.client-account'))
             ->assertOk()
-            ->assertSee('ไม่มี Credential')
-            ->assertSee('ยังไม่มี Sisahygo API Credential')
+            ->assertSee('ยังไม่ได้เชื่อมต่อ')
+            ->assertSee('บัญชีนี้ยังไม่มีการเชื่อมต่อ Sisahygo ที่เปิดใช้งาน')
             ->assertDontSee('secret-api-key');
 
         Http::assertNothingSent();

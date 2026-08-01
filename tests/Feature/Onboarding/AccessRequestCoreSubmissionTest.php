@@ -180,7 +180,7 @@ class AccessRequestCoreSubmissionTest extends TestCase
             ->set('province', 'กรุงเทพมหานคร')
             ->call('submit')
             ->assertSet('state', 'editing')
-            ->assertSee('Sisahygo Core ยังไม่พร้อมให้บริการชั่วคราว')
+            ->assertSee('Sisahygo ยังไม่พร้อมให้บริการชั่วคราว')
             ->assertDontSee('SQLSTATE raw internals');
     }
 

@@ -7,11 +7,14 @@ use App\Domain\ClientAccount\Models\ClientAccount;
 use App\Domain\ClientAccount\Services\CurrentClientAccountResolver;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class ApiStatus extends Component
 {
     public ?array $status = null;
+
+    public bool $canManage = false;
 
     public function mount(CheckSisahygoApiConnectivity $connectivity): void
     {
@@ -23,6 +26,12 @@ class ApiStatus extends Component
         $this->check($connectivity);
     }
 
+    #[On('sisahygo-credential-updated')]
+    public function refreshAfterCredentialUpdate(CheckSisahygoApiConnectivity $connectivity): void
+    {
+        $this->check($connectivity);
+    }
+
     public function render(): View
     {
         return view('livewire.settings.client-account.api-status');
@@ -30,7 +39,10 @@ class ApiStatus extends Component
 
     private function check(CheckSisahygoApiConnectivity $connectivity): void
     {
-        $this->status = $connectivity(auth()->user(), $this->currentClientAccount());
+        $account = $this->currentClientAccount();
+
+        $this->canManage = auth()->user()?->can('manageSettings', $account) ?? false;
+        $this->status = $connectivity(auth()->user(), $account);
     }
 
     private function currentClientAccount(): ClientAccount

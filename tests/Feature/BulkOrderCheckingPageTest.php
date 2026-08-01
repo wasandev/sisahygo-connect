@@ -331,6 +331,39 @@ class BulkOrderCheckingPageTest extends TestCase
         $this->assertSame(6639, $orders[1]['items'][0]['product_id']);
     }
 
+
+    public function test_account_without_order_bulk_shows_authorization_unavailable_state(): void
+    {
+        [$user, $account] = $this->eligibleAccount(withOrderBulk: false);
+        $this->actingAs($user)->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id]);
+        Http::fake(['*' => Http::response($this->fixture('units-success.json'))]);
+
+        Livewire::test(OrderCheckingBulk::class)
+            ->assertSet('unavailable', true)
+            ->assertSee('บัญชีนี้ยังไม่มีสิทธิ์ใช้งาน Bulk Order Checking');
+
+        Http::assertNotSent(fn ($request) => str_contains($request->url(), '/order-checkings/bulk'));
+    }
+
+    public function test_account_switching_recalculates_bulk_access_from_selected_account(): void
+    {
+        $user = User::factory()->create();
+        $allowed = $this->accountFor($user, 'Allowed Bulk Account', true);
+        $blocked = $this->accountFor($user, 'Blocked Bulk Account', false);
+        Http::fake(['*' => Http::response($this->fixture('units-success.json'))]);
+
+        $this->actingAs($user)->withSession([CurrentClientAccountResolver::SESSION_KEY => $allowed->id]);
+        Livewire::test(OrderCheckingBulk::class)
+            ->assertSet('unavailable', false)
+            ->assertSee('สร้างรายการตรวจสอบแบบหลายรายการ');
+
+        app()->forgetInstance(ClientAccount::class);
+        $this->withSession([CurrentClientAccountResolver::SESSION_KEY => $blocked->id]);
+        Livewire::test(OrderCheckingBulk::class)
+            ->assertSet('unavailable', true)
+            ->assertSee('บัญชีนี้ยังไม่มีสิทธิ์ใช้งาน Bulk Order Checking');
+    }
+
     private function uiOrder(string $reference): array
     {
         return [
@@ -355,16 +388,27 @@ class BulkOrderCheckingPageTest extends TestCase
         ];
     }
 
-    private function eligibleAccount(): array
+    private function eligibleAccount(bool $withOrderBulk = true): array
     {
         $user = User::factory()->create();
-        $account = ClientAccount::factory()->create();
+        $account = $this->accountFor($user, 'Bulk Account', $withOrderBulk);
+
+        return [$user, $account];
+    }
+
+    private function accountFor(User $user, string $name, bool $withOrderBulk = true): ClientAccount
+    {
+        $account = ClientAccount::factory()->create(['name' => $name]);
         ClientAccountUser::factory()->for($account)->for($user)->owner()->create(['role' => ClientAccountRole::Owner]);
-        ClientAccountCapability::factory()->for($account)->capability(ClientCapability::OrderBulk)->create();
+
+        if ($withOrderBulk) {
+            ClientAccountCapability::factory()->for($account)->capability(ClientCapability::OrderBulk)->create();
+        }
+
         ClientAccountCustomer::factory()->for($account)->sender()->create(['customer_id' => 10001]);
         app(SisahygoApiCredentialService::class)->create($account, SisahygoApiEnvironment::Sandbox, 'Sandbox', 'secret-api-key');
 
-        return [$user, $account];
+        return $account;
     }
 
     private function fixture(string $name): string

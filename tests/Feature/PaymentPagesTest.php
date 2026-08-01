@@ -244,6 +244,47 @@ class PaymentPagesTest extends TestCase
             ->assertSee('ไม่พบรายการชำระเงิน');
     }
 
+
+    public function test_account_without_payment_view_shows_authorization_state_without_calling_core(): void
+    {
+        [$user, $account] = $this->eligibleAccount(withPaymentView: false);
+        $this->actingAs($user)->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id]);
+        Http::fake(['*' => Http::response($this->fixture('payments-index-success.json'))]);
+
+        Livewire::test(PaymentIndex::class)
+            ->assertSet('unavailable', true)
+            ->assertSee('Client Account นี้ไม่มีสิทธิ์ดูข้อมูลการชำระเงิน');
+
+        Http::assertNothingSent();
+    }
+
+    public function test_payment_download_is_not_allowed_by_payment_view(): void
+    {
+        [$user, $account] = $this->eligibleAccount();
+
+        $this->assertTrue($user->can('payment.viewAny', $account));
+        $this->assertFalse($user->can('payment.download', $account));
+    }
+
+    public function test_account_switching_recalculates_payment_access_from_selected_account(): void
+    {
+        $user = User::factory()->create();
+        $allowed = $this->accountFor($user, 'Allowed Payment Account', true);
+        $blocked = $this->accountFor($user, 'Blocked Payment Account', false);
+        Http::fake(['https://sandbox-api.sisahygo.online/api/v1/client/payments*' => Http::response($this->fixture('payments-index-success.json'))]);
+
+        $this->actingAs($user)->withSession([CurrentClientAccountResolver::SESSION_KEY => $allowed->id]);
+        Livewire::test(PaymentIndex::class)
+            ->assertSet('unavailable', false)
+            ->assertSee('ศูนย์การชำระเงิน');
+
+        app()->forgetInstance(ClientAccount::class);
+        $this->withSession([CurrentClientAccountResolver::SESSION_KEY => $blocked->id]);
+        Livewire::test(PaymentIndex::class)
+            ->assertSet('unavailable', true)
+            ->assertSee('Client Account นี้ไม่มีสิทธิ์ดูข้อมูลการชำระเงิน');
+    }
+
     public function test_navigation_active_state_covers_detail_page(): void
     {
         [$user, $account] = $this->eligibleAccount();
@@ -261,16 +302,27 @@ class PaymentPagesTest extends TestCase
     }
 
     /** @return array{0: User, 1: ClientAccount} */
-    private function eligibleAccount(): array
+    private function eligibleAccount(bool $withPaymentView = true): array
     {
         $user = User::factory()->create();
-        $account = ClientAccount::factory()->create(['name' => 'Selected Account']);
+        $account = $this->accountFor($user, 'Selected Account', $withPaymentView);
+
+        return [$user, $account];
+    }
+
+    private function accountFor(User $user, string $name, bool $withPaymentView = true): ClientAccount
+    {
+        $account = ClientAccount::factory()->create(['name' => $name]);
         ClientAccountUser::factory()->for($account)->for($user)->owner()->create(['role' => ClientAccountRole::Owner]);
-        ClientAccountCapability::factory()->for($account)->capability(ClientCapability::PaymentView)->create();
+
+        if ($withPaymentView) {
+            ClientAccountCapability::factory()->for($account)->capability(ClientCapability::PaymentView)->create();
+        }
+
         ClientAccountCustomer::factory()->for($account)->sender()->create(['customer_id' => 10001, 'can_view_payment' => true]);
         app(SisahygoApiCredentialService::class)->create($account, SisahygoApiEnvironment::Sandbox, 'Sandbox', 'secret-api-key');
 
-        return [$user, $account];
+        return $account;
     }
 
     private function fixture(string $name): string

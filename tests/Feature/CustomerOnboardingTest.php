@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Domain\ClientAccount\Models\ClientAccount;
 use App\Domain\ClientAccount\Models\ClientAccountUser;
-use App\Domain\Onboarding\Models\AccessRequest;
 use App\Integrations\Sisahygo\Configuration\SisahygoApiConfiguration;
 use App\Livewire\Onboarding\RequestAccess;
 use Illuminate\Support\Facades\Http;
@@ -62,27 +61,62 @@ class CustomerOnboardingTest extends TestCase
             && ! $request->hasHeader('X-Api-Key'));
     }
 
-    public function test_mock_invitation_activation_creates_user_client_account_and_logs_in(): void
+    public function test_invitation_activation_uses_core_contract_instead_of_local_access_request(): void
     {
-        $accessRequest = AccessRequest::query()->create([
-            'company_name' => 'Acme Logistics',
-            'contact_name' => 'Anong Contact',
-            'email' => 'contact@example.com',
-            'phone' => '0812345678',
-            'province' => 'Bangkok',
-            'status' => AccessRequest::STATUS_PENDING,
-            'invitation_token' => 'fake-token-123',
-            'submitted_at' => now(),
+        config()->set('sisahygo.api.base_url', 'https://sandbox-api.sisahygo.online/api/v1/client');
+        app()->forgetInstance(SisahygoApiConfiguration::class);
+
+        Http::fake([
+            'https://sandbox-api.sisahygo.online/api/v1/connect-onboarding/invitations/fake-token-123' => Http::response([
+                'data' => [
+                    'status' => 'valid',
+                    'email' => 'contact@example.com',
+                    'company_name' => 'Acme Logistics',
+                    'contact_name' => 'Anong Contact',
+                    'role' => 'owner',
+                    'email_verified_by_invitation' => true,
+                    'client_account' => ['code' => 'ACME', 'name' => 'Acme Logistics'],
+                ],
+            ]),
+            'https://sandbox-api.sisahygo.online/api/v1/connect-onboarding/invitations/fake-token-123/activate' => Http::response([
+                'data' => [
+                    'invitation_reference' => 'CINV-20260729-ABCDEFGH',
+                    'access_request_reference' => 'CAR-20260729-9ZI0TB0B',
+                    'activation_status' => 'activated',
+                    'already_activated' => false,
+                    'email' => 'contact@example.com',
+                    'company_name' => 'Acme Logistics',
+                    'contact_name' => 'Anong Contact',
+                    'role' => 'both',
+                    'user' => [
+                        'email' => 'contact@example.com',
+                        'role' => 'owner',
+                        'email_verified_by_invitation' => true,
+                    ],
+                    'client_account' => [
+                        'external_id' => 'ACME',
+                        'code' => 'ACME',
+                        'name' => 'Acme Logistics',
+                        'status' => 'active',
+                    ],
+                    'customer_mappings' => [[
+                        'customer_id' => 1649051,
+                        'core_customer_id' => 1649051,
+                        'customer_external_id' => '1649051',
+                        'role' => 'both',
+                    ]],
+                    'capabilities' => [],
+                    'credential' => null,
+                ],
+            ]),
         ]);
 
         $this->get('/invitation/fake-token-123')
             ->assertOk()
-            ->assertSee('ยินดีต้อนรับ')
             ->assertSee('Acme Logistics')
-            ->assertSee('เริ่มใช้งาน');
+            ->assertSee('contact@example.com');
 
         $this->post('/invitation/fake-token-123', [
-            'company_name' => 'Acme Logistics',
             'email' => 'contact@example.com',
             'password' => 'password123',
             'password_confirmation' => 'password123',
@@ -90,9 +124,15 @@ class CustomerOnboardingTest extends TestCase
 
         $this->assertAuthenticated();
         $this->assertDatabaseHas('users', ['email' => 'contact@example.com']);
-        $this->assertDatabaseHas('client_accounts', ['name' => 'Acme Logistics']);
+        $this->assertDatabaseHas('client_accounts', ['code' => 'ACME', 'name' => 'Acme Logistics']);
         $this->assertDatabaseHas('client_account_users', ['role' => 'owner', 'is_active' => true]);
-        $this->assertSame(AccessRequest::STATUS_APPROVED, $accessRequest->fresh()->status);
+        $this->assertDatabaseHas('client_account_customers', [
+            'customer_id' => 1649051,
+            'can_send' => true,
+            'can_receive' => true,
+            'is_active' => true,
+        ]);
+        $this->assertDatabaseCount('access_requests', 0);
     }
 
     public function test_first_login_welcome_sets_flag_and_continues_to_account_selection(): void

@@ -217,7 +217,7 @@ class SisahygoReleaseCandidateCommandTest extends TestCase
         $html = Blade::render('<x-connect.environment-banner />');
 
         $this->assertStringContainsString('STAGING', $html);
-        $this->assertStringContainsString('Sandbox API', $html);
+        $this->assertStringContainsString('Sandbox workspace', $html);
         $this->assertStringContainsString('Release Candidate', $html);
         $this->assertStringContainsString('sandbox-api.sisahygo.online', $html);
         $this->assertStringContainsString('rc-1unsafetext', $html);
@@ -301,6 +301,10 @@ class SisahygoReleaseCandidateCommandTest extends TestCase
 
     private function readOnlyResponse(string $url, string $baseUrl = 'https://sandbox-api.sisahygo.online/api/v1/client'): mixed
     {
+        if (str_starts_with($url, $baseUrl.'/ping')) {
+            return Http::response(['data' => ['status' => 'ok']]);
+        }
+
         if (str_starts_with($url, $baseUrl.'/units')) {
             return Http::response($this->fixture('units-success.json'));
         }

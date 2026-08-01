@@ -26,7 +26,16 @@
         </x-connect.card>
     @else
         @if ($pageError)
-            <div class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700" role="alert">{{ $pageError }}</div>
+            <div class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700" role="alert">
+                <p>{{ $pageError }}</p>
+                @if ($apiValidationMessages !== [])
+                    <ul class="mt-2 list-disc space-y-1 pl-5">
+                        @foreach ($apiValidationMessages as $message)
+                            <li>{{ $message }}</li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
         @endif
 
         @if ($unknownMessage)

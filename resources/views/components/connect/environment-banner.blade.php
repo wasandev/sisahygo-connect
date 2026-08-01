@@ -17,7 +17,7 @@
     <div class="border-b border-amber-200 bg-amber-50 text-amber-950" role="status" aria-label="Non-production environment">
         <div class="mx-auto flex max-w-7xl flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2 text-xs font-semibold sm:px-6 lg:px-8">
             <span class="rounded bg-amber-200 px-2 py-0.5 uppercase">{{ strtoupper($appEnvironment) }}</span>
-            <span>{{ $apiEnvironment === 'sandbox' ? 'Sandbox API' : 'Non-production API' }}</span>
+            <span>{{ $apiEnvironment === 'sandbox' ? 'Sandbox workspace' : 'Non-production workspace' }}</span>
             <span class="text-amber-800">Release Candidate</span>
             @if ($showHost)
                 <span class="truncate text-amber-700">{{ $apiHost }}</span>

@@ -28,8 +28,8 @@ Route::middleware('guest')->group(function () {
     Route::get('/request-access', [AccessRequestController::class, 'create'])->name('request-access');
     Route::post('/request-access', [AccessRequestController::class, 'store'])->name('request-access.store');
     Route::get('/request-access/success', [AccessRequestController::class, 'success'])->name('request-access.success');
-    Route::get('/invitation/{token}', [InvitationController::class, 'show'])->name('invitation.show');
-    Route::post('/invitation/{token}', [InvitationController::class, 'activate'])->name('invitation.activate');
+    Route::get('/invitation/{token}', [InvitationController::class, 'show'])->middleware('throttle:20,1')->name('invitation.show');
+    Route::post('/invitation/{token}', [InvitationController::class, 'activate'])->middleware('throttle:6,1')->name('invitation.activate');
 });
 
 Route::middleware(['auth'])->group(function () {

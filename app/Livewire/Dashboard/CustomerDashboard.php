@@ -4,6 +4,8 @@ namespace App\Livewire\Dashboard;
 
 use App\Application\Dashboard\GetCustomerDashboard;
 use App\Application\Integration\SisahygoApiErrorMessage;
+use App\Application\Settings\ClientAccountSetupState;
+use App\Application\Settings\ResolveClientAccountSetupState;
 use App\Domain\ClientAccount\Models\ClientAccount;
 use App\Domain\ClientAccount\Services\CurrentClientAccountResolver;
 use App\Integrations\Sisahygo\Exceptions\SisahygoApiException;
@@ -22,31 +24,40 @@ class CustomerDashboard extends Component
 
     public ?string $unavailableMessage = null;
 
-    public function mount(GetCustomerDashboard $dashboard): void
+    /** @var array<string, mixed>|null */
+    public ?array $setupState = null;
+
+    public function mount(GetCustomerDashboard $dashboard, ResolveClientAccountSetupState $setupState): void
     {
-        $this->loadDashboard($dashboard);
+        $clientAccount = $this->currentClientAccount();
+        $this->loadDashboard($dashboard, $clientAccount);
+        $this->setupState = $this->serializeSetupState($setupState(auth()->user(), $clientAccount));
     }
 
-    public function refresh(GetCustomerDashboard $dashboard): void
+    public function refresh(GetCustomerDashboard $dashboard, ResolveClientAccountSetupState $setupState): void
     {
-        $this->loadDashboard($dashboard, forcePaymentRefresh: true);
+        $clientAccount = $this->currentClientAccount();
+        $this->loadDashboard($dashboard, $clientAccount, forcePaymentRefresh: true);
+        $this->setupState = $this->serializeSetupState($setupState(auth()->user(), $clientAccount));
     }
 
     public function render(): View
     {
-        return view('livewire.dashboard.customer-dashboard')->layout('layouts.app', [
+        return view('livewire.dashboard.customer-dashboard', [
+            'setupState' => $this->setupState,
+        ])->layout('layouts.app', [
             'title' => __('dashboard.title'),
         ]);
     }
 
-    private function loadDashboard(GetCustomerDashboard $service, bool $forcePaymentRefresh = false): void
+    private function loadDashboard(GetCustomerDashboard $service, ?ClientAccount $clientAccount = null, bool $forcePaymentRefresh = false): void
     {
         $this->pageError = null;
         $this->unavailable = false;
         $this->unavailableMessage = null;
 
         try {
-            $this->dashboard = $service(auth()->user(), $this->currentClientAccount(), $forcePaymentRefresh);
+            $this->dashboard = $service(auth()->user(), $clientAccount ?? $this->currentClientAccount(), $forcePaymentRefresh);
         } catch (ModelNotFoundException) {
             $this->dashboard = null;
             $this->unavailable = true;
@@ -58,6 +69,20 @@ class CustomerDashboard extends Component
         } catch (SisahygoApiException $exception) {
             $this->pageError = $this->safeApiMessage($exception);
         }
+    }
+
+    /** @return array<string, mixed> */
+    private function serializeSetupState(ClientAccountSetupState $state): array
+    {
+        return [
+            'steps' => $state->steps,
+            'is_ready' => $state->isReady(),
+            'completed_steps' => $state->completedSteps(),
+            'total_steps' => $state->totalSteps(),
+            'can_manage_settings' => $state->canManageSettings,
+            'client_account_name' => $state->clientAccountName,
+            'next_action_key' => $state->nextActionKey,
+        ];
     }
 
     private function currentClientAccount(): ClientAccount
