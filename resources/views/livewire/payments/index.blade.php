@@ -135,9 +135,20 @@
                     </x-connect.empty-state>
                 </div>
             @else
-                <div class="hidden overflow-x-auto lg:block">
-                    <table class="min-w-full divide-y divide-slate-100 text-sm">
+                <div class="hidden overflow-x-auto xl:block">
+                    <table class="min-w-[1180px] table-fixed divide-y divide-slate-100 text-sm">
                         <caption class="sr-only">{{ __('payment.list.results_title') }}</caption>
+                        <colgroup>
+                            <col class="w-[22rem]">
+                            <col class="w-[8rem]">
+                            <col class="w-[8rem]">
+                            <col class="w-[13rem]">
+                            <col class="w-[18rem]">
+                            <col class="w-[10rem]">
+                            <col class="w-[9rem]">
+                            <col class="w-[8rem]">
+                            <col class="w-[9rem]">
+                        </colgroup>
                         <thead class="bg-slate-50 text-left text-xs font-semibold text-slate-500">
                             <tr>
                                 <th scope="col" class="px-5 py-3">{{ __('payment.fields.order_header_no') }}</th>
@@ -153,18 +164,28 @@
                         </thead>
                         <tbody class="divide-y divide-slate-100 bg-white">
                             @foreach ($payments as $payment)
-                                <tr wire:key="payment-row-{{ $payment['payment_identifier'] }}">
+                                <tr wire:key="payment-row-{{ $payment['payment_identifier'] }}" class="align-top hover:bg-slate-50/70">
                                     <td class="px-5 py-4">
-                                        <a href="{{ route('payments.show', $payment['payment_identifier']) }}" wire:navigate class="connect-focus break-all font-semibold text-connect-blue-700 hover:text-connect-blue-900">{{ $payment['order_header_no'] ?: $payment['payment_identifier'] }}</a>
-                                        <p class="mt-1 break-all text-xs text-slate-500">{{ __('payment.fields.payment_identifier') }}: {{ $payment['payment_identifier'] }}</p>
-                                        <p class="mt-1 break-all text-xs text-slate-500">{{ __('payment.fields.client_reference_no') }}: {{ $payment['client_reference_no'] ?: __('payment.fallback.empty') }}</p>
+                                        <div class="min-w-0 space-y-2">
+                                            <a href="{{ route('payments.show', $payment['payment_identifier']) }}" wire:navigate class="connect-focus block truncate text-base font-semibold text-connect-blue-700 hover:text-connect-blue-900" title="{{ $payment['order_header_no'] ?: $payment['payment_identifier'] }}">{{ $payment['order_header_no'] ?: $payment['payment_identifier'] }}</a>
+                                            <dl class="space-y-1 text-xs text-slate-500">
+                                                <div class="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-2">
+                                                    <dt>{{ __('payment.fields.payment_identifier') }}</dt>
+                                                    <dd class="truncate font-medium text-slate-700" title="{{ $payment['payment_identifier'] }}">{{ $payment['payment_identifier'] }}</dd>
+                                                </div>
+                                                <div class="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-2">
+                                                    <dt>{{ __('payment.fields.client_reference_no') }}</dt>
+                                                    <dd class="truncate" title="{{ $payment['client_reference_no'] ?: __('payment.fallback.empty') }}">{{ $payment['client_reference_no'] ?: __('payment.fallback.empty') }}</dd>
+                                                </div>
+                                            </dl>
+                                        </div>
                                     </td>
                                     <td class="px-5 py-4 text-slate-600">{{ $payment['billing_date'] }}</td>
                                     <td class="px-5 py-4"><x-connect.badge variant="blue">{{ $payment['payment_type_label'] }}</x-connect.badge></td>
-                                    <td class="px-5 py-4"><span class="font-semibold text-connect-navy-900">{{ $payment['payer_role_label'] }}</span><p class="mt-1 break-words text-xs text-slate-500">{{ $payment['payer_name'] ?: __('payment.fallback.empty') }}</p></td>
+                                    <td class="px-5 py-4"><span class="font-semibold text-connect-navy-900">{{ $payment['payer_role_label'] }}</span><p class="mt-1 line-clamp-2 text-xs text-slate-500" title="{{ $payment['payer_name'] ?: __('payment.fallback.empty') }}">{{ $payment['payer_name'] ?: __('payment.fallback.empty') }}</p></td>
                                     <td class="px-5 py-4 text-slate-600">
-                                        <span class="block break-words">{{ __('payment.fields.sender') }}: {{ data_get($payment, 'sender.name') ?: __('payment.fallback.empty') }}</span>
-                                        <span class="block break-words text-xs text-slate-500">{{ __('payment.fields.receiver') }}: {{ data_get($payment, 'receiver.name') ?: __('payment.fallback.empty') }}</span>
+                                        <span class="block truncate" title="{{ data_get($payment, 'sender.name') ?: __('payment.fallback.empty') }}">{{ __('payment.fields.sender') }}: {{ data_get($payment, 'sender.name') ?: __('payment.fallback.empty') }}</span>
+                                        <span class="mt-1 block truncate text-xs text-slate-500" title="{{ data_get($payment, 'receiver.name') ?: __('payment.fallback.empty') }}">{{ __('payment.fields.receiver') }}: {{ data_get($payment, 'receiver.name') ?: __('payment.fallback.empty') }}</span>
                                     </td>
                                     <td class="px-5 py-4 text-right font-semibold text-connect-navy-900">{{ $payment['total_amount_display'] }}</td>
                                     <td class="px-5 py-4"><x-connect.badge :variant="$payment['payment_status_variant']">{{ $payment['payment_status_label'] }}</x-connect.badge></td>
@@ -176,16 +197,26 @@
                     </table>
                 </div>
 
-                <div class="space-y-3 bg-slate-50/70 p-3 lg:hidden">
+                <div class="space-y-3 bg-slate-50/70 p-3 xl:hidden">
                     @foreach ($payments as $payment)
                         <article wire:key="payment-card-{{ $payment['payment_identifier'] }}" class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-                            <div class="flex items-start justify-between gap-3">
-                                <div class="min-w-0">
-                                    <a href="{{ route('payments.show', $payment['payment_identifier']) }}" wire:navigate class="connect-focus break-all font-semibold text-connect-blue-700">{{ $payment['order_header_no'] ?: $payment['payment_identifier'] }}</a>
-                                    <p class="mt-1 break-all text-xs text-slate-500">{{ __('payment.fields.payment_identifier') }}: {{ $payment['payment_identifier'] }}</p>
-                                    <p class="mt-1 break-all text-xs text-slate-500">{{ __('payment.fields.client_reference_no') }}: {{ $payment['client_reference_no'] ?: __('payment.fallback.empty') }}</p>
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                <div class="min-w-0 space-y-2">
+                                    <a href="{{ route('payments.show', $payment['payment_identifier']) }}" wire:navigate class="connect-focus block break-words text-base font-semibold text-connect-blue-700" title="{{ $payment['order_header_no'] ?: $payment['payment_identifier'] }}">{{ $payment['order_header_no'] ?: $payment['payment_identifier'] }}</a>
+                                    <dl class="space-y-1 text-xs text-slate-500">
+                                        <div class="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-2">
+                                            <dt>{{ __('payment.fields.payment_identifier') }}</dt>
+                                            <dd class="min-w-0 break-words font-medium text-slate-700">{{ $payment['payment_identifier'] }}</dd>
+                                        </div>
+                                        <div class="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-2">
+                                            <dt>{{ __('payment.fields.client_reference_no') }}</dt>
+                                            <dd class="min-w-0 break-words">{{ $payment['client_reference_no'] ?: __('payment.fallback.empty') }}</dd>
+                                        </div>
+                                    </dl>
                                 </div>
-                                <x-connect.badge :variant="$payment['payment_status_variant']">{{ $payment['payment_status_label'] }}</x-connect.badge>
+                                <div class="shrink-0">
+                                    <x-connect.badge :variant="$payment['payment_status_variant']">{{ $payment['payment_status_label'] }}</x-connect.badge>
+                                </div>
                             </div>
                             <dl class="mt-4 grid gap-3 text-sm sm:grid-cols-2">
                                 <div><dt class="text-xs text-slate-500">{{ __('payment.fields.type') }}</dt><dd><x-connect.badge variant="blue">{{ $payment['payment_type_label'] }}</x-connect.badge></dd></div>
