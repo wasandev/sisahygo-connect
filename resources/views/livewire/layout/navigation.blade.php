@@ -23,6 +23,7 @@ new class extends Component
         ['label' => __('navigation.tracking'), 'route' => 'tracking'],
         ['label' => __('navigation.history'), 'route' => 'history'],
         ['label' => __('navigation.payments'), 'route' => 'payments', 'active' => 'payments*'],
+        ['label' => __('navigation.reports'), 'route' => 'reports', 'active' => 'reports*'],
         ['label' => __('navigation.settings'), 'route' => 'settings'],
     ];
 

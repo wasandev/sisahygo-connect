@@ -9,6 +9,8 @@ enum ClientCapability: string
     case ShipmentHistory = 'shipment.history';
     case PaymentView = 'payment.view';
     case PaymentDownload = 'payment.download';
+    case ReportView = 'report.view';
+    case ReportExport = 'report.export';
     case OrderCreate = 'order.create';
     case OrderBulk = 'order.bulk';
     case SettingsManage = 'settings.manage';

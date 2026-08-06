@@ -166,12 +166,12 @@ class InvitationActivationTest extends TestCase
         $this->post(route('invitation.activate', $this->token), $this->passwordPayload())
             ->assertRedirect(route('onboarding.welcome'));
 
-        $this->assertSame(6, ClientAccountCapability::query()->count());
+        $this->assertSame(8, ClientAccountCapability::query()->count());
         $this->assertSame(1, ClientAccountCapability::query()
             ->where('capability', ClientCapability::SettingsManage->value)
             ->where('is_enabled', true)
             ->count());
-        foreach ([ClientCapability::OrderCreate, ClientCapability::OrderBulk, ClientCapability::ShipmentView, ClientCapability::ShipmentHistory, ClientCapability::PaymentView] as $capability) {
+        foreach ([ClientCapability::OrderCreate, ClientCapability::OrderBulk, ClientCapability::ShipmentView, ClientCapability::ShipmentHistory, ClientCapability::PaymentView, ClientCapability::ReportView, ClientCapability::ReportExport] as $capability) {
             $this->assertSame(1, ClientAccountCapability::query()
                 ->where('capability', $capability->value)
                 ->where('is_enabled', true)
@@ -283,7 +283,7 @@ class InvitationActivationTest extends TestCase
 
         $accountB = ClientAccount::query()->where('code', 'BETA')->firstOrFail();
         $this->assertSame($accountB->id, session(CurrentClientAccountResolver::SESSION_KEY));
-        foreach ([ClientCapability::OrderCreate, ClientCapability::OrderBulk, ClientCapability::ShipmentView, ClientCapability::ShipmentHistory, ClientCapability::PaymentView] as $capability) {
+        foreach ([ClientCapability::OrderCreate, ClientCapability::OrderBulk, ClientCapability::ShipmentView, ClientCapability::ShipmentHistory, ClientCapability::PaymentView, ClientCapability::ReportView, ClientCapability::ReportExport] as $capability) {
             $this->assertDatabaseHas('client_account_capabilities', [
                 'client_account_id' => $accountB->id,
                 'capability' => $capability->value,

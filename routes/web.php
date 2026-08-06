@@ -13,6 +13,9 @@ use App\Livewire\OrderCheckingBulk;
 use App\Livewire\Orders\OrderShow;
 use App\Livewire\Payments\PaymentIndex;
 use App\Livewire\Payments\PaymentShow;
+use App\Livewire\Reports\ReportCenter;
+use App\Livewire\Reports\ReportPage;
+use App\Http\Controllers\Reports\ReportExportController;
 use App\Livewire\Shipments\ShipmentIndex;
 use App\Livewire\Shipments\ShipmentShow;
 use App\Livewire\Shipments\TrackingLookup;
@@ -96,10 +99,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/payments/{paymentIdentifier}', PaymentShow::class)
             ->name('payments.show');
 
-        Route::view('/reports', 'pages.placeholder', [
-            'title' => __('navigation.reports'),
-            'description' => __('page.placeholder.reports'),
-        ])->name('reports');
+        Route::get('/reports', ReportCenter::class)->name('reports');
+        Route::get('/reports/shipments', ReportPage::class)->defaults('report', 'shipments')->name('reports.shipments');
+        Route::get('/reports/order-checkings', ReportPage::class)->defaults('report', 'order-checkings')->name('reports.order-checkings');
+        Route::get('/reports/payments', ReportPage::class)->defaults('report', 'payments')->name('reports.payments');
+        Route::get('/reports/{report}/export', ReportExportController::class)->name('reports.export');
 
         Route::view('/settings', 'settings.client-account')
             ->name('settings');

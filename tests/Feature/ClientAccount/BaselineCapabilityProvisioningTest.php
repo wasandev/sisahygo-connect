@@ -48,6 +48,8 @@ class BaselineCapabilityProvisioningTest extends TestCase
             ClientCapability::OrderBulk,
             ClientCapability::ShipmentHistory,
             ClientCapability::PaymentView,
+            ClientCapability::ReportView,
+            ClientCapability::ReportExport,
         ], $first);
         $this->assertSame([], $second);
 
@@ -122,7 +124,7 @@ class BaselineCapabilityProvisioningTest extends TestCase
         $this->artisan('client-account:provision-baseline-capabilities', ['account' => 'REPAIR'])
             ->expectsOutputToContain('order.bulk')
             ->expectsOutputToContain('payment.view')
-            ->expectsOutputToContain('Added 2 baseline capabilities.')
+            ->expectsOutputToContain('Added 4 baseline capabilities.')
             ->assertSuccessful();
 
         $this->artisan('client-account:provision-baseline-capabilities', ['account' => 'REPAIR'])
@@ -163,6 +165,8 @@ class BaselineCapabilityProvisioningTest extends TestCase
             ClientCapability::ShipmentView,
             ClientCapability::ShipmentHistory,
             ClientCapability::PaymentView,
+            ClientCapability::ReportView,
+            ClientCapability::ReportExport,
         ];
     }
 

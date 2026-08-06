@@ -18,6 +18,8 @@ class ProvisionBaselineClientAccountCapabilities
             ClientCapability::ShipmentView,
             ClientCapability::ShipmentHistory,
             ClientCapability::PaymentView,
+            ClientCapability::ReportView,
+            ClientCapability::ReportExport,
         ];
     }
 

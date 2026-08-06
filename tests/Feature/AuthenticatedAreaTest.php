@@ -2,7 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Application\ClientAccounts\ProvisionBaselineClientAccountCapabilities;
 use App\Domain\ClientAccount\Enums\ClientAccountRole;
+use App\Domain\ClientAccount\Enums\ClientCapability;
+use App\Domain\ClientAccount\Models\ClientAccountCapability;
 use App\Domain\ClientAccount\Models\ClientAccount;
 use App\Domain\ClientAccount\Models\ClientAccountUser;
 use App\Models\User;
@@ -83,6 +86,13 @@ class AuthenticatedAreaTest extends TestCase
             'is_active' => true,
             'joined_at' => now(),
         ]);
+
+        app(ProvisionBaselineClientAccountCapabilities::class)->provision($account);
+        ClientAccountCapability::query()->firstOrCreate([
+            'client_account_id' => $account->id,
+            'capability' => ClientCapability::ReportView->value,
+        ], ['is_enabled' => true]);
+        app()->instance(ClientAccount::class, $account);
 
         return $account;
     }

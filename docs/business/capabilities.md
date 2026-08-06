@@ -56,3 +56,10 @@ php artisan client-account:provision-baseline-capabilities {account}
 ```
 
 The command displays the account identity, currently present capabilities, missing baseline capabilities, and capabilities to add. It adds only missing baseline capabilities, does not remove or duplicate rows, preserves custom capabilities, does not touch API credentials, and does not call Sisahygo Core.
+
+## Reports Phase 1
+
+- `report.view` controls the Reports center and HTML report pages.
+- `report.export` controls Excel download routes and is checked server-side.
+- These are separate from `shipment.export`, `payment.download`, `settings.manage`, and `users.manage`.
+- The standard business baseline now provisions `report.view` and `report.export`; the baseline repair command adds missing rows idempotently without removing custom capabilities.

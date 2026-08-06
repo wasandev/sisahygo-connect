@@ -9,6 +9,7 @@ use App\Domain\ClientAccount\Models\ClientAccountUser;
 use App\Domain\ClientAccount\Policies\ClientAccountPolicy;
 use App\Domain\ClientAccount\Policies\ClientAccountUserPolicy;
 use App\Domain\Payment\Policies\PaymentPolicy;
+use App\Domain\Report\Policies\ReportPolicy;
 use App\Domain\Shipment\Policies\ShipmentPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -35,5 +36,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('shipment.export', [ShipmentPolicy::class, 'export']);
         Gate::define('payment.viewAny', [PaymentPolicy::class, 'viewAny']);
         Gate::define('payment.download', [PaymentPolicy::class, 'download']);
+        Gate::define('report.view', [ReportPolicy::class, 'viewAny']);
+        Gate::define('report.export', [ReportPolicy::class, 'export']);
     }
 }
