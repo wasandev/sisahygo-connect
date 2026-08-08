@@ -29,7 +29,7 @@ class ReportPagesTest extends TestCase
         $this->actingAs($user)->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id]);
         $this->fakeReport('shipments');
 
-        $this->get(route('reports'))->assertOk()->assertSee('รายงานสรุปการจัดส่งสินค้า')->assertSee('รายงานรายการที่สร้างผ่าน Sisahygo Connect')->assertSee('รายงานค่าขนส่งและสถานะการชำระเงิน')->assertDontSee('Timeline')->assertDontSee('ผู้รับ');
+        $this->get(route('reports'))->assertOk()->assertSee('รายงานสรุปการจัดส่งสินค้า')->assertSee('รายงานรายการที่สร้างผ่าน Sisahygo Connect')->assertSee('รายงานค่าขนส่งและสถานะการชำระเงิน')->assertDontSee('Timeline');
         $this->get(route('reports.shipments'))->assertOk()->assertSee('Shipment No. 1')->assertDontSee(__('reports.actions.export'));
 
         [$blockedUser, $blocked] = $this->account(reportView: false, reportExport: false);
@@ -75,13 +75,13 @@ class ReportPagesTest extends TestCase
             ->assertSee('150.00')
             ->assertSee('PAY-001')
             ->assertSee('เงินสดต้นทาง')
-            ->assertSee('Page 1');
+            ->assertSee('หน้า 1');
 
         Http::assertSent(fn ($request) => str_contains($request->url(), 'relationship=sender') && str_contains($request->url(), 'payment_status=unpaid') && str_contains($request->url(), 'payment_type=H'));
 
-        $this->get(route('reports.payments'))->assertOk()->assertSee('Too many requests')->assertDontSee('raw core message');
+        $this->get(route('reports.payments'))->assertOk()->assertSee('มีคำขอมากเกินไป')->assertDontSee('raw core message');
 
-        $this->get(route('reports.payments'))->assertOk()->assertSee('not in the expected format');
+        $this->get(route('reports.payments'))->assertOk()->assertSee('รูปแบบข้อมูลรายงานไม่ถูกต้อง');
 
         app(ReportQueryService::class)->fetch($user, $account, 'payments', ['relationship' => 'receiver', 'payment_status' => 'paid']);
         Http::assertSent(fn ($request) => str_contains($request->url(), 'relationship=receiver') && str_contains($request->url(), 'payment_status=paid'));
@@ -92,10 +92,10 @@ class ReportPagesTest extends TestCase
         [$user, $account] = $this->account();
         $this->actingAs($user)->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id]);
         $this->fakeReport('order-checkings', summary: ['total_orders' => 2, 'single_orders' => 1, 'bulk_orders' => 1, 'checking' => 1, 'confirmed_or_new' => 1, 'rejected_or_cancelled' => 0, 'unresolved_price_orders' => 1], rows: [['submitted_at' => '2026-07-01T10:00:00+07:00', 'submission_type' => 'bulk', 'client_reference' => 'REF-BULK', 'batch_reference' => 'BATCH-1', 'order_number' => 'OH-1', 'receiver' => 'Receiver', 'item_count' => 1, 'order_status' => 'checking', 'freight_amount' => '0.00', 'pricing_status' => 'unresolved', 'submitted_by' => 'Safe User']]);
-        $this->get(route('reports.order-checkings'))->assertOk()->assertSee('REF-BULK')->assertSee('BATCH-1')->assertSee('unresolved');
+        $this->get(route('reports.order-checkings'))->assertOk()->assertSee('REF-BULK')->assertSee('BATCH-1')->assertSee('รอระบุราคา')->assertDontSeeText('unresolved');
 
         $this->fakeReport('shipments', rows: [['order_date' => '2026-07-01', 'order_number' => 'OH-SHIP', 'tracking_identifier' => 'TRK-1', 'relationship' => 'receiver', 'sender_name' => 'Sender', 'receiver_name' => 'Receiver', 'current_status' => 'completed', 'item_count' => 1, 'freight_amount' => '10.00', 'latest_status_time' => '2026-07-01T10:00:00+07:00']]);
-        $this->get(route('reports.shipments'))->assertOk()->assertSee('OH-SHIP')->assertSee('receiver')->assertSee('10.00');
+        $this->get(route('reports.shipments'))->assertOk()->assertSee('OH-SHIP')->assertSee('ผู้รับ')->assertDontSeeText('receiver')->assertSee('10.00');
     }
 
     /** @return array{0: User, 1: ClientAccount} */

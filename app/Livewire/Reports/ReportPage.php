@@ -70,6 +70,24 @@ class ReportPage extends Component
         return route('reports.export', array_merge(['report' => $this->report], $this->filters()));
     }
 
+    public function displayValue(array $row, string $column): string
+    {
+        $value = data_get($row, $column);
+
+        if ($value === null || $value === '') {
+            return '-';
+        }
+
+        if (is_bool($value)) {
+            return __('reports.values.boolean.'.($value ? 'true' : 'false'));
+        }
+
+        $translationKey = 'reports.values.'.$column.'.'.$value;
+        $translation = __($translationKey);
+
+        return $translation === $translationKey ? (string) $value : (string) $translation;
+    }
+
     public function render(): View
     {
         return view('livewire.reports.page')->layout('layouts.app', ['title' => $this->definition['title'] ?? __('navigation.reports')]);
