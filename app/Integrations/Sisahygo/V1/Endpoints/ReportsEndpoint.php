@@ -15,6 +15,7 @@ class ReportsEndpoint
     {
         $endpoint = match ($report) {
             'shipments' => '/reports/shipments',
+            'shipment-status' => '/reports/shipment-status',
             'order-checkings' => '/reports/order-checkings',
             'order-checking-items' => '/reports/order-checkings/items',
             'payments' => '/reports/payments',
@@ -34,7 +35,8 @@ class ReportsEndpoint
     {
         return array_filter(array_intersect_key($filters, array_flip([
             'date_from', 'date_to', 'relationship', 'status', 'search', 'type', 'client_reference',
-            'batch_reference', 'pricing_status', 'payment_status', 'payment_type', 'page', 'per_page', 'export',
+            'batch_reference', 'pricing_status', 'payment_status', 'payment_type', 'only_delayed',
+            'only_in_progress', 'page', 'per_page', 'export',
         ])), fn ($value) => $value !== null && $value !== '' && $value !== []);
     }
 }

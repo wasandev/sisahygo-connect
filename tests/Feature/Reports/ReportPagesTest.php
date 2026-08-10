@@ -29,7 +29,7 @@ class ReportPagesTest extends TestCase
         $this->actingAs($user)->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id]);
         $this->fakeReport('shipments');
 
-        $this->get(route('reports'))->assertOk()->assertSee('รายงานสรุปการจัดส่งสินค้า')->assertSee('รายงานรายการที่สร้างผ่าน Sisahygo Connect')->assertSee('รายงานค่าขนส่งและสถานะการชำระเงิน')->assertDontSee('Timeline');
+        $this->get(route('reports'))->assertOk()->assertSee('รายงานสรุปการจัดส่งสินค้า')->assertSee('รายงานสถานะและระยะเวลาการขนส่ง')->assertSee('รายงานรายการที่สร้างผ่าน Sisahygo Connect')->assertSee('รายงานค่าขนส่งและสถานะการชำระเงิน')->assertDontSee('STATUS-HIDDEN');
         $this->get(route('reports.shipments'))->assertOk()->assertSee('Shipment No. 1')->assertDontSee(__('reports.actions.export'));
 
         [$blockedUser, $blocked] = $this->account(reportView: false, reportExport: false);
@@ -55,6 +55,62 @@ class ReportPagesTest extends TestCase
             ->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
         Http::assertSent(fn ($request) => str_contains($request->url(), '/reports/shipments') && str_contains($request->url(), 'export=1'));
+    }
+
+
+    public function test_shipment_status_report_renders_timeline_filters_and_export(): void
+    {
+        [$user, $account] = $this->account(reportView: true, reportExport: true);
+        $this->actingAs($user)->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id]);
+        $this->fakeReport('shipment-status', summary: [
+            'total_shipments' => 1,
+            'waiting' => 0,
+            'in_transit' => 1,
+            'arrival' => 0,
+            'delivered' => 0,
+            'cancelled' => 0,
+            'problem' => 0,
+            'average_processing_time' => '2d 1h',
+            'oldest_pending_shipment' => 'ST-001 / 2d 1h',
+        ], rows: [[
+            'shipment_date' => '2026-07-01',
+            'tracking_number' => 'TRK-ST-001',
+            'order_number' => 'ST-001',
+            'sender' => 'Sender',
+            'receiver' => 'Receiver',
+            'relationship' => 'both',
+            'current_status' => 'loaded',
+            'current_branch' => 'Bangkok Hub',
+            'last_update' => '2026-07-02T10:00:00+07:00',
+            'processing_time' => '2d 1h',
+            'delayed' => true,
+            'timeline' => [
+                ['status' => 'checking', 'date' => '2026-07-01', 'time' => '08:00:00', 'user' => 'Checker User', 'remark' => null],
+                ['status' => 'loaded', 'date' => '2026-07-02', 'time' => '10:00:00', 'user' => 'Loader User', 'remark' => 'Loaded to truck'],
+            ],
+        ]]);
+
+        $this->get(route('reports.shipment-status', ['only_delayed' => 1, 'only_in_progress' => 1]))
+            ->assertOk()
+            ->assertSee('รายงานสถานะและระยะเวลาการขนส่ง')
+            ->assertSee('เฉพาะงานล่าช้า')
+            ->assertSee('เฉพาะงานที่กำลังดำเนินการ')
+            ->assertSee('ST-001')
+            ->assertSee('ผู้ส่งและผู้รับ')
+            ->assertSee('ขึ้นรถแล้ว')
+            ->assertSee('ใช่')
+            ->assertSee('ดูลำดับเหตุการณ์การขนส่ง')
+            ->assertSee('Checker User')
+            ->assertSee('Loaded to truck');
+
+        Http::assertSent(fn ($request) => str_contains($request->url(), '/reports/shipment-status') && str_contains($request->url(), 'only_delayed=1') && str_contains($request->url(), 'only_in_progress=1'));
+
+        $download = $this->get(route('reports.export', ['report' => 'shipment-status', 'date_from' => '2026-07-01', 'date_to' => '2026-07-31']))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        $this->assertStringContainsString('sisahygo-shipment-status-report-20260701-20260731.xlsx', $download->headers->get('content-disposition'));
+
+        Http::assertSent(fn ($request) => str_contains($request->url(), '/reports/shipment-status') && str_contains($request->url(), 'export=1'));
     }
 
     public function test_filters_summary_rows_pagination_and_safe_errors(): void
@@ -120,10 +176,13 @@ class ReportPagesTest extends TestCase
     {
         $summary = $summary ?: match ($report) {
             'order-checkings' => ['total_orders' => 1, 'single_orders' => 1, 'bulk_orders' => 0, 'checking' => 1, 'confirmed_or_new' => 0, 'rejected_or_cancelled' => 0, 'unresolved_price_orders' => 0],
+            'shipment-status' => ['total_shipments' => 1, 'waiting' => 0, 'in_transit' => 1, 'arrival' => 0, 'delivered' => 0, 'cancelled' => 0, 'problem' => 0, 'average_processing_time' => '1h', 'oldest_pending_shipment' => 'Shipment No. 1 / 1h'],
             'payments' => ['total_freight_amount' => '10.00', 'total_paid_amount' => '0.00', 'total_balance_amount' => '10.00', 'paid_count' => 0, 'unpaid_count' => 1],
             default => ['total_shipments' => 1, 'in_progress' => 1, 'delivered' => 0, 'pending_or_problem' => 0, 'total_freight_amount' => '10.00'],
         };
-        $rows = $rows ?: [['order_date' => '2026-07-01', 'order_number' => 'Shipment No. 1', 'tracking_identifier' => 'TRK-1', 'relationship' => 'sender', 'sender_name' => 'Sender', 'receiver_name' => 'Receiver', 'current_status' => 'confirmed', 'item_count' => 1, 'freight_amount' => '10.00', 'latest_status_time' => null]];
+        $rows = $rows ?: ($report === 'shipment-status'
+            ? [['shipment_date' => '2026-07-01', 'tracking_number' => 'TRK-1', 'order_number' => 'Shipment No. 1', 'sender' => 'Sender', 'receiver' => 'Receiver', 'relationship' => 'sender', 'current_status' => 'loaded', 'current_branch' => 'Bangkok Hub', 'last_update' => null, 'processing_time' => '1h', 'delayed' => false, 'timeline' => []]]
+            : [['order_date' => '2026-07-01', 'order_number' => 'Shipment No. 1', 'tracking_identifier' => 'TRK-1', 'relationship' => 'sender', 'sender_name' => 'Sender', 'receiver_name' => 'Receiver', 'current_status' => 'confirmed', 'item_count' => 1, 'freight_amount' => '10.00', 'latest_status_time' => null]]);
 
         Http::fake(["https://sandbox-api.sisahygo.online/api/v1/client/reports/{$report}*" => Http::response($this->reportPayload($report, $summary, $rows))]);
     }
@@ -143,10 +202,13 @@ class ReportPagesTest extends TestCase
     {
         $summary = $summary ?: match ($report) {
             'order-checkings' => ['total_orders' => 1, 'single_orders' => 1, 'bulk_orders' => 0, 'checking' => 1, 'confirmed_or_new' => 0, 'rejected_or_cancelled' => 0, 'unresolved_price_orders' => 0],
+            'shipment-status' => ['total_shipments' => 1, 'waiting' => 0, 'in_transit' => 1, 'arrival' => 0, 'delivered' => 0, 'cancelled' => 0, 'problem' => 0, 'average_processing_time' => '1h', 'oldest_pending_shipment' => 'Shipment No. 1 / 1h'],
             'payments' => ['total_freight_amount' => '10.00', 'total_paid_amount' => '0.00', 'total_balance_amount' => '10.00', 'paid_count' => 0, 'unpaid_count' => 1],
             default => ['total_shipments' => 1, 'in_progress' => 1, 'delivered' => 0, 'pending_or_problem' => 0, 'total_freight_amount' => '10.00'],
         };
-        $rows = $rows ?: [['order_date' => '2026-07-01', 'order_number' => 'Shipment No. 1', 'tracking_identifier' => 'TRK-1', 'relationship' => 'sender', 'sender_name' => 'Sender', 'receiver_name' => 'Receiver', 'current_status' => 'confirmed', 'item_count' => 1, 'freight_amount' => '10.00', 'latest_status_time' => null]];
+        $rows = $rows ?: ($report === 'shipment-status'
+            ? [['shipment_date' => '2026-07-01', 'tracking_number' => 'TRK-1', 'order_number' => 'Shipment No. 1', 'sender' => 'Sender', 'receiver' => 'Receiver', 'relationship' => 'sender', 'current_status' => 'loaded', 'current_branch' => 'Bangkok Hub', 'last_update' => null, 'processing_time' => '1h', 'delayed' => false, 'timeline' => []]]
+            : [['order_date' => '2026-07-01', 'order_number' => 'Shipment No. 1', 'tracking_identifier' => 'TRK-1', 'relationship' => 'sender', 'sender_name' => 'Sender', 'receiver_name' => 'Receiver', 'current_status' => 'confirmed', 'item_count' => 1, 'freight_amount' => '10.00', 'latest_status_time' => null]]);
 
         return ['data' => ['summary' => $summary, 'rows' => $rows, 'pagination' => ['current_page' => 1, 'per_page' => 25, 'total' => count($rows), 'last_page' => 1]], 'meta' => ['report' => $report, 'filters' => ['date_from' => '2026-07-01', 'date_to' => '2026-07-31'], 'generated_at' => '2026-07-31T10:00:00+07:00', 'export_limit' => 5000]];
     }

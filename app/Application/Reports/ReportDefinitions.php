@@ -16,6 +16,15 @@ class ReportDefinitions
                 'columns' => ['order_date', 'order_number', 'tracking_identifier', 'relationship', 'sender_name', 'receiver_name', 'current_status', 'item_count', 'freight_amount', 'latest_status_time'],
                 'file' => 'sisahygo-shipment-report',
             ],
+            'shipment-status' => [
+                'title' => __('reports.shipment_status.title'),
+                'description' => __('reports.shipment_status.description'),
+                'route' => 'reports.shipment-status',
+                'summary' => ['total_shipments', 'waiting', 'in_transit', 'arrival', 'delivered', 'cancelled', 'problem', 'average_processing_time', 'oldest_pending_shipment'],
+                'columns' => ['shipment_date', 'tracking_number', 'order_number', 'sender', 'receiver', 'relationship', 'current_status', 'current_branch', 'last_update', 'processing_time', 'delayed'],
+                'timeline_columns' => ['tracking_number', 'timeline_status', 'timeline_date', 'timeline_time', 'timeline_user', 'timeline_remark'],
+                'file' => 'sisahygo-shipment-status-report',
+            ],
             'order-checkings' => [
                 'title' => __('reports.order_checkings.title'),
                 'description' => __('reports.order_checkings.description'),

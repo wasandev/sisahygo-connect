@@ -31,6 +31,9 @@ final readonly class ReportCriteria
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', Rule::in([10, 25, 50])],
         ];
+        if ($report === 'shipment-status') {
+            $rules += ['only_delayed' => ['nullable', 'boolean'], 'only_in_progress' => ['nullable', 'boolean']];
+        }
         if ($report === 'order-checkings') {
             $rules += ['type' => ['nullable', Rule::in(['all', 'single', 'bulk'])], 'client_reference' => ['nullable', 'string', 'max:100'], 'batch_reference' => ['nullable', 'string', 'max:100'], 'pricing_status' => ['nullable', Rule::in(['resolved', 'unresolved'])]];
         }

@@ -38,15 +38,32 @@ class ReportExportController extends Controller
         }
         $detailRows = [array_map(fn ($key) => __('reports.fields.'.$key), $columns)];
         foreach ($summaryResult['data']['rows'] as $row) {
-            $detailRows[] = array_map(fn ($key) => data_get($row, $key, ''), $columns);
+            $detailRows[] = array_map(fn ($key) => $this->displayValue($row, $key), $columns);
         }
 
         $sheets = [['title' => __('reports.export.summary_sheet'), 'rows' => $summaryRows]];
-        if ($report === 'order-checkings') {
+        if ($report === 'shipment-status') {
+            $timelineColumns = $definition['timeline_columns'];
+            $timelineRows = [array_map(fn ($key) => __('reports.fields.'.$key), $timelineColumns)];
+            foreach ($summaryResult['data']['rows'] as $row) {
+                foreach (($row['timeline'] ?? []) as $event) {
+                    $timelineRows[] = [
+                        data_get($row, 'tracking_number', ''),
+                        $this->statusLabel(data_get($event, 'status')),
+                        data_get($event, 'date', ''),
+                        data_get($event, 'time', ''),
+                        data_get($event, 'user', ''),
+                        data_get($event, 'remark', ''),
+                    ];
+                }
+            }
+            $sheets[] = ['title' => __('reports.export.shipment_status_sheet'), 'rows' => $detailRows];
+            $sheets[] = ['title' => __('reports.export.timeline_sheet'), 'rows' => $timelineRows];
+        } elseif ($report === 'order-checkings') {
             $items = $service->fetch($request->user(), $account, 'order-checking-items', $filters, true);
             $itemColumns = ['client_reference', 'batch_reference', 'order_number', 'product', 'unit', 'quantity', 'unit_price', 'line_amount', 'pricing_status', 'item_remark', 'client_item_no'];
             $itemRows = [array_map(fn ($key) => __('reports.fields.'.$key), $itemColumns)];
-            foreach ($items['data']['rows'] as $row) $itemRows[] = array_map(fn ($key) => data_get($row, $key, ''), $itemColumns);
+            foreach ($items['data']['rows'] as $row) $itemRows[] = array_map(fn ($key) => $this->displayValue($row, $key), $itemColumns);
             $sheets[] = ['title' => __('reports.export.order_items_sheet'), 'rows' => $itemRows];
         } else {
             $sheets[] = ['title' => $report === 'payments' ? __('reports.export.payment_details_sheet') : __('reports.export.shipment_details_sheet'), 'rows' => $detailRows];
@@ -57,5 +74,39 @@ class ReportExportController extends Controller
         $filename = $definition['file'].'-'.str_replace('-', '', $summaryResult['meta']['filters']['date_from']).'-'.str_replace('-', '', $summaryResult['meta']['filters']['date_to']).'.xlsx';
 
         return response()->download($path, $filename, ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'])->deleteFileAfterSend(true);
+    }
+
+    private function displayValue(array $row, string $key): string
+    {
+        $value = data_get($row, $key, '');
+
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        if (is_bool($value)) {
+            return __('reports.values.boolean.'.($value ? 'true' : 'false'));
+        }
+
+        if ($key === 'current_status' || $key === 'order_status') {
+            return $this->statusLabel($value);
+        }
+
+        $translationKey = 'reports.values.'.$key.'.'.$value;
+        $translation = __($translationKey);
+
+        return $translation === $translationKey ? (string) $value : (string) $translation;
+    }
+
+    private function statusLabel(mixed $value): string
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        $translationKey = 'reports.values.current_status.'.$value;
+        $translation = __($translationKey);
+
+        return $translation === $translationKey ? (string) $value : (string) $translation;
     }
 }
