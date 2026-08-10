@@ -39,6 +39,11 @@ class ReportPage extends Component
     #[Url(as: 'pricing_status', except: '')] public string $pricingStatus = '';
     #[Url(as: 'payment_status', except: '')] public string $paymentStatus = '';
     #[Url(as: 'payment_type', except: '')] public string $paymentType = '';
+    #[Url(except: '')] public string $province = '';
+    #[Url(except: '')] public string $district = '';
+    #[Url(as: 'sub_district', except: '')] public string $subDistrict = '';
+    #[Url(except: '')] public string $product = '';
+    #[Url(except: '')] public string $unit = '';
     #[Url(as: 'only_delayed', except: false)] public bool $onlyDelayed = false;
     #[Url(as: 'only_in_progress', except: false)] public bool $onlyInProgress = false;
     #[Url(except: 1)] public int $page = 1;
@@ -62,7 +67,7 @@ class ReportPage extends Component
     public function refresh(): void { $this->loadReport(); }
     public function clearFilters(): void
     {
-        $this->dateFrom = $this->dateTo = null; $this->relationship = 'all'; $this->status = $this->search = $this->type = $this->clientReference = $this->batchReference = $this->pricingStatus = $this->paymentStatus = $this->paymentType = ''; $this->onlyDelayed = $this->onlyInProgress = false; $this->page = 1; $this->loadReport();
+        $this->dateFrom = $this->dateTo = null; $this->relationship = 'all'; $this->status = $this->search = $this->type = $this->clientReference = $this->batchReference = $this->pricingStatus = $this->paymentStatus = $this->paymentType = $this->province = $this->district = $this->subDistrict = $this->product = $this->unit = ''; $this->onlyDelayed = $this->onlyInProgress = false; $this->page = 1; $this->loadReport();
     }
     public function nextPage(): void { if (($this->meta['last_page'] ?? $this->page) > $this->page) { $this->page++; $this->loadReport(); } }
     public function previousPage(): void { if ($this->page > 1) { $this->page--; $this->loadReport(); } }
@@ -123,6 +128,8 @@ class ReportPage extends Component
             'client_reference' => $this->clientReference, 'batch_reference' => $this->batchReference, 'pricing_status' => $this->pricingStatus,
             'payment_status' => $this->paymentStatus, 'payment_type' => $this->paymentType,
             'only_delayed' => $this->onlyDelayed, 'only_in_progress' => $this->onlyInProgress,
+            'province' => $this->province, 'district' => $this->district, 'sub_district' => $this->subDistrict,
+            'product' => $this->product, 'unit' => $this->unit,
             'page' => $this->page, 'per_page' => $this->perPage,
         ];
     }

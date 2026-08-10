@@ -17,6 +17,8 @@ class ReportsEndpoint
             'shipments' => '/reports/shipments',
             'shipment-status' => '/reports/shipment-status',
             'order-checkings' => '/reports/order-checkings',
+            'receivers' => '/reports/receivers',
+            'products' => '/reports/products',
             'order-checking-items' => '/reports/order-checkings/items',
             'payments' => '/reports/payments',
             default => throw new SisahygoUnexpectedResponseException('Unsupported report.'),
@@ -36,7 +38,7 @@ class ReportsEndpoint
         return array_filter(array_intersect_key($filters, array_flip([
             'date_from', 'date_to', 'relationship', 'status', 'search', 'type', 'client_reference',
             'batch_reference', 'pricing_status', 'payment_status', 'payment_type', 'only_delayed',
-            'only_in_progress', 'page', 'per_page', 'export',
+            'only_in_progress', 'province', 'district', 'sub_district', 'product', 'unit', 'page', 'per_page', 'export',
         ])), fn ($value) => $value !== null && $value !== '' && $value !== []);
     }
 }

@@ -59,6 +59,18 @@ class ReportExportController extends Controller
             }
             $sheets[] = ['title' => __('reports.export.shipment_status_sheet'), 'rows' => $detailRows];
             $sheets[] = ['title' => __('reports.export.timeline_sheet'), 'rows' => $timelineRows];
+        } elseif ($report === 'receivers') {
+            $sheets[] = ['title' => __('reports.export.receivers_sheet'), 'rows' => $detailRows];
+            $areaColumns = $definition['area_columns'];
+            $areaRows = [array_map(fn ($key) => __('reports.fields.'.$key), $areaColumns)];
+            foreach (($summaryResult['data']['area_rows'] ?? []) as $row) $areaRows[] = array_map(fn ($key) => $this->displayValue($row, $key), $areaColumns);
+            $sheets[] = ['title' => __('reports.export.delivery_areas_sheet'), 'rows' => $areaRows];
+        } elseif ($report === 'products') {
+            $sheets[] = ['title' => __('reports.export.products_sheet'), 'rows' => $detailRows];
+            $detailColumns = $definition['detail_columns'];
+            $productRows = [array_map(fn ($key) => __('reports.fields.'.$key), $detailColumns)];
+            foreach (($summaryResult['data']['product_details'] ?? []) as $row) $productRows[] = array_map(fn ($key) => $this->displayValue($row, $key), $detailColumns);
+            $sheets[] = ['title' => __('reports.export.product_details_sheet'), 'rows' => $productRows];
         } elseif ($report === 'order-checkings') {
             $items = $service->fetch($request->user(), $account, 'order-checking-items', $filters, true);
             $itemColumns = ['client_reference', 'batch_reference', 'order_number', 'product', 'unit', 'quantity', 'unit_price', 'line_amount', 'pricing_status', 'item_remark', 'client_item_no'];

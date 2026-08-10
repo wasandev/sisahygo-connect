@@ -34,6 +34,12 @@ final readonly class ReportCriteria
         if ($report === 'shipment-status') {
             $rules += ['only_delayed' => ['nullable', 'boolean'], 'only_in_progress' => ['nullable', 'boolean']];
         }
+        if ($report === 'receivers') {
+            $rules += ['province' => ['nullable', 'string', 'max:120'], 'district' => ['nullable', 'string', 'max:120'], 'sub_district' => ['nullable', 'string', 'max:120']];
+        }
+        if ($report === 'products') {
+            $rules += ['product' => ['nullable', 'string', 'max:120'], 'unit' => ['nullable', 'string', 'max:120']];
+        }
         if ($report === 'order-checkings') {
             $rules += ['type' => ['nullable', Rule::in(['all', 'single', 'bulk'])], 'client_reference' => ['nullable', 'string', 'max:100'], 'batch_reference' => ['nullable', 'string', 'max:100'], 'pricing_status' => ['nullable', Rule::in(['resolved', 'unresolved'])]];
         }

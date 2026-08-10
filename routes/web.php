@@ -102,6 +102,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/reports', ReportCenter::class)->name('reports');
         Route::get('/reports/shipments', ReportPage::class)->defaults('report', 'shipments')->name('reports.shipments');
         Route::get('/reports/shipment-status', ReportPage::class)->defaults('report', 'shipment-status')->name('reports.shipment-status');
+        Route::get('/reports/receivers', ReportPage::class)->defaults('report', 'receivers')->name('reports.receivers');
+        Route::get('/reports/products', ReportPage::class)->defaults('report', 'products')->name('reports.products');
         Route::get('/reports/order-checkings', ReportPage::class)->defaults('report', 'order-checkings')->name('reports.order-checkings');
         Route::get('/reports/payments', ReportPage::class)->defaults('report', 'payments')->name('reports.payments');
         Route::get('/reports/{report}/export', ReportExportController::class)->name('reports.export');

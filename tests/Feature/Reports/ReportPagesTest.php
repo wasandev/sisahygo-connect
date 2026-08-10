@@ -29,7 +29,7 @@ class ReportPagesTest extends TestCase
         $this->actingAs($user)->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id]);
         $this->fakeReport('shipments');
 
-        $this->get(route('reports'))->assertOk()->assertSee('รายงานสรุปการจัดส่งสินค้า')->assertSee('รายงานสถานะและระยะเวลาการขนส่ง')->assertSee('รายงานรายการที่สร้างผ่าน Sisahygo Connect')->assertSee('รายงานค่าขนส่งและสถานะการชำระเงิน')->assertDontSee('STATUS-HIDDEN');
+        $this->get(route('reports'))->assertOk()->assertSee('รายงานสรุปการจัดส่งสินค้า')->assertSee('รายงานสถานะและระยะเวลาการขนส่ง')->assertSee('รายงานผู้รับและพื้นที่จัดส่ง')->assertSee('รายงานสินค้าและปริมาณการขนส่ง')->assertSee('รายงานรายการที่สร้างผ่าน Sisahygo Connect')->assertSee('รายงานค่าขนส่งและสถานะการชำระเงิน')->assertDontSee('STATUS-HIDDEN');
         $this->get(route('reports.shipments'))->assertOk()->assertSee('Shipment No. 1')->assertDontSee(__('reports.actions.export'));
 
         [$blockedUser, $blocked] = $this->account(reportView: false, reportExport: false);
@@ -113,6 +113,92 @@ class ReportPagesTest extends TestCase
         Http::assertSent(fn ($request) => str_contains($request->url(), '/reports/shipment-status') && str_contains($request->url(), 'export=1'));
     }
 
+
+    public function test_receiver_report_renders_filters_rows_pagination_and_export(): void
+    {
+        [$user, $account] = $this->account(reportView: true, reportExport: true);
+        $this->actingAs($user)->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id]);
+        $this->fakeReport('receivers', summary: [
+            'total_shipments' => 3,
+            'unique_receivers' => 2,
+            'total_quantity' => '12.0000',
+            'total_freight_amount' => '250.00',
+            'top_receiver' => 'ผู้รับหลัก / 2',
+            'top_destination_province' => 'กรุงเทพมหานคร / 2',
+        ], rows: [[
+            'receiver' => 'ผู้รับหลัก',
+            'province' => 'กรุงเทพมหานคร',
+            'district' => 'บางรัก',
+            'sub_district' => 'สีลม',
+            'shipment_count' => 2,
+            'total_quantity' => '10.0000',
+            'freight_amount' => '200.00',
+            'average_freight_per_shipment' => '100.00',
+            'last_shipment_date' => '2026-07-03',
+        ]]);
+
+        $this->get(route('reports.receivers', ['province' => 'กรุงเทพมหานคร', 'district' => 'บางรัก', 'sub_district' => 'สีลม', 'search' => 'ผู้รับ']))
+            ->assertOk()
+            ->assertSee('รายงานผู้รับและพื้นที่จัดส่ง')
+            ->assertSee('จังหวัด')
+            ->assertSee('อำเภอ/เขต')
+            ->assertSee('ตำบล/แขวง')
+            ->assertSee('ผู้รับหลัก')
+            ->assertSee('200.00')
+            ->assertSee('หน้า 1');
+
+        Http::assertSent(fn ($request) => str_contains($request->url(), '/reports/receivers') && str_contains($request->url(), 'province=') && str_contains($request->url(), 'district=') && str_contains($request->url(), 'sub_district='));
+
+        $download = $this->get(route('reports.export', ['report' => 'receivers', 'date_from' => '2026-07-01', 'date_to' => '2026-07-31']))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        $this->assertStringContainsString('sisahygo-receiver-area-report-20260701-20260731.xlsx', $download->headers->get('content-disposition'));
+
+        Http::assertSent(fn ($request) => str_contains($request->url(), '/reports/receivers') && str_contains($request->url(), 'export=1'));
+    }
+
+    public function test_product_report_renders_filters_rows_pagination_and_export(): void
+    {
+        [$user, $account] = $this->account(reportView: true, reportExport: true);
+        $this->actingAs($user)->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id]);
+        $this->fakeReport('products', summary: [
+            'total_shipments' => 2,
+            'total_product_lines' => 3,
+            'total_quantity' => '9.0000',
+            'unique_products' => 1,
+            'total_freight_amount' => '90.00',
+            'top_product_by_quantity' => 'สินค้า A / 9.0000',
+        ], rows: [[
+            'product' => 'สินค้า A',
+            'unit' => 'ลัง',
+            'shipment_count' => 2,
+            'quantity' => '9.0000',
+            'receiver_count' => 2,
+            'freight_amount' => '90.00',
+            'average_quantity_per_shipment' => '4.5000',
+            'last_shipment_date' => '2026-07-02',
+        ]]);
+
+        $this->get(route('reports.products', ['product' => 'สินค้า A', 'unit' => 'ลัง', 'search' => 'สินค้า']))
+            ->assertOk()
+            ->assertSee('รายงานสินค้าและปริมาณการขนส่ง')
+            ->assertSee('สินค้า')
+            ->assertSee('หน่วย')
+            ->assertSee('สินค้า A')
+            ->assertSee('ลัง')
+            ->assertSee('90.00')
+            ->assertSee('หน้า 1');
+
+        Http::assertSent(fn ($request) => str_contains($request->url(), '/reports/products') && str_contains($request->url(), 'product=') && str_contains($request->url(), 'unit='));
+
+        $download = $this->get(route('reports.export', ['report' => 'products', 'date_from' => '2026-07-01', 'date_to' => '2026-07-31']))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        $this->assertStringContainsString('sisahygo-product-volume-report-20260701-20260731.xlsx', $download->headers->get('content-disposition'));
+
+        Http::assertSent(fn ($request) => str_contains($request->url(), '/reports/products') && str_contains($request->url(), 'export=1'));
+    }
+
     public function test_filters_summary_rows_pagination_and_safe_errors(): void
     {
         [$user, $account] = $this->account();
@@ -177,12 +263,17 @@ class ReportPagesTest extends TestCase
         $summary = $summary ?: match ($report) {
             'order-checkings' => ['total_orders' => 1, 'single_orders' => 1, 'bulk_orders' => 0, 'checking' => 1, 'confirmed_or_new' => 0, 'rejected_or_cancelled' => 0, 'unresolved_price_orders' => 0],
             'shipment-status' => ['total_shipments' => 1, 'waiting' => 0, 'in_transit' => 1, 'arrival' => 0, 'delivered' => 0, 'cancelled' => 0, 'problem' => 0, 'average_processing_time' => '1h', 'oldest_pending_shipment' => 'Shipment No. 1 / 1h'],
+            'receivers' => ['total_shipments' => 1, 'unique_receivers' => 1, 'total_quantity' => '1.0000', 'total_freight_amount' => '10.00', 'top_receiver' => 'Receiver / 1', 'top_destination_province' => 'กรุงเทพมหานคร / 1'],
+            'products' => ['total_shipments' => 1, 'total_product_lines' => 1, 'total_quantity' => '1.0000', 'unique_products' => 1, 'total_freight_amount' => '10.00', 'top_product_by_quantity' => 'Product / 1.0000'],
             'payments' => ['total_freight_amount' => '10.00', 'total_paid_amount' => '0.00', 'total_balance_amount' => '10.00', 'paid_count' => 0, 'unpaid_count' => 1],
             default => ['total_shipments' => 1, 'in_progress' => 1, 'delivered' => 0, 'pending_or_problem' => 0, 'total_freight_amount' => '10.00'],
         };
-        $rows = $rows ?: ($report === 'shipment-status'
-            ? [['shipment_date' => '2026-07-01', 'tracking_number' => 'TRK-1', 'order_number' => 'Shipment No. 1', 'sender' => 'Sender', 'receiver' => 'Receiver', 'relationship' => 'sender', 'current_status' => 'loaded', 'current_branch' => 'Bangkok Hub', 'last_update' => null, 'processing_time' => '1h', 'delayed' => false, 'timeline' => []]]
-            : [['order_date' => '2026-07-01', 'order_number' => 'Shipment No. 1', 'tracking_identifier' => 'TRK-1', 'relationship' => 'sender', 'sender_name' => 'Sender', 'receiver_name' => 'Receiver', 'current_status' => 'confirmed', 'item_count' => 1, 'freight_amount' => '10.00', 'latest_status_time' => null]]);
+        $rows = $rows ?: match ($report) {
+            'shipment-status' => [['shipment_date' => '2026-07-01', 'tracking_number' => 'TRK-1', 'order_number' => 'Shipment No. 1', 'sender' => 'Sender', 'receiver' => 'Receiver', 'relationship' => 'sender', 'current_status' => 'loaded', 'current_branch' => 'Bangkok Hub', 'last_update' => null, 'processing_time' => '1h', 'delayed' => false, 'timeline' => []]],
+            'receivers' => [['receiver' => 'Receiver', 'province' => 'กรุงเทพมหานคร', 'district' => 'บางรัก', 'sub_district' => 'สีลม', 'shipment_count' => 1, 'total_quantity' => '1.0000', 'freight_amount' => '10.00', 'average_freight_per_shipment' => '10.00', 'last_shipment_date' => '2026-07-01']],
+            'products' => [['product' => 'Product', 'unit' => 'ลัง', 'shipment_count' => 1, 'quantity' => '1.0000', 'receiver_count' => 1, 'freight_amount' => '10.00', 'average_quantity_per_shipment' => '1.0000', 'last_shipment_date' => '2026-07-01']],
+            default => [['order_date' => '2026-07-01', 'order_number' => 'Shipment No. 1', 'tracking_identifier' => 'TRK-1', 'relationship' => 'sender', 'sender_name' => 'Sender', 'receiver_name' => 'Receiver', 'current_status' => 'confirmed', 'item_count' => 1, 'freight_amount' => '10.00', 'latest_status_time' => null]],
+        };
 
         Http::fake(["https://sandbox-api.sisahygo.online/api/v1/client/reports/{$report}*" => Http::response($this->reportPayload($report, $summary, $rows))]);
     }
@@ -203,13 +294,22 @@ class ReportPagesTest extends TestCase
         $summary = $summary ?: match ($report) {
             'order-checkings' => ['total_orders' => 1, 'single_orders' => 1, 'bulk_orders' => 0, 'checking' => 1, 'confirmed_or_new' => 0, 'rejected_or_cancelled' => 0, 'unresolved_price_orders' => 0],
             'shipment-status' => ['total_shipments' => 1, 'waiting' => 0, 'in_transit' => 1, 'arrival' => 0, 'delivered' => 0, 'cancelled' => 0, 'problem' => 0, 'average_processing_time' => '1h', 'oldest_pending_shipment' => 'Shipment No. 1 / 1h'],
+            'receivers' => ['total_shipments' => 1, 'unique_receivers' => 1, 'total_quantity' => '1.0000', 'total_freight_amount' => '10.00', 'top_receiver' => 'Receiver / 1', 'top_destination_province' => 'กรุงเทพมหานคร / 1'],
+            'products' => ['total_shipments' => 1, 'total_product_lines' => 1, 'total_quantity' => '1.0000', 'unique_products' => 1, 'total_freight_amount' => '10.00', 'top_product_by_quantity' => 'Product / 1.0000'],
             'payments' => ['total_freight_amount' => '10.00', 'total_paid_amount' => '0.00', 'total_balance_amount' => '10.00', 'paid_count' => 0, 'unpaid_count' => 1],
             default => ['total_shipments' => 1, 'in_progress' => 1, 'delivered' => 0, 'pending_or_problem' => 0, 'total_freight_amount' => '10.00'],
         };
-        $rows = $rows ?: ($report === 'shipment-status'
-            ? [['shipment_date' => '2026-07-01', 'tracking_number' => 'TRK-1', 'order_number' => 'Shipment No. 1', 'sender' => 'Sender', 'receiver' => 'Receiver', 'relationship' => 'sender', 'current_status' => 'loaded', 'current_branch' => 'Bangkok Hub', 'last_update' => null, 'processing_time' => '1h', 'delayed' => false, 'timeline' => []]]
-            : [['order_date' => '2026-07-01', 'order_number' => 'Shipment No. 1', 'tracking_identifier' => 'TRK-1', 'relationship' => 'sender', 'sender_name' => 'Sender', 'receiver_name' => 'Receiver', 'current_status' => 'confirmed', 'item_count' => 1, 'freight_amount' => '10.00', 'latest_status_time' => null]]);
+        $rows = $rows ?: match ($report) {
+            'shipment-status' => [['shipment_date' => '2026-07-01', 'tracking_number' => 'TRK-1', 'order_number' => 'Shipment No. 1', 'sender' => 'Sender', 'receiver' => 'Receiver', 'relationship' => 'sender', 'current_status' => 'loaded', 'current_branch' => 'Bangkok Hub', 'last_update' => null, 'processing_time' => '1h', 'delayed' => false, 'timeline' => []]],
+            'receivers' => [['receiver' => 'Receiver', 'province' => 'กรุงเทพมหานคร', 'district' => 'บางรัก', 'sub_district' => 'สีลม', 'shipment_count' => 1, 'total_quantity' => '1.0000', 'freight_amount' => '10.00', 'average_freight_per_shipment' => '10.00', 'last_shipment_date' => '2026-07-01']],
+            'products' => [['product' => 'Product', 'unit' => 'ลัง', 'shipment_count' => 1, 'quantity' => '1.0000', 'receiver_count' => 1, 'freight_amount' => '10.00', 'average_quantity_per_shipment' => '1.0000', 'last_shipment_date' => '2026-07-01']],
+            default => [['order_date' => '2026-07-01', 'order_number' => 'Shipment No. 1', 'tracking_identifier' => 'TRK-1', 'relationship' => 'sender', 'sender_name' => 'Sender', 'receiver_name' => 'Receiver', 'current_status' => 'confirmed', 'item_count' => 1, 'freight_amount' => '10.00', 'latest_status_time' => null]],
+        };
 
-        return ['data' => ['summary' => $summary, 'rows' => $rows, 'pagination' => ['current_page' => 1, 'per_page' => 25, 'total' => count($rows), 'last_page' => 1]], 'meta' => ['report' => $report, 'filters' => ['date_from' => '2026-07-01', 'date_to' => '2026-07-31'], 'generated_at' => '2026-07-31T10:00:00+07:00', 'export_limit' => 5000]];
+        $data = ['summary' => $summary, 'rows' => $rows, 'pagination' => ['current_page' => 1, 'per_page' => 25, 'total' => count($rows), 'last_page' => 1]];
+        if ($report === 'receivers') $data['area_rows'] = [['province' => 'กรุงเทพมหานคร', 'district' => 'บางรัก', 'sub_district' => 'สีลม', 'shipment_count' => 1, 'unique_receivers' => 1, 'total_quantity' => '1.0000', 'freight_amount' => '10.00']];
+        if ($report === 'products') $data['product_details'] = [['shipment_date' => '2026-07-01', 'order_number' => 'PD-1', 'receiver' => 'Receiver', 'product' => 'Product', 'unit' => 'ลัง', 'quantity' => '1.0000', 'unit_price' => '10.00', 'freight_amount' => '10.00', 'client_item_no' => 'I-1']];
+
+        return ['data' => $data, 'meta' => ['report' => $report, 'filters' => ['date_from' => '2026-07-01', 'date_to' => '2026-07-31'], 'generated_at' => '2026-07-31T10:00:00+07:00', 'export_limit' => 5000]];
     }
 }
