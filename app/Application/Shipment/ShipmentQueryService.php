@@ -2,6 +2,7 @@
 
 namespace App\Application\Shipment;
 
+use App\Application\Support\CoreDateTimeFormatter;
 use App\Domain\ClientAccount\Enums\ClientCapability;
 use App\Domain\ClientAccount\Models\ClientAccount;
 use App\Integrations\Sisahygo\Support\SisahygoIntegrationContext;
@@ -20,6 +21,7 @@ class ShipmentQueryService
     public function __construct(
         private readonly SisahygoIntegrationContextBuilder $contextBuilder,
         private readonly ShipmentsEndpoint $shipments,
+        private readonly CoreDateTimeFormatter $dateTime,
     ) {}
 
     /**
@@ -141,7 +143,7 @@ class ShipmentQueryService
                 'label' => ShipmentStatusLabels::label($status->status),
                 'variant' => ShipmentStatusLabels::variant($status->status),
                 'occurred_at' => $status->occurredAt?->toIso8601String(),
-                'occurred_at_display' => $status->occurredAt?->timezone(config('app.timezone'))->format('Y-m-d H:i'),
+                'occurred_at_display' => $this->dateTime->display($status->occurredAt),
                 'description' => $status->description,
                 'branch_name' => $status->branchName,
                 'actor' => $status->actor,

@@ -57,7 +57,6 @@ class ReportPagesTest extends TestCase
         Http::assertSent(fn ($request) => str_contains($request->url(), '/reports/shipments') && str_contains($request->url(), 'export=1'));
     }
 
-
     public function test_shipment_status_report_renders_timeline_filters_and_export(): void
     {
         [$user, $account] = $this->account(reportView: true, reportExport: true);
@@ -113,6 +112,47 @@ class ReportPagesTest extends TestCase
         Http::assertSent(fn ($request) => str_contains($request->url(), '/reports/shipment-status') && str_contains($request->url(), 'export=1'));
     }
 
+
+    public function test_shipment_status_report_formats_timezone_aware_timestamps_in_app_timezone(): void
+    {
+        [$user, $account] = $this->account(reportView: true, reportExport: true);
+        $this->actingAs($user)->withSession([CurrentClientAccountResolver::SESSION_KEY => $account->id]);
+        $this->fakeReport('shipment-status', rows: [[
+            'shipment_date' => '2026-09-03',
+            'tracking_number' => 'TRK-TZ-001',
+            'order_number' => 'ST-TZ-001',
+            'sender' => 'Sender',
+            'receiver' => 'Receiver',
+            'relationship' => 'sender',
+            'current_status' => 'loaded',
+            'current_branch' => 'Bangkok Hub',
+            'last_update' => '2026-09-03T07:36:00Z',
+            'processing_time' => '1h',
+            'delayed' => false,
+            'timeline' => [
+                ['status' => 'checking', 'date' => '2026-09-03T07:36:00Z', 'time' => null, 'user' => 'Checker User', 'remark' => null],
+                ['status' => 'loaded', 'date' => '2026-09-04T18:30:00Z', 'time' => null, 'user' => 'Loader User', 'remark' => null],
+                ['status' => 'delivered', 'date' => '2026-09-05T09:42:00+07:00', 'time' => null, 'user' => 'Delivery User', 'remark' => null],
+                ['status' => 'created', 'date' => '2026-09-05', 'time' => '09:42:00', 'user' => 'Creator User', 'remark' => null],
+            ],
+        ]]);
+
+        $this->get(route('reports.shipment-status'))
+            ->assertOk()
+            ->assertSee('03/09/2026 14:36')
+            ->assertSee('03/09/2026 14:36')
+            ->assertSee('05/09/2026 01:30')
+            ->assertSee('05/09/2026 09:42');
+
+        $result = app(ReportQueryService::class)->fetch($user, $account, 'shipment-status', []);
+        $this->assertSame('03/09/2026 14:36', $result['data']['rows'][0]['last_update']);
+        $this->assertSame('03/09/2026', $result['data']['rows'][0]['timeline'][0]['date']);
+        $this->assertSame('14:36', $result['data']['rows'][0]['timeline'][0]['time']);
+        $this->assertSame('05/09/2026', $result['data']['rows'][0]['timeline'][1]['date']);
+        $this->assertSame('01:30', $result['data']['rows'][0]['timeline'][1]['time']);
+        $this->assertSame('05/09/2026', $result['data']['rows'][0]['timeline'][3]['date']);
+        $this->assertSame('09:42', $result['data']['rows'][0]['timeline'][3]['time']);
+    }
 
     public function test_receiver_report_renders_filters_rows_pagination_and_export(): void
     {

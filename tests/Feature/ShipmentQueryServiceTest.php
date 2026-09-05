@@ -72,6 +72,30 @@ class ShipmentQueryServiceTest extends TestCase
         $this->assertSame('รับสินค้าแล้ว', $shipment['timeline'][0]['label']);
     }
 
+    public function test_detail_formats_timezone_aware_timeline_in_app_timezone_without_double_shift(): void
+    {
+        [$user, $account] = $this->eligibleAccount();
+        Http::fake(['https://sandbox-api.sisahygo.online/api/v1/client/shipments/SH-TZ' => Http::response([
+            'data' => [
+                'tracking_no' => 'SH-TZ',
+                'order_header_no' => 'OH-TZ',
+                'history' => [
+                    ['status' => 'picked_up', 'changed_at' => '2026-09-03T07:36:00Z'],
+                    ['status' => 'loaded', 'changed_at' => '2026-09-04T18:30:00Z'],
+                    ['status' => 'delivered', 'changed_at' => '2026-09-05T09:42:00+07:00'],
+                    ['status' => 'created', 'changed_at' => '2026-09-05 09:42:00'],
+                ],
+            ],
+        ])]);
+
+        $shipment = app(ShipmentQueryService::class)->detail($user, $account, 'SH-TZ');
+
+        $this->assertSame('03/09/2026 14:36', $shipment['timeline'][0]['occurred_at_display']);
+        $this->assertSame('05/09/2026 01:30', $shipment['timeline'][1]['occurred_at_display']);
+        $this->assertSame('05/09/2026 09:42', $shipment['timeline'][2]['occurred_at_display']);
+        $this->assertSame('05/09/2026 09:42', $shipment['timeline'][3]['occurred_at_display']);
+    }
+
     public function test_suspended_account_is_rejected(): void
     {
         [$user, $account] = $this->eligibleAccount(ClientAccountStatus::Suspended);
